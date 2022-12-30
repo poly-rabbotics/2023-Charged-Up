@@ -25,7 +25,7 @@ public class Robot extends TimedRobot {
      * initialization code.
      */
     @Override
-        public void robotInit() {
+    public void robotInit() {
         m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
         m_chooser.addOption("My Auto", kCustomAuto);
         SmartDashboard.putData("Auto choices", m_chooser);
@@ -66,8 +66,6 @@ public class Robot extends TimedRobot {
                 // Put custom auto code here
                 break;
             case kDefaultAuto:
-                // Put custom auto code here
-                break;
             default:
                 // Put default auto code here
                 break;
