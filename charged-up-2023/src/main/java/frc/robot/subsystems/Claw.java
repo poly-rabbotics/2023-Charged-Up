@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 public class Claw {
 
+    static DoubleSolenoid clawSolenoid;
+
     static boolean pneumaticsTransitioning;
     static boolean clawClosed;
 

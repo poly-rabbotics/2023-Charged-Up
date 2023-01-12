@@ -4,6 +4,8 @@ import java.util.concurrent.*;
 import edu.wpi.first.wpilibj.*;
 
 public class RobotMap {
+	// NOTE: this should be the only instance of this class, ever.
+	// It only works if you use the same one everywhere.
 
         /* --> Joysticks <-- */
     public static XboxController driveJoystick;
@@ -15,8 +17,7 @@ public class RobotMap {
         try{
             driveJoystick = new XboxController(0);
         } catch (Exception e) {
-        	dashboardLog.logError("Error occured while initializing joysticks.");
-			dashboardLog.logError(e);
+        	
 		} 
     }
 
@@ -24,8 +25,7 @@ public class RobotMap {
         try {
             clawSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 4, 5);
         } catch (Exception e) {
-        	dashboardLog.logError("Error occured while initializing claw.");
-			dashboardLog.logError(e);
+        	
 		}
     }
 }
