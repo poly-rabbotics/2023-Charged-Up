@@ -41,7 +41,6 @@ public class Robot extends TimedRobot {
         comp.enableDigital();
         
         RobotMap.initClaw();
-        claw = new Claw();
     }
 
     /**
@@ -92,7 +91,7 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        claw.run();
+        Claw.instance.run();
     }
 
     /** This function is called once when the robot is disabled. */

@@ -3,48 +3,57 @@ package frc.robot.subsystems;
 import frc.robot.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.*;
 
 public class Claw {
 
-    static DoubleSolenoid clawSolenoid;
+    private DoubleSolenoid clawSolenoid;
 
-    static boolean pneumaticsTransitioning;
-    static boolean clawClosed;
+    private boolean pneumaticsTransitioning;
+    private boolean clawClosed;
 
-    public Claw() {
-        clawSolenoid = RobotMap.clawSolenoid;
+    private static Claw instance = new Claw();
+
+    private Claw() {
 
         pneumaticsTransitioning = false;
         clawClosed = false;
+
+        try {
+            clawSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 4, 5);
+        } catch (Exception e) {
+            DashboardLog.logWarning("An error occured while initializing clawSolenoid");
+		}
     }
 
-    public void run() {
+    public static void run() {
+        if(DriveJoystick.claw() && !instance.pneumaticsTransitioning) {
+            instance.pneumaticsTransitioning = true;
 
-        if(DriveJoystick.claw() && !pneumaticsTransitioning) {
-            pneumaticsTransitioning = true;
-
-            if(clawClosed) {
-                RobotMap.clawSolenoid.set(Value.kReverse);
-                clawClosed = false;
+            if(instance.clawClosed) {
+                instance.clawSolenoid.set(Value.kReverse);
+                instance.clawClosed = false;
             } else {
-                RobotMap.clawSolenoid.set(Value.kForward);
-                clawClosed = true;
+                instance.clawSolenoid.set(Value.kForward);
+                instance.clawClosed = true;
             }
         }
-        if(!DriveJoystick.claw()) pneumaticsTransitioning = false;
+
+        if(!DriveJoystick.claw()) 
+            instance.pneumaticsTransitioning = false;
     }
 
     public static void close() {
         if(RobotMap.clawSolenoid.get() == Value.kForward) {
-            RobotMap.clawSolenoid.set(Value.kReverse);
-            clawClosed = false;
+            instance.clawSolenoid.set(Value.kReverse);
+            instance.clawClosed = false;
         }
     }
 
     public static void release() {
         if(RobotMap.clawSolenoid.get() == Value.kReverse) {
-            RobotMap.clawSolenoid.set(Value.kForward);
-            clawClosed = true;
+            instance.clawSolenoid.set(Value.kForward);
+            instance.clawClosed = true;
         }
     }
 }
