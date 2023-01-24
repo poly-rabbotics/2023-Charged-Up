@@ -23,6 +23,7 @@ public class Drive {
     }
 
     public static void run(double joystickX, double joystickY) {
+        //rotates joystick axes by 45 degrees & sets units to left and right axes
         instance.rightUnit.set(joystickX + joystickY);
         instance.leftUnit.set(joystickY - joystickX);   
     }
