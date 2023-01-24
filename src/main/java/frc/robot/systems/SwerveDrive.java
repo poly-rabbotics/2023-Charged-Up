@@ -1,0 +1,49 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package frc.robot.systems;
+
+import frc.robot.subsystems.SwerveMode;
+import frc.robot.subsystems.SwerveModule;
+
+/** Add your docs here. */
+public class SwerveDrive {
+    private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1, 2, 3, 4 };
+    private static final int MODULE_ROTATION_CAN_IDS[] = { 5, 6, 7, 8 };
+
+    private static SwerveDrive instance = new SwerveDrive(MODULE_MOVEMENT_CAN_IDS, MODULE_ROTATION_CAN_IDS);
+
+    private SwerveMode mode = SwerveMode.Relative;
+    private SwerveModule modules[];
+
+    private SwerveDrive(int moduleIDs[], int rotationIDs[]) {
+        for (int i = 0; i < moduleIDs.length; i++) {
+            modules[i] = new SwerveModule(moduleIDs[i], rotationIDs[i]);
+        }
+    }
+
+    public static void setMode(SwerveMode mode) {
+        instance.mode = mode;
+    }
+
+    public static SwerveMode getMode() {
+        return instance.mode;
+    }
+
+    /**
+     * If mode is Headless then the given rotation will be assumed to be
+     * relative to the driver.
+     * 
+     * @param rotation Rotation in degrees.
+     * @param speed Native motor speed.
+     */
+    public static void setMovementVector(double rotation, double speed) {
+        if (instance.mode == SwerveMode.Headless)
+            return; // TODO: HEADLESS
+
+        for (SwerveModule module : instance.modules) {
+            module.setMovementVector(rotation, speed);
+        }
+    }
+}
