@@ -6,11 +6,15 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
 
 /** Add your docs here. */
 public class DriveUnit {
     private CANSparkMax leader;
     private CANSparkMax follower;
+    private RelativeEncoder encoder;
+    private SparkMaxPIDController controller;
     
     /**
      * Creates new drive unit
@@ -21,6 +25,9 @@ public class DriveUnit {
         leader = new CANSparkMax(leaderCANID, MotorType.kBrushless);
         follower = new CANSparkMax(followerCANID, MotorType.kBrushless);
         follower.follow(leader);
+
+        encoder = leader.getEncoder();
+        controller = leader.getPIDController();
     }
     /**
      * sets the speed for the leader CANID
@@ -28,5 +35,17 @@ public class DriveUnit {
      */
     public void set(double speed) {
         leader.set(speed);
+    }
+
+    public RelativeEncoder getEncoder() {
+        return encoder;
+    }
+
+    public SparkMaxPIDController getController() {
+        return controller;
+    }
+
+    public void setController(SparkMaxPIDController newController) {
+        controller = newController;
     }
 }
