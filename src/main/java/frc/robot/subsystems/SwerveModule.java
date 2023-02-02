@@ -4,10 +4,9 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.sensors.CANCoder;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkMaxAbsoluteEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 
 import edu.wpi.first.math.controller.PIDController;
 
@@ -19,7 +18,7 @@ public class SwerveModule {
 
     private CANSparkMax rotationalMotor;
     private CANSparkMax movementMotor;
-    private SparkMaxAbsoluteEncoder rotationalEncoder;
+    private CANCoder rotationalEncoder;
     private PIDController controller;
 
     private class DirectionSet {
@@ -32,27 +31,26 @@ public class SwerveModule {
         }
     }
 
-    public SwerveModule(int rotationalMotorID, int movementMotorID) {
+    public SwerveModule(int rotationalMotorID, int movementMotorID, int canCoderID) {
         rotationalMotor = new CANSparkMax(rotationalMotorID, MotorType.kBrushless);
         movementMotor = new CANSparkMax(movementMotorID, MotorType.kBrushless);
-        rotationalEncoder = rotationalMotor.getAbsoluteEncoder(Type.kDutyCycle);
-        rotationalEncoder.setPositionConversionFactor(360.0);
+        rotationalEncoder = new CANCoder(canCoderID);
         controller = new PIDController(PID_P, PID_I, PID_D);
     }
 
     private DirectionSet convertAngleToDirection(double setpoint1) {
-        double currentPosition = rotationalEncoder.getPosition() % rotationalEncoder.getPositionConversionFactor();
+        double currentPosition = rotationalEncoder.getPosition();
         
         // We're going to start finding the quickest way to get to either the
         // given point, or 180 degrees from it. In the case of the latter we
         // will invert the motor.
 
-        double setpoint2 = (setpoint1 + 180.0) % rotationalEncoder.getPositionConversionFactor();
+        double setpoint2 = (setpoint1 + 180.0);
 
         double movement1 = setpoint1 - currentPosition;
-        double movement2 = rotationalEncoder.getPositionConversionFactor() + movement1;
+        double movement2 = 360.0 + movement1;
         double movement3 = setpoint2 - currentPosition;
-        double movement4 = rotationalEncoder.getPositionConversionFactor() - movement3;
+        double movement4 = 360.0 - movement3;
 
         double minimumMovement = Math.min(Math.min(movement1, movement2), Math.min(movement3, movement4));
         boolean inversionRequired = (minimumMovement == movement3) || (minimumMovement == movement4);

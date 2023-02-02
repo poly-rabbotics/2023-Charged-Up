@@ -10,15 +10,16 @@ import frc.robot.subsystems.SwerveModule;
 public class SwerveDrive {
     private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1, 2, 3, 4 };
     private static final int MODULE_ROTATION_CAN_IDS[] = { 5, 6, 7, 8 };
+    private static final int MODULE_ENCODER_CAN_IDS[] = { 5, 6, 7, 8 };
 
-    private static SwerveDrive instance = new SwerveDrive(MODULE_MOVEMENT_CAN_IDS, MODULE_ROTATION_CAN_IDS);
+    private static SwerveDrive instance = new SwerveDrive(MODULE_MOVEMENT_CAN_IDS, MODULE_ROTATION_CAN_IDS, MODULE_ENCODER_CAN_IDS);
 
     private SwerveMode mode = SwerveMode.Relative;
     private SwerveModule modules[];
 
-    private SwerveDrive(int moduleIDs[], int rotationIDs[]) {
+    private SwerveDrive(int moduleIDs[], int rotationIDs[], int encoderIDs[]) {
         for (int i = 0; i < moduleIDs.length; i++) {
-            modules[i] = new SwerveModule(moduleIDs[i], rotationIDs[i]);
+            modules[i] = new SwerveModule(moduleIDs[i], rotationIDs[i], encoderIDs[i]);
         }
     }
 
