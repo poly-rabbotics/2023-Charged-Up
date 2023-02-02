@@ -7,7 +7,6 @@ package frc.robot.systems;
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.subsystems.SwerveModule;
 
-/** Add your docs here. */
 public class SwerveDrive {
     private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1, 2, 3, 4 };
     private static final int MODULE_ROTATION_CAN_IDS[] = { 5, 6, 7, 8 };
@@ -31,6 +30,12 @@ public class SwerveDrive {
         return instance.mode;
     }
 
+    public static void resetOrientation() {
+        for (SwerveModule module : instance.modules) {
+            module.setMovementVector(0.0, 0.0);
+        }
+    }
+
     /**
      * If mode is Headless then the given rotation will be assumed to be
      * relative to the driver.
@@ -39,11 +44,18 @@ public class SwerveDrive {
      * @param speed Native motor speed.
      */
     public static void setMovementVector(double rotation, double speed) {
-        if (instance.mode == SwerveMode.Headless)
-            return; // TODO: HEADLESS
+        if (instance.mode == SwerveMode.Relative) {
+            for (SwerveModule module : instance.modules) {
+                module.setMovementVector(rotation, speed);
+            }
+
+            return;
+        }
+    
+        double orientation = Pigeon.getGlobalRotationDegrees();
 
         for (SwerveModule module : instance.modules) {
-            module.setMovementVector(rotation, speed);
-        }
+            module.setMovementVector(rotation - orientation, speed);
+        }        
     }
 }
