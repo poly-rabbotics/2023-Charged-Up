@@ -22,14 +22,26 @@ public class SwerveDrive {
         }
     }
 
+    /**
+     * Sets the current mode of the swerve drive. This changes the behavior of
+     * setMovementVector.
+     * @param mode The mode in which to operate.
+     */
     public static void setMode(SwerveMode mode) {
         instance.mode = mode;
     }
 
+    /**
+     * Get the current swerve mode.
+     */
     public static SwerveMode getMode() {
         return instance.mode;
     }
 
+    /**
+     * Moves all swerve modules so that the face forward relative to the 
+     * robot's front.
+     */
     public static void resetOrientation() {
         for (SwerveModule module : instance.modules) {
             module.setMovementVector(0.0, 0.0);
