@@ -49,6 +49,11 @@ public class DriveUnit {
     public void setController(SparkMaxPIDController newController) {
         controller = newController;
     }
+
+    public SparkMaxPIDController getController() {
+        return controller;
+    }
+
     public void settupPID(double p, double i, double d) {
         controller.setP(p);
         controller.setI(i);

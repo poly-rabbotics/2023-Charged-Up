@@ -9,6 +9,7 @@ import com.ctre.phoenix.sensors.Pigeon2;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
+import edu.wpi.first.wpilibj.XboxController;
 
 public class Drive {
     private static final int LEFT_LEADER_CAN_ID = 0;
@@ -19,13 +20,17 @@ public class Drive {
     private static final int PID_DEADZONE = 5;
 
     private static Drive instance = new Drive();
+    private static XboxController controller = new XboxController(0);
 
     private DriveUnit rightUnit;
     private DriveUnit leftUnit;
+    
+    private SparkMaxPIDController rightController;
+    private SparkMaxPIDController leftController;
 
     private Pigeon2 pigeon;
 
-    private static final double P = 0;
+    private static final double P = 0.0000001;
     private static final double I = 0;
     private static final double D = 0;
     private double velocitySetPoint = 0;
@@ -36,12 +41,22 @@ public class Drive {
         leftUnit = new DriveUnit(LEFT_LEADER_CAN_ID, LEFT_FOLLOWER_CAN_ID);
 
         rightUnit.settupPID(P, I, D);
-        rightUnit.settupPID(P, I, D);
+        leftUnit.settupPID(P, I, D);
+
+        rightController = rightUnit.getController();
+        leftController = leftUnit.getController();
 
         pigeon = new Pigeon2(PIGEON_CAN_ID);
     }
 
     public static void run(double joystickX, double joystickY) {
+        //toggle balancing
+        if(controller.getAButtonPressed()) {
+            instance.isBalancing = true;
+        } else if(controller.getAButtonReleased()) {
+            instance.isBalancing = false;
+        }
+
         if(instance.isBalancing) {
             instance.autoBalance();
             return;
@@ -71,4 +86,9 @@ public class Drive {
     private double getGlobalRotation() {
         return instance.pigeon.getPitch() % 360.0;
     }
+
+    public static void setBalancing(boolean isBalancing) {
+        instance.isBalancing = isBalancing;
+    }
+
 }

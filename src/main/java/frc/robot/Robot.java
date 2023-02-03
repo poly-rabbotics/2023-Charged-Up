@@ -7,6 +7,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.systems.*;
+import edu.wpi.first.wpilibj.XboxController;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -15,10 +17,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends TimedRobot {
-    private static final String kDefaultAuto = "Default";
     private static final String kCustomAuto = "My Auto";
+    private static final String kDefaultAuto = "Default";
     private String m_autoSelected;
     private final SendableChooser<String> m_chooser = new SendableChooser<>();
+    private XboxController xboxController = new XboxController(0);
 
     /**
      * This function is run when the robot is first started up and should be used for any
@@ -39,7 +42,9 @@ public class Robot extends TimedRobot {
      * SmartDashboard integrated updating.
      */
     @Override
-    public void robotPeriodic() {}
+    public void robotPeriodic() {
+        Drive.run(xboxController.getRawAxis(0), xboxController.getRawAxis(1));
+    }
 
     /**
      * This autonomous (along with the chooser code above) shows how to select between different
