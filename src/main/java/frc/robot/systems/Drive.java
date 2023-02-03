@@ -23,16 +23,11 @@ public class Drive {
     private DriveUnit rightUnit;
     private DriveUnit leftUnit;
 
-    private RelativeEncoder rightEncoder;
-    private RelativeEncoder leftEncoder;
-    private SparkMaxPIDController rightController;
-    private SparkMaxPIDController leftController;
-
     private Pigeon2 pigeon;
 
-    private double kP = 0;
-    private double kI = 0;
-    private double kD = 0;
+    private static final double P = 0;
+    private static final double I = 0;
+    private static final double D = 0;
     private double velocitySetPoint = 0;
     private boolean isBalancing = false;
 
@@ -40,21 +35,8 @@ public class Drive {
         rightUnit = new DriveUnit(RIGHT_LEADER_CAN_ID, RIGHT_FOLLOWER_CAN_ID);
         leftUnit = new DriveUnit(LEFT_LEADER_CAN_ID, LEFT_FOLLOWER_CAN_ID);
 
-        rightEncoder = rightUnit.getEncoder();
-        leftEncoder = leftUnit.getEncoder();
-
-        rightController = rightUnit.getController();
-        leftController = leftUnit.getController();
-
-        rightController.setP(kP);
-        leftController.setP(kP);
-        rightController.setI(kI);
-        leftController.setI(kI);
-        rightController.setD(kD);
-        leftController.setD(kD);
-
-        leftController.setOutputRange(-1, 1);
-        rightController.setOutputRange(-1, 1);
+        rightUnit.settupPID(P, I, D);
+        rightUnit.settupPID(P, I, D);
 
         pigeon = new Pigeon2(PIGEON_CAN_ID);
     }
