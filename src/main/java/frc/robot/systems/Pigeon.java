@@ -24,7 +24,7 @@ public class Pigeon {
      * the robot is in at the point this method is called.
      */
     public static void setRelativeForward() {
-        instance.relativeForward = getGobalRotationDegrees();
+        instance.relativeForward = getGlobalRotationDegrees();
     }
 
     /**
