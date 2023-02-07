@@ -68,7 +68,7 @@ public class SwerveModule {
         controller.reset();
 
         DirectionSet directionSet = convertAngleToDirection(rotation);
-        double calculation = controller.calculate(rotationalEncoder.getPosition() + directionSet.movement);
+        double calculation = controller.calculate(rotationalEncoder.getPosition(), directionSet.movement);
         
         if (directionSet.invert)
             rotationalMotor.setInverted(!rotationalMotor.getInverted());
