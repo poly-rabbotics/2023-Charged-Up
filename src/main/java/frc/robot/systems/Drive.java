@@ -48,13 +48,13 @@ public class Drive {
      * will be run from Robot.java
      */
     public static void run(double joystickX, double joystickY) {
-        //toggle balancing
+        //Balance if right joystick is pressed, hold not toggle
         if(controller.getRawAxis(2) > 0.3) {
             instance.isBalancing = true;
-        } else if(controller.getAButtonReleased()) {
+        } else {
             instance.isBalancing = false;
         }
-
+        
         if(instance.isBalancing) {
             instance.autoBalance();
             return;
