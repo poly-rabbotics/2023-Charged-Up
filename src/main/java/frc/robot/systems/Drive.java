@@ -5,8 +5,6 @@
 package frc.robot.systems;
 
 import frc.robot.subsystems.DriveUnit;
-import com.ctre.phoenix.sensors.Pigeon2;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import edu.wpi.first.wpilibj.XboxController;

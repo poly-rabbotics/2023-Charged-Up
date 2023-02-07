@@ -4,15 +4,9 @@
 
 package frc.robot.subsystems;
 
-import java.lang.ModuleLayer.Controller;
-import java.util.ResourceBundle.Control;
-
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import edu.wpi.first.wpilibj.Encoder;
-
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 
 /** Add your docs here. */
@@ -21,7 +15,6 @@ public class DriveUnit {
     private static final double PID_OUTPUT_MIN = -1;
     private CANSparkMax leader;
     private CANSparkMax follower;
-    private RelativeEncoder encoder;
     private SparkMaxPIDController controller;
     
     
@@ -35,7 +28,6 @@ public class DriveUnit {
         follower = new CANSparkMax(followerCANID, MotorType.kBrushless);
         follower.follow(leader);
 
-        encoder = leader.getEncoder();
         controller = leader.getPIDController();
     }
     
