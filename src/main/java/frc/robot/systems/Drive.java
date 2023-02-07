@@ -16,8 +16,8 @@ public class Drive {
     private static final int RIGHT_LEADER_CAN_ID = 1;
     private static final int LEFT_FOLLOWER_CAN_ID = 2;
     private static final int RIGHT_FOLLOWER_CAN_ID = 3;
-    private static final int PIGEON_CAN_ID = 9;
-    private static final int PID_DEADZONE = 5;
+    private static final int TILT_DEADZONE = 10;
+    private static final int BALANCING_RPM = 300;
 
     private static Drive instance = new Drive();
     private static XboxController controller = new XboxController(0);
@@ -27,8 +27,6 @@ public class Drive {
     
     private SparkMaxPIDController rightController;
     private SparkMaxPIDController leftController;
-
-    private Pigeon2 pigeon;
 
     private static final double P = 0.0000001;
     private static final double I = 0;
@@ -45,13 +43,15 @@ public class Drive {
 
         rightController = rightUnit.getController();
         leftController = leftUnit.getController();
-
-        pigeon = new Pigeon2(PIGEON_CAN_ID);
     }
 
+    /**
+     * Main method for drive system, typically
+     * will be run from Robot.java
+     */
     public static void run(double joystickX, double joystickY) {
         //toggle balancing
-        if(controller.getAButtonPressed()) {
+        if(controller.getRawAxis(2) > 0.3) {
             instance.isBalancing = true;
         } else if(controller.getAButtonReleased()) {
             instance.isBalancing = false;
@@ -67,28 +67,24 @@ public class Drive {
         instance.leftUnit.set(joystickY - joystickX);
     }
 
+    /**
+     * Uses PID control to automatically level on charging station, 
+     * Detects whether to go forwards or backwards by checking the pitch of the robot
+     * and the rate of change of the pitch
+     */
     private void autoBalance() {
-        if (instance.getGlobalRotation() <= -PID_DEADZONE) { //if robot is tilted forwards
-            instance.velocitySetPoint = -30;
-        } else if (instance.getGlobalRotation() >= PID_DEADZONE) { //if robot is tilted backwards
-            instance.velocitySetPoint = 30;
+        if (Pigeon.getRelativePitch() <= -TILT_DEADZONE && Pigeon.getChangePerSecond().pitch > 0.1) { //if robot is tilted forwards
+            instance.velocitySetPoint = -BALANCING_RPM;
+        } else if (Pigeon.getRelativePitch() >= TILT_DEADZONE && Pigeon.getChangePerSecond().pitch > 0.1) { //if robot is tilted backwards
+            instance.velocitySetPoint = BALANCING_RPM;
         } else { //if robot is not tilted
             instance.velocitySetPoint = 0;
         }
 
         instance.rightController.setReference(velocitySetPoint, ControlType.kVelocity);
-        instance.leftController.setReference(velocitySetPoint, ControlType.kVelocity);
+        instance.leftController.setReference(-velocitySetPoint, ControlType.kVelocity);
 
         instance.rightUnit.setController(rightController);
         instance.leftUnit.setController(leftController);
     }
-
-    private double getGlobalRotation() {
-        return instance.pigeon.getPitch() % 360.0;
-    }
-
-    public static void setBalancing(boolean isBalancing) {
-        instance.isBalancing = isBalancing;
-    }
-
 }
