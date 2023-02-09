@@ -5,6 +5,7 @@
 package frc.robot.systems;
 
 import frc.robot.subsystems.DriveUnit;
+import frc.robot.Controls.*;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import edu.wpi.first.wpilibj.XboxController;
@@ -30,7 +31,7 @@ public class Drive {
     private static final double I = 0;
     private static final double D = 0;
     private double velocitySetPoint = 0;
-    private boolean isBalancing = false;
+    private static boolean isBalancing = false;
 
     private Drive() {
         rightUnit = new DriveUnit(RIGHT_LEADER_CAN_ID, RIGHT_FOLLOWER_CAN_ID);
@@ -44,18 +45,15 @@ public class Drive {
     }
 
     /**
-     * Main method for drive system, typically
-     * will be run from Robot.java
+     * Method to run the drive system during teleop
      */
-    public static void run(double joystickX, double joystickY) {
-        //Balance if right joystick is pressed, hold not toggle
-        if(controller.getRawAxis(2) > 0.3) {
-            instance.isBalancing = true;
-        } else {
-            instance.isBalancing = false;
-        }
+    public static void run() {
+
+        //gets the x and y axes of the left joystick
+        double joystickX = DriveJoystick.getMoveX();
+        double joystickY = DriveJoystick.getMoveY();
         
-        if(instance.isBalancing) {
+        if(DriveJoystick.getRunAutoBalance()) {
             instance.autoBalance();
             return;
         }

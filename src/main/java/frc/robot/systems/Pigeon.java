@@ -9,9 +9,11 @@ import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import com.ctre.phoenix.sensors.Pigeon2;
 
+/**
+ * Class to handle the Pigeon2.
+ */
 public class Pigeon {
     private static final int PIGEON_CAN_ID = 20;
 
@@ -82,7 +84,7 @@ public class Pigeon {
         }
     }
 
-    /*
+    /**
      * This is made a subclass to make sure no one gets confused and tries to
      * run the whole Pigeon on a thread in Robot.java
      */
