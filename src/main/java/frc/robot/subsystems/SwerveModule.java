@@ -20,6 +20,7 @@ public class SwerveModule {
     private CANSparkMax movementMotor;
     private CANCoder rotationalEncoder;
     private PIDController controller;
+    private double CANCoderOffset; //in degrees
 
     private class DirectionSet {
         public double movement;
@@ -31,15 +32,16 @@ public class SwerveModule {
         }
     }
 
-    public SwerveModule(int rotationalMotorID, int movementMotorID, int canCoderID) {
+    public SwerveModule(int rotationalMotorID, int movementMotorID, int canCoderID, double CANCoderOffset) {
         rotationalMotor = new CANSparkMax(rotationalMotorID, MotorType.kBrushless);
         movementMotor = new CANSparkMax(movementMotorID, MotorType.kBrushless);
         rotationalEncoder = new CANCoder(canCoderID);
         controller = new PIDController(PID_P, PID_I, PID_D);
+        this.CANCoderOffset = CANCoderOffset;
     }
 
     private DirectionSet convertAngleToDirection(double setpoint1) {
-        double currentPosition = rotationalEncoder.getPosition();
+        double currentPosition = rotationalEncoder.getPosition() - CANCoderOffset;
         
         // We're going to start finding the quickest way to get to either the
         // given point, or 180 degrees from it. In the case of the latter we
