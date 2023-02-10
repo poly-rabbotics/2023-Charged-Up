@@ -40,6 +40,7 @@ public class Elevator {
             } else {
                 instance.controlMode = "Position";
             }
+        }
         
         //sets the elevator motor to percent output if in manual mode
         if(instance.controlMode.equals("Manual")) {
@@ -48,7 +49,7 @@ public class Elevator {
             } else {
                 instance.elevatorMotor.set(ControlMode.PercentOutput, 0);
             }
-        }
+        } 
         
         if(instance.controlMode.equals("Position")) {
             instance.elevatorMotor.set(ControlMode.Position, instance.position);
