@@ -8,7 +8,7 @@ public class Elevator {
     
     private static final int ELEVATOR_MOTOR_ID = 0;
     private static final int ELEVATOR_BOTTOM_SETPOINT = 0;
-    private static final int ELEVATOR_TOP_SETPOINT = 0;
+    private static final int ELEVATOR_TOP_SETPOINT = 10000; //find the real value, this is arbitrary for now
     
     private double speed;
     private double position;
@@ -16,7 +16,7 @@ public class Elevator {
     private String controlMode;
     
     TalonFX elevatorMotor;
-    XboxController controller;
+    XboxController controller; //get rid of this once merged, we need to use a universal controller
     
     private static Elevator instance = new Elevator();
     
