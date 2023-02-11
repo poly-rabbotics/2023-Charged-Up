@@ -50,6 +50,11 @@ public class Rainbow implements LightPattern {
 		requestingReset = hueShift >= 180.0;
 	}
 
+	/**
+	 * EPIC GAMER LIGHTS GO BRRRRR
+	 * @param length
+	 * @param speed
+	 */
 	public Rainbow(int length, double speed) {
 		this.speed = speed;
 		pattern = new Color[length];

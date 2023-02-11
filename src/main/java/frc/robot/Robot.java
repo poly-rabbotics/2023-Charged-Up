@@ -9,7 +9,6 @@ import java.util.concurrent.*;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.subsystems.*;
 import frc.robot.patterns.*;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.util.*;
@@ -27,7 +26,7 @@ public class Robot extends TimedRobot {
 	private String m_autoSelected;
 	private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-	private final int BUFFER_LENGTH = 64;
+	private final int BUFFER_LENGTH = 65;
 	private LightRenderer lightRenderer = new LightRenderer(1, BUFFER_LENGTH);
 	private ScheduledExecutorService lightRendererService;
 
@@ -122,7 +121,7 @@ public class Robot extends TimedRobot {
 	
 	private void updateLEDPattern() {
 		if (isDisabled()) {
-			lightRenderer.setPatternIfNotSameType(new Up(40, BUFFER_LENGTH, 8, true));
+			lightRenderer.setPatternIfNotSameType(new Rainbow(BUFFER_LENGTH, 500));
 		}
 	}
 
