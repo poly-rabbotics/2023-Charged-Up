@@ -9,10 +9,10 @@ import frc.robot.subsystems.SwerveModule;
 import edu.wpi.first.wpilibj.XboxController;
 
 public class SwerveDrive {
-    private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1, 2, 3, 4 };
-    private static final int MODULE_ROTATION_CAN_IDS[] = { 5, 6, 7, 8 };
+    private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1, 6, 3, 8 };
+    private static final int MODULE_ROTATION_CAN_IDS[] = { 10, 12, 14, 13 };
     private static final int MODULE_ENCODER_CAN_IDS[] = { 5, 6, 7, 8 };
-    private static final double MODULE_CANCODER_OFFSETS[] = { 0, 0, 0, 0};
+    private static final double MODULE_CANCODER_OFFSETS[] = { 3, 2, 12, 0};
 
     private static double testRotation = 0;
     private static double testSpeed = 0;
