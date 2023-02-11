@@ -6,6 +6,7 @@ package frc.robot.systems;
 
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.subsystems.SwerveModule;
+import edu.wpi.first.wpilibj.XboxController;
 
 public class SwerveDrive {
     private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1, 2, 3, 4 };
@@ -13,7 +14,11 @@ public class SwerveDrive {
     private static final int MODULE_ENCODER_CAN_IDS[] = { 5, 6, 7, 8 };
     private static final double MODULE_CANCODER_OFFSETS[] = { 0, 0, 0, 0};
 
+    private static double testRotation = 0;
+    private static double testSpeed = 0;
+
     private static SwerveDrive instance = new SwerveDrive(MODULE_MOVEMENT_CAN_IDS, MODULE_ROTATION_CAN_IDS, MODULE_ENCODER_CAN_IDS, MODULE_CANCODER_OFFSETS);
+    private static XboxController testController = new XboxController(0);
 
     private SwerveMode mode = SwerveMode.Relative;
     private SwerveModule modules[];
@@ -71,5 +76,22 @@ public class SwerveDrive {
         for (SwerveModule module : instance.modules) {
             module.setMovementVector(rotation - orientation, speed);
         }        
+    }
+
+    /**
+     * Temporary method to test functionality of swerve modules
+     */
+    public static void test() {
+        if(testController.getRawAxis(4) > 0.1)
+            testRotation = testController.getRawAxis(0)*180.0;
+        else testRotation = 0;
+
+        if(testController.getRawAxis(1) > 0.1)
+            testSpeed = testController.getRawAxis(1);
+        else testSpeed = 0;
+
+        for(SwerveModule module : instance.modules) {
+            module.setMovementVector(testRotation, testSpeed);
+        }
     }
 }
