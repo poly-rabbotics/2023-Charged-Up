@@ -13,13 +13,13 @@ public class Elevator {
      * 1 INCH = 18500 TICKS (probably accurate)
      * *******************
      */
-    private static final int TICKS_PER_INCH = 18500;
+    private static final int TICKS_PER_INCH = -4000; //temp value
     
-    private static final int ELEVATOR_MOTOR_ID = 0;
+    private static final int ELEVATOR_MOTOR_ID = 5;
     private static final int ELEVATOR_BOTTOM_SETPOINT = 0;
-    private static final int ELEVATOR_MID_SETPOINT = 15 * TICKS_PER_INCH; //find the real value, this is arbitrary for now
-    private static final int ELEVATOR_TOP_SETPOINT = 30 * TICKS_PER_INCH; //find the real value, this is arbitrary for now
-    private static final double MANUAL_DEADZONE = 0.1;
+    private static final int ELEVATOR_MID_SETPOINT = -500000; //find the real value, this is arbitrary for now
+    private static final int ELEVATOR_TOP_SETPOINT = -250000; //find the real value, this is arbitrary for now
+    private static final double MANUAL_DEADZONE = 0.3;
 
     private double speed;
     private double encoderPosition;
@@ -27,7 +27,7 @@ public class Elevator {
     private ElevatorMode controlMode;
     private ElevatorSetpoint setpoint;
 
-    private double P = 0.0000001;
+    private double P = 0.000000001;
     private double I = 0.0;
     private double D = 0.0;
     
@@ -39,9 +39,6 @@ public class Elevator {
     private Elevator() {
         elevatorMotor = new TalonFX(ELEVATOR_MOTOR_ID);
         controller = new XboxController(0);
-        
-        controlMode = ElevatorMode.POSITION;
-        setpoint = ElevatorSetpoint.BOTTOM;
 
         elevatorMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
         elevatorMotor.config_kP(0, P);
@@ -56,13 +53,25 @@ public class Elevator {
     private enum ElevatorSetpoint {
         BOTTOM, MID, TOP
     }
+
+    public static void elevatorInit() {
+        instance.controlMode = ElevatorMode.MANUAL;
+        instance.setpoint = ElevatorSetpoint.BOTTOM;
+    }
     
     /**
     * The main method for the elevator that will be run from other classes
     */
     public static void run() {
-        instance.speed = instance.getElevatorSpeed();
+        instance.speed = getElevatorSpeed();
         instance.speed = instance.elevatorMotor.getSelectedSensorPosition();
+
+        
+
+        //sets current encoder position to 0 if x button is pressed
+        if(instance.controller.getRawButton(3)) {
+            instance.elevatorMotor.getSensorCollection().setIntegratedSensorPosition(0, 30);
+        }
         
         //switches between manual and position control modes
         if(instance.getSwitchControlMode()) {
@@ -82,15 +91,18 @@ public class Elevator {
             positionControl();
         }
 
-        SmartDashboard.putBooleanArray("Setpoint", new boolean[] {instance.setpoint == ElevatorSetpoint.BOTTOM, instance.setpoint == ElevatorSetpoint.MID, instance.setpoint == ElevatorSetpoint.TOP});
+        SmartDashboard.putBoolean("Manual Mode", instance.controlMode == ElevatorMode.MANUAL);
+        SmartDashboard.putBoolean("Setpoint", instance.setpoint == ElevatorSetpoint.BOTTOM);
+        SmartDashboard.putNumber("Speed", getElevatorSpeed());
+        SmartDashboard.putNumber("Encoder position", instance.elevatorMotor.getSelectedSensorPosition());
     }
     
     /**
     * Gets the left joystick's value to be used for percent output
     * @return Left joystick Y axis
     */
-    private double getElevatorSpeed() {
-        return -(controller.getRawAxis(1));
+    private static double getElevatorSpeed() {
+        return (instance.controller.getRawAxis(1));
     }
     
     /**
@@ -111,7 +123,9 @@ public class Elevator {
      * Manual control of the elevator using the left joystick
      */
     private static void manualControl() {
-        if(instance.speed >= MANUAL_DEADZONE || instance.speed <= -MANUAL_DEADZONE) {
+        instance.speed = getElevatorSpeed();
+
+        if(Math.abs(instance.speed) > MANUAL_DEADZONE) {
             instance.elevatorMotor.set(ControlMode.PercentOutput, instance.speed);
         } else {
             instance.elevatorMotor.set(ControlMode.PercentOutput, 0);
@@ -133,10 +147,6 @@ public class Elevator {
         //sets setpoint to top if y button is pressed
         else if(instance.controller.getRawButton(4))
             instance.setpoint = ElevatorSetpoint.TOP;
-
-        //sets current encoder position to 0 if x button is pressed
-        if(instance.controller.getRawButton(3))
-            instance.elevatorMotor.setSelectedSensorPosition(0);
 
 
         if(instance.setpoint == ElevatorSetpoint.BOTTOM) {
