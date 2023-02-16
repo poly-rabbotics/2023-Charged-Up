@@ -24,6 +24,8 @@ public class SwerveModule {
     private PIDController controller;
     private double CANCoderOffset; //in degrees
 
+    private double ENCODER_COUNTS_PER_DEGREE = 4096.0 / 360.0 * 21.42; //4096 encoder counts per revolution, 360 degrees per revolution, 21.42:1 gearing
+
     private class DirectionSet {
         public double movement;
         public boolean invert;
@@ -40,6 +42,7 @@ public class SwerveModule {
         rotationalEncoder = new CANCoder(canCoderID);
         controller = new PIDController(PID_P, PID_I, PID_D);
         this.CANCoderOffset = CANCoderOffset;
+        controller.setTolerance(0.5 * ENCODER_COUNTS_PER_DEGREE); // 0.5 degrees, maybe change this later
     }
 
     private DirectionSet convertAngleToDirection(double setpoint1) {
@@ -74,12 +77,13 @@ public class SwerveModule {
         DirectionSet directionSet = convertAngleToDirection(rotation);
         double calculation = controller.calculate(rotationalEncoder.getPosition(), directionSet.movement);
         
+        SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " Calculation", calculation);
+
         if (directionSet.invert)
             rotationalMotor.setInverted(!rotationalMotor.getInverted());
         
         rotationalMotor.set(calculation);
         movementMotor.set(speed);
-        SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " CANCoder", rotationalEncoder.getPosition() % 360);
     }
     //for making PID adjustments faster rather than changing the code and re-deploying
     public void adjustPIDs() {
@@ -87,23 +91,29 @@ public class SwerveModule {
         SmartDashboard.putNumber("I", PID_I);
         SmartDashboard.putNumber("D", PID_D);
 
-        if (SwerveDrive.testController.getRawButtonPressed(6)) {
+        if (SwerveDrive.testController.getRawButtonPressed(6)) { //right bumper increases P
             PID_P += 0.00000001;
         } 
-        else if (SwerveDrive.testController.getRawButtonPressed(5)) {
+        else if (SwerveDrive.testController.getRawButtonPressed(5)) { //left bumper decreases P
             PID_P -= 0.00000001;
         }
-        if (SwerveDrive.testController.getRawButtonPressed(1)) {
+        if (SwerveDrive.testController.getRawButtonPressed(1)) { //A increases I
             PID_I += 0.00000001;
         } 
-        else if (SwerveDrive.testController.getRawButtonPressed(4)) {
+        else if (SwerveDrive.testController.getRawButtonPressed(4)) { //Y decreases I
             PID_I -= 0.00000001;
         } 
-        if (SwerveDrive.testController.getPOV() == 180) {
+        if (SwerveDrive.testController.getPOV() == 180) { //down increases D
             PID_D += 0.00000001;
         } 
-        else if (SwerveDrive.testController.getPOV() == 0) {
+        else if (SwerveDrive.testController.getPOV() == 0) { //up decreases D
             PID_D -= 0.00000001;
         }
+
+        SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " Speed", rotationalMotor.getAppliedOutput());
+        SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " CANCoder", Math.abs(rotationalEncoder.getPosition() % 360));
+        SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " Error", controller.getPositionError());
+        SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " Enc Counts", rotationalMotor.getEncoder().getPosition());
+        //MAKE SOME OF THESE PLOTS IN SHUFFLEBOARD TO SEE PID GRAPHS
     }
 }
