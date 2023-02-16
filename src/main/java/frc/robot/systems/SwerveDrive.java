@@ -11,17 +11,18 @@ import edu.wpi.first.wpilibj.XboxController;
 public class SwerveDrive {
     private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1, 6, 3, 8 };
     private static final int MODULE_ROTATION_CAN_IDS[] = { 10, 12, 14, 13 };
-    private static final int MODULE_ENCODER_CAN_IDS[] = { 5, 6, 7, 8 };
-    private static final double MODULE_CANCODER_OFFSETS[] = { 3, 2, 12, 0};
+    private static final int MODULE_ENCODER_CAN_IDS[] = { 5, 9, 7, 8 };
+
+    private static final double MODULE_CANCODER_OFFSETS[] = {-12, 25, -113, 40}; //degrees offset between encoder's 0 and module's 0
 
     private static double testRotation = 0;
     private static double testSpeed = 0;
 
     private static SwerveDrive instance = new SwerveDrive(MODULE_MOVEMENT_CAN_IDS, MODULE_ROTATION_CAN_IDS, MODULE_ENCODER_CAN_IDS, MODULE_CANCODER_OFFSETS);
-    private static XboxController testController = new XboxController(0);
+    public static XboxController testController = new XboxController(0);
 
     private SwerveMode mode = SwerveMode.Relative;
-    private SwerveModule modules[];
+    private SwerveModule modules[] = new SwerveModule[4];
 
     private SwerveDrive(int moduleIDs[], int rotationIDs[], int encoderIDs[], double CANCoderOffsets[]) {
         for (int i = 0; i < moduleIDs.length; i++) {
@@ -82,13 +83,11 @@ public class SwerveDrive {
      * Temporary method to test functionality of swerve modules
      */
     public static void test() {
-        if(testController.getRawAxis(4) > 0.1)
-            testRotation = testController.getRawAxis(0)*180.0;
-        else testRotation = 0;
-
-        if(testController.getRawAxis(1) > 0.1)
-            testSpeed = testController.getRawAxis(1);
-        else testSpeed = 0;
+        testRotation = testController.getRawAxis(4);
+        testSpeed = testController.getRawAxis(1);
+            if (Math.abs(testRotation) < 0.1) testRotation = 0;
+            if (Math.abs(testSpeed) < 0.1) testSpeed = 0;
+            
 
         for(SwerveModule module : instance.modules) {
             module.setMovementVector(testRotation, testSpeed);

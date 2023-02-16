@@ -7,14 +7,16 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.sensors.CANCoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import frc.robot.systems.SwerveDrive;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** Add your docs here. */
 public class SwerveModule {
-    private static final double PID_P = 0.0000001;
-    private static final double PID_I = 0;
-    private static final double PID_D = 0;
+    private static double PID_P = 0.0000001;
+    private static double PID_I = 0;
+    private static double PID_D = 0;
 
     private CANSparkMax rotationalMotor;
     private CANSparkMax movementMotor;
@@ -32,7 +34,7 @@ public class SwerveModule {
         }
     }
 
-    public SwerveModule(int rotationalMotorID, int movementMotorID, int canCoderID, double CANCoderOffset) {
+    public SwerveModule(int movementMotorID, int rotationalMotorID, int canCoderID, double CANCoderOffset) {
         rotationalMotor = new CANSparkMax(rotationalMotorID, MotorType.kBrushless);
         movementMotor = new CANSparkMax(movementMotorID, MotorType.kBrushless);
         rotationalEncoder = new CANCoder(canCoderID);
@@ -74,8 +76,34 @@ public class SwerveModule {
         
         if (directionSet.invert)
             rotationalMotor.setInverted(!rotationalMotor.getInverted());
-
+        
         rotationalMotor.set(calculation);
         movementMotor.set(speed);
+        SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " CANCoder", rotationalEncoder.getPosition() % 360);
+    }
+    //for making PID adjustments faster rather than changing the code and re-deploying
+    public void adjustPIDs() {
+        SmartDashboard.putNumber("P", PID_P);
+        SmartDashboard.putNumber("I", PID_I);
+        SmartDashboard.putNumber("D", PID_D);
+
+        if (SwerveDrive.testController.getRawButtonPressed(6)) {
+            PID_P += 0.00000001;
+        } 
+        else if (SwerveDrive.testController.getRawButtonPressed(5)) {
+            PID_P -= 0.00000001;
+        }
+        if (SwerveDrive.testController.getRawButtonPressed(1)) {
+            PID_I += 0.00000001;
+        } 
+        else if (SwerveDrive.testController.getRawButtonPressed(4)) {
+            PID_I -= 0.00000001;
+        } 
+        if (SwerveDrive.testController.getPOV() == 180) {
+            PID_D += 0.00000001;
+        } 
+        else if (SwerveDrive.testController.getPOV() == 0) {
+            PID_D -= 0.00000001;
+        }
     }
 }
