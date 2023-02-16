@@ -1,9 +1,15 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.can.SlotConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.ctre.phoenixpro.configs.Slot0Configs;
+
 import edu.wpi.first.wpilibj.XboxController;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Elevator {
@@ -21,15 +27,19 @@ public class Elevator {
     private static final int ELEVATOR_TOP_SETPOINT = -250000; //find the real value, this is arbitrary for now
     private static final double MANUAL_DEADZONE = 0.3;
 
+    private int targetSetpoint;
     private double speed;
     private double encoderPosition;
     private boolean rbPressed = false;
     private ElevatorMode controlMode;
     private ElevatorSetpoint setpoint;
 
-    private double P = 0.000000001;
-    private double I = 0.0;
-    private double D = 0.0;
+    private double overShoot;
+    private boolean recordOvershoot;
+
+    private final double P = 1.0;
+    private final double I = 0.00001;
+    private final double D = 0.005;
     
     TalonFX elevatorMotor;
     XboxController controller; //get rid of this once merged, we need to use a universal controller
@@ -40,10 +50,14 @@ public class Elevator {
         elevatorMotor = new TalonFX(ELEVATOR_MOTOR_ID);
         controller = new XboxController(0);
 
-        elevatorMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
+        elevatorMotor.configFactoryDefault();
+        elevatorMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 20);
+        elevatorMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 30);
         elevatorMotor.config_kP(0, P);
         elevatorMotor.config_kI(0, I);
         elevatorMotor.config_kD(0, D);
+        elevatorMotor.selectProfileSlot(0, 0);
+        
     }
 
     private enum ElevatorMode {
@@ -54,9 +68,13 @@ public class Elevator {
         BOTTOM, MID, TOP
     }
 
+    /**
+     * The method to be run in teleopInit to reset variables
+     */
     public static void elevatorInit() {
         instance.controlMode = ElevatorMode.MANUAL;
         instance.setpoint = ElevatorSetpoint.BOTTOM;
+        instance.elevatorMotor.setNeutralMode(NeutralMode.Brake);
     }
     
     /**
@@ -64,9 +82,7 @@ public class Elevator {
     */
     public static void run() {
         instance.speed = getElevatorSpeed();
-        instance.speed = instance.elevatorMotor.getSelectedSensorPosition();
-
-        
+        instance.encoderPosition = instance.elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
 
         //sets current encoder position to 0 if x button is pressed
         if(instance.controller.getRawButton(3)) {
@@ -82,19 +98,20 @@ public class Elevator {
             }
         }
         
-        //sets the elevator motor to percent output if in manual mode
-        if(instance.controlMode == ElevatorMode.MANUAL) {
+        if(instance.controlMode == ElevatorMode.MANUAL) { //manual control
             manualControl();
-        } 
-        
-        if(instance.controlMode == ElevatorMode.POSITION) {
+        } if(instance.controlMode == ElevatorMode.POSITION) { //position control
             positionControl();
         }
 
-        SmartDashboard.putBoolean("Manual Mode", instance.controlMode == ElevatorMode.MANUAL);
-        SmartDashboard.putBoolean("Setpoint", instance.setpoint == ElevatorSetpoint.BOTTOM);
+        //updates the smart dashboard
+        SmartDashboard.putString("Control Mode", instance.controlMode.toString());
+        SmartDashboard.putString("Setpoint", instance.setpoint.toString());
         SmartDashboard.putNumber("Speed", getElevatorSpeed());
-        SmartDashboard.putNumber("Encoder position", instance.elevatorMotor.getSelectedSensorPosition());
+        SmartDashboard.putNumber("Encoder position", instance.encoderPosition);
+        SmartDashboard.putNumber("Target Setpoint", instance.targetSetpoint);
+        SmartDashboard.putNumber("Overshoot", instance.overShoot);
+        SmartDashboard.putNumber("Motor Power", instance.elevatorMotor.getMotorOutputPercent());
     }
     
     /**
@@ -138,23 +155,32 @@ public class Elevator {
      */
     private static void positionControl() {
 
-        //sets setpoint to bottom if a button is pressed
-        if(instance.controller.getRawButton(1))
+        if(instance.controller.getRawButton(1)) {//A button
             instance.setpoint = ElevatorSetpoint.BOTTOM;
-        //sets setpoint to mid if b button is pressed
-        else if(instance.controller.getRawButton(2))
+            instance.overShoot = 0;
+            instance.recordOvershoot = false;
+        } else if(instance.controller.getRawButton(2)) {//B button
             instance.setpoint = ElevatorSetpoint.MID;
-        //sets setpoint to top if y button is pressed
-        else if(instance.controller.getRawButton(4))
+            instance.overShoot = 0;
+            instance.recordOvershoot = false;
+        } else if(instance.controller.getRawButton(4)) {//Y button
             instance.setpoint = ElevatorSetpoint.TOP;
-
-
-        if(instance.setpoint == ElevatorSetpoint.BOTTOM) {
-            instance.elevatorMotor.set(ControlMode.Position, ELEVATOR_BOTTOM_SETPOINT);
-        } else if(instance.setpoint == ElevatorSetpoint.MID) {
-            instance.elevatorMotor.set(ControlMode.Position, ELEVATOR_MID_SETPOINT);
-        } else if(instance.setpoint == ElevatorSetpoint.TOP) {
-            instance.elevatorMotor.set(ControlMode.Position, ELEVATOR_TOP_SETPOINT);
+            instance.overShoot = 0;
         }
+
+        //sets elevator motor to current setpoint
+        if(instance.setpoint == ElevatorSetpoint.BOTTOM) {
+            instance.targetSetpoint = ELEVATOR_BOTTOM_SETPOINT;
+        } else if(instance.setpoint == ElevatorSetpoint.MID) {
+            instance.targetSetpoint = ELEVATOR_MID_SETPOINT;
+        } else if(instance.setpoint == ElevatorSetpoint.TOP) {
+            instance.targetSetpoint = ELEVATOR_TOP_SETPOINT;
+        }
+
+        if(Math.abs(instance.encoderPosition) - Math.abs(instance.targetSetpoint)  > instance.overShoot && Math.abs(instance.encoderPosition) > Math.abs(instance.targetSetpoint)) {
+            instance.overShoot = Math.abs(instance.encoderPosition) - Math.abs(instance.targetSetpoint);
+        }
+
+        instance.elevatorMotor.set(ControlMode.Position, instance.targetSetpoint);
     }
 }
