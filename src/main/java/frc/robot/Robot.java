@@ -77,8 +77,8 @@ public class Robot extends TimedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        Fourbar.fourbarInit();
-        Elevator.elevatorInit();
+        Fourbar.init();
+        Elevator.init();
     }
 
     /** This function is called periodically during operator control. */
