@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Fourbar;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -76,12 +77,14 @@ public class Robot extends TimedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
+        Fourbar.fourbarInit();
         Elevator.elevatorInit();
     }
 
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
+        Fourbar.run();
         Elevator.run();
     }
 

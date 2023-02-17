@@ -2,8 +2,6 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.can.SlotConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
-import com.ctre.phoenixpro.configs.Slot0Configs;
-
 import edu.wpi.first.wpilibj.XboxController;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -14,17 +12,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Elevator {
 
-    /*
-     * *******************
-     * 1 INCH = 18500 TICKS (probably accurate)
-     * *******************
-     */
-    private static final int TICKS_PER_INCH = -4000; //temp value
+    private static final int TICKS_PER_INCH = -23890; //temp value
     
     private static final int ELEVATOR_MOTOR_ID = 5;
     private static final int ELEVATOR_BOTTOM_SETPOINT = 0;
-    private static final int ELEVATOR_MID_SETPOINT = -500000; //find the real value, this is arbitrary for now
-    private static final int ELEVATOR_TOP_SETPOINT = -250000; //find the real value, this is arbitrary for now
+    private static final int ELEVATOR_MID_SETPOINT = TICKS_PER_INCH * 16; //find the real value, this is arbitrary for now
+    private static final int ELEVATOR_TOP_SETPOINT = TICKS_PER_INCH * 28; //find the real value, this is arbitrary for now
     private static final double MANUAL_DEADZONE = 0.3;
 
     private int targetSetpoint;
@@ -33,13 +26,12 @@ public class Elevator {
     private boolean rbPressed = false;
     private ElevatorMode controlMode;
     private ElevatorSetpoint setpoint;
-
+    private boolean recordOvershoot = false;
     private double overShoot;
-    private boolean recordOvershoot;
 
     private final double P = 1.0;
     private final double I = 0.00001;
-    private final double D = 0.005;
+    private final double D = 0.01;
     
     TalonFX elevatorMotor;
     XboxController controller; //get rid of this once merged, we need to use a universal controller
@@ -84,8 +76,8 @@ public class Elevator {
         instance.speed = getElevatorSpeed();
         instance.encoderPosition = instance.elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
 
-        //sets current encoder position to 0 if x button is pressed
-        if(instance.controller.getRawButton(3)) {
+        //sets current encoder position to 0 if start button is pressed
+        if(instance.controller.getRawButton(8)) {
             instance.elevatorMotor.getSensorCollection().setIntegratedSensorPosition(0, 30);
         }
         
@@ -105,13 +97,13 @@ public class Elevator {
         }
 
         //updates the smart dashboard
-        SmartDashboard.putString("Control Mode", instance.controlMode.toString());
-        SmartDashboard.putString("Setpoint", instance.setpoint.toString());
-        SmartDashboard.putNumber("Speed", getElevatorSpeed());
-        SmartDashboard.putNumber("Encoder position", instance.encoderPosition);
-        SmartDashboard.putNumber("Target Setpoint", instance.targetSetpoint);
-        SmartDashboard.putNumber("Overshoot", instance.overShoot);
-        SmartDashboard.putNumber("Motor Power", instance.elevatorMotor.getMotorOutputPercent());
+        SmartDashboard.putString("Elev Control Mode", instance.controlMode.toString());
+        SmartDashboard.putString("Elev Setpoint", instance.setpoint.toString());
+        SmartDashboard.putNumber("Elev Speed", getElevatorSpeed());
+        SmartDashboard.putNumber("Elev Position", instance.encoderPosition);
+        SmartDashboard.putNumber("Elev Target Position", instance.targetSetpoint);
+        SmartDashboard.putNumber("Elev Overshoot", instance.overShoot);
+        SmartDashboard.putNumber("Elev Motor Power", instance.elevatorMotor.getMotorOutputPercent());
     }
     
     /**
