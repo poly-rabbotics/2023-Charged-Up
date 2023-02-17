@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** Add your docs here. */
 public class SwerveModule {
-    private static double PID_P = 0.0000001;
+    private static double PID_P = 0.000001;
     private static double PID_I = 0;
     private static double PID_D = 0;
 
@@ -42,7 +42,7 @@ public class SwerveModule {
         rotationalEncoder = new CANCoder(canCoderID);
         controller = new PIDController(PID_P, PID_I, PID_D);
         this.CANCoderOffset = CANCoderOffset;
-        controller.setTolerance(0.5 * ENCODER_COUNTS_PER_DEGREE); // 0.5 degrees, maybe change this later
+        controller.setTolerance(0.5); // 0.5 degrees, maybe change this later
     }
 
     private DirectionSet convertAngleToDirection(double setpoint1) {
@@ -71,6 +71,7 @@ public class SwerveModule {
      * @param speed Native motor speed, 1.0 to -1.0.
      */
     public void setMovementVector(double rotation, double speed) {
+        adjustPIDs();
         controller.setSetpoint(rotation);
         controller.reset();
 
@@ -91,16 +92,16 @@ public class SwerveModule {
         SmartDashboard.putNumber("I", PID_I);
         SmartDashboard.putNumber("D", PID_D);
 
-        if (SwerveDrive.testController.getRawButtonPressed(6)) { //right bumper increases P
+        if (SwerveDrive.testController.getRawButton(6)) { //right bumper increases P
             PID_P += 0.00000001;
         } 
-        else if (SwerveDrive.testController.getRawButtonPressed(5)) { //left bumper decreases P
+        else if (SwerveDrive.testController.getRawButton(5)) { //left bumper decreases P
             PID_P -= 0.00000001;
         }
-        if (SwerveDrive.testController.getRawButtonPressed(1)) { //A increases I
+        if (SwerveDrive.testController.getRawButton(1)) { //A increases I
             PID_I += 0.00000001;
         } 
-        else if (SwerveDrive.testController.getRawButtonPressed(4)) { //Y decreases I
+        else if (SwerveDrive.testController.getRawButton(4)) { //Y decreases I
             PID_I -= 0.00000001;
         } 
         if (SwerveDrive.testController.getPOV() == 180) { //down increases D
@@ -110,6 +111,9 @@ public class SwerveModule {
             PID_D -= 0.00000001;
         }
 
+        controller.setP(PID_P);
+        controller.setI(PID_I);
+        controller.setD(PID_D);
         SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " Speed", rotationalMotor.getAppliedOutput());
         SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " CANCoder", Math.abs(rotationalEncoder.getPosition() % 360));
         SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " Error", controller.getPositionError());

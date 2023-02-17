@@ -83,6 +83,11 @@ public class SwerveDrive {
      * Temporary method to test functionality of swerve modules
      */
     public static void test() {
+        resetOrientation();
+        for(SwerveModule module : instance.modules) {
+            module.adjustPIDs();
+        }
+        /* 
         testRotation = testController.getRawAxis(4);
         testSpeed = testController.getRawAxis(1);
             if (Math.abs(testRotation) < 0.1) testRotation = 0;
@@ -91,6 +96,6 @@ public class SwerveDrive {
 
         for(SwerveModule module : instance.modules) {
             module.setMovementVector(testRotation, testSpeed);
-        }
+        } */
     }
 }
