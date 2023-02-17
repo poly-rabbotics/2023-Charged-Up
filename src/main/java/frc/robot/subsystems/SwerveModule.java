@@ -45,10 +45,10 @@ public class SwerveModule {
         // given point, or 180 degrees from it. In the case of the latter we
         // will invert the motor.
 
-        double setpoint2 = (setpoint1 + 180.0);
+        double setpoint2 = (setpoint1 + 180.0) % 360.0;
 
         double movement1 = setpoint1 - currentPosition;
-        double movement2 = 360.0 + movement1;
+        double movement2 = 360.0 - movement1;
         double movement3 = setpoint2 - currentPosition;
         double movement4 = 360.0 - movement3;
 
@@ -67,8 +67,9 @@ public class SwerveModule {
         controller.setSetpoint(rotation);
         controller.reset();
 
+        double currentPosition = rotationalEncoder.getPosition() % 360.0;
         DirectionSet directionSet = convertAngleToDirection(rotation);
-        double calculation = controller.calculate(rotationalEncoder.getPosition(), directionSet.movement);
+        double calculation = controller.calculate(currentPosition, (currentPosition + directionSet.movement) % 360.0);
         
         if (directionSet.invert)
             rotationalMotor.setInverted(!rotationalMotor.getInverted());

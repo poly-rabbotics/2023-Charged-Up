@@ -65,7 +65,7 @@ public class SwerveDrive {
             return;
         }
     
-        double orientation = Pigeon.getAbsoluteRotationDegrees();
+        double orientation = Pigeon.getRelativeRotationDegrees();
 
         for (SwerveModule module : instance.modules) {
             module.setMovementVector(rotation - orientation, speed);
