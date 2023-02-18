@@ -58,7 +58,7 @@ public class Elevator {
         elevatorMotor.selectProfileSlot(0, 0);
         
         //Configures motor to brake when not being used
-        instance.elevatorMotor.setNeutralMode(NeutralMode.Brake);
+        elevatorMotor.setNeutralMode(NeutralMode.Brake);
         
     }
 

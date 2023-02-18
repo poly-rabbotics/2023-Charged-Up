@@ -29,7 +29,7 @@ public class Fourbar {
     private CANSparkMax fourbarMotor;
     private RelativeEncoder relativeEncoder;
     private SparkMaxPIDController pidController;
-    private static XboxController controller; //get rid of this once merged, we need to use a universal controller
+    private static XboxController controller = new XboxController(0); //get rid of this once merged, we need to use a universal controller
     
     //variables
     private double speed;
@@ -55,7 +55,7 @@ public class Fourbar {
         fourbarMotor = new CANSparkMax(MOTOR_ID, MotorType.kBrushless);
         relativeEncoder = fourbarMotor.getEncoder();
         pidController = fourbarMotor.getPIDController();
-        instance.fourbarMotor.setIdleMode(IdleMode.kBrake);
+        fourbarMotor.setIdleMode(IdleMode.kBrake);
         
         pidController.setP(P);
         pidController.setI(I);
@@ -214,5 +214,6 @@ public class Fourbar {
         SmartDashboard.putNumber("FB Position", instance.relativeEncoder.getPosition());
         SmartDashboard.putNumber("FB Target Setpoint", instance.targetSetpoint);
         SmartDashboard.putNumber("FB Motor Power", instance.fourbarMotor.get()); //doesn't update correctly, fix later
+        SmartDashboard.putNumber("FOV", controller.getPOV());
     }
 }
