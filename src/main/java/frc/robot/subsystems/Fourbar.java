@@ -23,7 +23,7 @@ public class Fourbar {
     private static final double MANUAL_DEADZONE = 0.3;
     private static final double BOTTOM_SETPOINT = 0;
     private static final double MID_SETPOINT = 35;
-    private static final double TOP_SETPOINT = 70;
+    private static final double TOP_SETPOINT = 65;
     
     //Motor and controller
     private CANSparkMax fourbarMotor;

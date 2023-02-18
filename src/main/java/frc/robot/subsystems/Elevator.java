@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
+
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.XboxController;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -24,6 +26,7 @@ public class Elevator {
     
     //Motor and controller
     TalonFX elevatorMotor;
+    DigitalInput bottomLimitSwitch;
     XboxController controller; //get rid of this once merged, we need to use a universal controller
 
     //variables
@@ -48,6 +51,7 @@ public class Elevator {
      */
     private Elevator() {
         elevatorMotor = new TalonFX(ELEVATOR_MOTOR_ID);
+        bottomLimitSwitch = new DigitalInput(0);
         controller = new XboxController(0);
 
         elevatorMotor.configFactoryDefault();
@@ -118,9 +122,12 @@ public class Elevator {
     private static void manualControl() {
         if(Math.abs(instance.speed) > MANUAL_DEADZONE) {
             instance.elevatorMotor.set(ControlMode.PercentOutput, instance.speed);
-        } else {
-            instance.elevatorMotor.set(ControlMode.PercentOutput, 0);
+        } else if(instance.controller.getPOV() == 180) {
+            instance.elevatorMotor.set(ControlMode.PercentOutput, 0.1);
+        } else if(instance.controller.getPOV() == 0) {
+            instance.elevatorMotor.set(ControlMode.PercentOutput, -0.1);
         }
+         else instance.elevatorMotor.set(ControlMode.PercentOutput, 0);
     }
 
     /**
@@ -142,7 +149,7 @@ public class Elevator {
     * Sets the encoder position to 0 if the start button is pressed
     */
     private static void setEncoderZero() {
-        if(instance.controller.getRawButton(8)) {
+        if(instance.controller.getRawButton(8) || !instance.bottomLimitSwitch.get()) {
             instance.elevatorMotor.getSensorCollection().setIntegratedSensorPosition(0, 30);
         }
     }
@@ -201,5 +208,6 @@ public class Elevator {
         SmartDashboard.putNumber("Elev Target Position", instance.targetSetpoint);
         SmartDashboard.putNumber("Elev Overshoot", instance.overShoot);
         SmartDashboard.putNumber("Elev Motor Power", instance.elevatorMotor.getMotorOutputPercent());
+        SmartDashboard.putBoolean("Limit Switch", !instance.bottomLimitSwitch.get());
     }
 }
