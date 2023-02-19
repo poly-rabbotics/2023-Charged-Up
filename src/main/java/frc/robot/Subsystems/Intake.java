@@ -7,13 +7,15 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import pabeles.concurrency.IntRangeConsumer;;
 
 public class Intake {
-    private final int RACK_MOTOR_ID = 0;
+    private final int RACK_MOTOR_ID = 11;
     private final int LEFT_ROLLER_MOTOR_ID = 0;
     private final int RIGHT_ROLLER_MOTOR_ID = 0;
     private final double ROLLER_DEADZONE = 0.3;
@@ -33,10 +35,13 @@ public class Intake {
     private static Intake instance = new Intake();
 
     public Intake() {
-        rackMotor = new CANSparkMax(0, MotorType.kBrushless);
+        rackMotor = new CANSparkMax(RACK_MOTOR_ID, MotorType.kBrushless);
 
-        leftRollerMotor = new TalonSRX(LEFT_ROLLER_MOTOR_ID);
-        rightRollerMotor = new TalonSRX(RIGHT_ROLLER_MOTOR_ID);
+        //UNCOMMENT LATER
+        //leftRollerMotor = new TalonSRX(LEFT_ROLLER_MOTOR_ID);
+        //rightRollerMotor = new TalonSRX(RIGHT_ROLLER_MOTOR_ID);
+        //clawSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 0);
+        //pivotSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 0);
 
         controller = new XboxController(0);
     }
@@ -57,6 +62,8 @@ public class Intake {
             instance.rackMotorSpeed = 0;
         }
 
+        SmartDashboard.putNumber("Rack Motor SPeed", instance.rackMotorSpeed);
+        SmartDashboard.putNumber("POV", instance.controller.getPort());
         instance.rackMotor.set(instance.rackMotorSpeed);
     }
 
@@ -67,17 +74,17 @@ public class Intake {
             rollerSpeed = 0;
         }
 
-        rightRollerMotor.set(ControlMode.PercentOutput, rollerSpeed);
+        //rightRollerMotor.set(ControlMode.PercentOutput, rollerSpeed);
     }
 
     private void runClaw() {
         if(instance.controller.getXButton()) {
 
             if(!instance.clawOpen) {
-                instance.clawSolenoid.set(Value.kReverse);
+                //instance.clawSolenoid.set(Value.kReverse);
                 instance.clawOpen = true;
             } else {
-                instance.clawSolenoid.set(Value.kForward);
+                //instance.clawSolenoid.set(Value.kForward);
                 instance.clawOpen = false;
             }
         } 
@@ -85,10 +92,10 @@ public class Intake {
     private void runPivot() {
         if(instance.controller.getLeftBumper()) {
             if(!instance.pivotDown) {
-                instance.pivotSolenoid.set(Value.kReverse);
+                //instance.pivotSolenoid.set(Value.kReverse);
                 instance.pivotDown = true;
             } else {
-                instance.pivotSolenoid.set(Value.kForward);
+                //instance.pivotSolenoid.set(Value.kForward);
                 instance.pivotDown = false;
             }
         }
