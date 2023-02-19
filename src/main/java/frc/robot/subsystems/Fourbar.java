@@ -29,10 +29,8 @@ public class Fourbar {
     private CANSparkMax fourbarMotor;
     private RelativeEncoder relativeEncoder;
     private SparkMaxPIDController pidController;
-    private static XboxController controller = new XboxController(0); //get rid of this once merged, we need to use a universal controller
-    
+
     //variables
-    private double speed;
     private double targetSetpoint;
     private boolean menuPressed;
     private boolean rbPressed;
@@ -87,16 +85,15 @@ public class Fourbar {
     /**
     * The method that will be run from teleopPeriodic
     */
-    public static void run() {
-        instance.speed = getSpeed();
+    public static void run(double speed, boolean switchControlMode, boolean menuButtonPressed, boolean rightStickPressed) {
         
         //sets current encoder position to 0 if menu button is pressed
-        setEncoderZero();
+        setEncoderZero(menuButtonPressed);
 
-        cycleTargetSetpoint();
+        cycleTargetSetpoint(rightStickPressed);
 
         //switches between control modes
-        if(getSwitchControlMode()) {
+        if(getSwitchControlMode(switchControlMode)) {
             if(instance.controlMode == ControlMode.MANUAL) {
                 instance.controlMode = ControlMode.PID;
             } else if(instance.controlMode == ControlMode.PID) {
@@ -106,13 +103,13 @@ public class Fourbar {
         
         //runs selected control mode
         if(instance.controlMode == ControlMode.MANUAL) {
-            manualControl();
+            manualControl(speed);
         } else if(instance.controlMode == ControlMode.PID) {
             pidControl();
         }
         
         //prints variables to Smart Dashboard
-        updateSmartDashboard();
+        updateSmartDashboard(speed);
     }
     
     /**
@@ -126,22 +123,22 @@ public class Fourbar {
     /**
      * Allows for manual control of motor output using the right joystick
      */
-    private static void manualControl(){
-        if(Math.abs(instance.speed) > MANUAL_DEADZONE) { //if joystick is outside of deadzone
-            instance.fourbarMotor.set(-instance.speed);
-        } else {
-            instance.fourbarMotor.set(0);
+    private static void manualControl(double speed){
+        if(Math.abs(speed) < MANUAL_DEADZONE) { //if joystick is inside of deadzone
+            speed = 0;
         }
+
+        instance.fourbarMotor.set(-speed/3);
     }
     
     /**
      * @return True once if left button is pressed
      */
-    private static boolean getSwitchControlMode() {
-        if(!instance.menuPressed && controller.getRawButton(5)) {
+    private static boolean getSwitchControlMode(boolean switchControlMode) {
+        if(!instance.menuPressed && switchControlMode) {
             instance.menuPressed = true;
             return true;
-        } else if(instance.menuPressed && !controller.getRawButton(5)) {
+        } else if(instance.menuPressed && !switchControlMode) {
             instance.menuPressed = false;
             return false;
         } else return false;
@@ -150,31 +147,23 @@ public class Fourbar {
     /**
      * @return True once if right joystick is pressed down
      */
-    private static boolean getSwitchSetpoint() {
-        if(!instance.rbPressed && controller.getRawButton(10)) {
+    private static boolean getSwitchSetpoint(boolean rightStickPressed) {
+        if(!instance.rbPressed && rightStickPressed) {
             instance.rbPressed = true;
             return true;
-        } else if(instance.rbPressed && !controller.getRawButton(10)) {
+        } else if(instance.rbPressed && !rightStickPressed) {
             instance.rbPressed = false;
             return false;
         } else return false;
     }
     
-    /**\
-     * Divides joystick value by 3 to cap motor output
-     * @return Right Joystick's Y Axis
-     */
-    private static double getSpeed() {
-        return controller.getRawAxis(5)/3;
-    }
-    
     /**
      * Cycles through each setpoint
      */
-    private static void cycleTargetSetpoint() {
+    private static void cycleTargetSetpoint(boolean rightStickPressed) {
 
         //set setpoint enum
-        if(getSwitchSetpoint()) {
+        if(getSwitchSetpoint(rightStickPressed)) {
             if(instance.setpoint == Setpoint.BOTTOM) {
                 instance.setpoint = Setpoint.MID;
             } else if(instance.setpoint == Setpoint.MID) {
@@ -198,8 +187,8 @@ public class Fourbar {
     /**
      * Sets the relative encoder position to zero if menu button is pressed
      */
-    private static void setEncoderZero() {
-        if(controller.getRawButton(7)) {
+    private static void setEncoderZero(boolean menuButtonPressed) {
+        if(menuButtonPressed) {
             instance.relativeEncoder.setPosition(0);
         }
     }
@@ -207,13 +196,12 @@ public class Fourbar {
     /**
      * Prints variables to Smart Dashboard
      */
-    private static void updateSmartDashboard() {
-        SmartDashboard.putNumber("FB Speed", instance.speed);
+    private static void updateSmartDashboard(double speed) {
+        SmartDashboard.putNumber("FB Speed", speed);
         SmartDashboard.putString("FB Setpoint", instance.setpoint.toString());
         SmartDashboard.putString("FB Control Mode", instance.controlMode.toString());
         SmartDashboard.putNumber("FB Position", instance.relativeEncoder.getPosition());
         SmartDashboard.putNumber("FB Target Setpoint", instance.targetSetpoint);
         SmartDashboard.putNumber("FB Motor Power", instance.fourbarMotor.get()); //doesn't update correctly, fix later
-        SmartDashboard.putNumber("FOV", controller.getPOV());
     }
 }

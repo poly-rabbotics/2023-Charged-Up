@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.XboxController;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -27,10 +26,8 @@ public class Elevator {
     //Motor and controller
     TalonFX elevatorMotor;
     DigitalInput bottomLimitSwitch;
-    XboxController controller; //get rid of this once merged, we need to use a universal controller
 
     //variables
-    private double speed;
     private double encoderPosition;
     private double overShoot;
     private int targetSetpoint;
@@ -52,7 +49,6 @@ public class Elevator {
     private Elevator() {
         elevatorMotor = new TalonFX(ELEVATOR_MOTOR_ID);
         bottomLimitSwitch = new DigitalInput(0);
-        controller = new XboxController(0);
 
         elevatorMotor.configFactoryDefault();
         elevatorMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 30);
@@ -86,15 +82,14 @@ public class Elevator {
     /**
     * The method that will be run in teleopPeriodic
     */
-    public static void run() {
-        instance.speed = getElevatorSpeed();
+    public static void run(double speed, boolean switchControlMode, boolean startButtonPressed, boolean aButtonPressed, boolean bButtonPressed, boolean xButtonPressed, boolean yButtonPressed, int dPadDirection) {
         instance.encoderPosition = instance.elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
 
         //sets current encoder position to 0 if start button is pressed
-        setEncoderZero();
+        setEncoderZero(startButtonPressed);
         
         //switches between manual and position control modes
-        if(getSwitchControlMode()) {
+        if(getSwitchControlMode(switchControlMode)) {
             if(instance.controlMode == ElevatorMode.POSITION) {
                 instance.controlMode = ElevatorMode.MANUAL;
             } else {
@@ -103,31 +98,36 @@ public class Elevator {
         }
 
         //switches between setpoints
-        updateTargetSetpoint();
+        updateTargetSetpoint(aButtonPressed, bButtonPressed, yButtonPressed);
         
         //runs control mode
         if(instance.controlMode == ElevatorMode.MANUAL) { //manual control
-            manualControl();
+            manualControl(speed, dPadDirection);
         } if(instance.controlMode == ElevatorMode.POSITION) { //position control
             positionControl();
         }
 
         //prints variables to Smart Dashboard
-        updateSmartDashboard();
+        updateSmartDashboard(speed);
     }
 
     /**
      * Manual control of the elevator using the left joystick
      */
-    private static void manualControl() {
-        if(Math.abs(instance.speed) > MANUAL_DEADZONE) {
-            instance.elevatorMotor.set(ControlMode.PercentOutput, instance.speed);
-        } else if(instance.controller.getPOV() == 180) {
-            instance.elevatorMotor.set(ControlMode.PercentOutput, 0.1);
-        } else if(instance.controller.getPOV() == 0) {
-            instance.elevatorMotor.set(ControlMode.PercentOutput, -0.1);
+    private static void manualControl(double speed, int dPadDirection) {
+
+        if(Math.abs(speed) < MANUAL_DEADZONE) {
+            speed = 0;
+        } 
+        
+        //low sensitivity control using DPAD
+        else if(dPadDirection == 180) {
+            speed = 0.1;
+        } else if(dPadDirection == 0) {
+            speed = -0.1;
         }
-         else instance.elevatorMotor.set(ControlMode.PercentOutput, 0);
+
+        instance.elevatorMotor.set(ControlMode.PercentOutput, speed);
     }
 
     /**
@@ -148,44 +148,35 @@ public class Elevator {
     /**
     * Sets the encoder position to 0 if the start button is pressed
     */
-    private static void setEncoderZero() {
-        if(instance.controller.getRawButton(8) || !instance.bottomLimitSwitch.get()) {
+    private static void setEncoderZero(boolean startButtonPressed) {
+        if(startButtonPressed || !instance.bottomLimitSwitch.get()) {
             instance.elevatorMotor.getSensorCollection().setIntegratedSensorPosition(0, 30);
         }
-    }
-    
-    /**
-    * Gets the left joystick's value to be used for percent output
-    * @return Left joystick Y axis
-    */
-    private static double getElevatorSpeed() {
-        return (instance.controller.getRawAxis(1));
     }
     
     /**
     * Gets the value of the A button to be used for switching control modes
     * @return True once if A button is pressed 
     */
-    private static boolean getSwitchControlMode() {
-        if(!instance.rbPressed && instance.controller.getRawButton(6)) {
+    private static boolean getSwitchControlMode(boolean switchControlMode) {
+        if(!instance.rbPressed && switchControlMode) {
             instance.rbPressed = true;
             return true;
-        } else if(instance.rbPressed && !instance.controller.getRawButton(6)) {
+        } else if(instance.rbPressed && !switchControlMode) {
             instance.rbPressed = false;
             return false;
         } else return false;
     }
 
-    private static void updateTargetSetpoint() {
-
+    private static void updateTargetSetpoint(boolean aButtonPressed, boolean bButtonPressed, boolean yButtonPressed) {
         //updates the setpoint enum
-        if(instance.controller.getRawButton(1)) {//A button
+        if(aButtonPressed) {
             instance.setpoint = ElevatorSetpoint.BOTTOM;
             instance.overShoot = 0;
-        } else if(instance.controller.getRawButton(2)) {//B button
+        } else if(bButtonPressed) {
             instance.setpoint = ElevatorSetpoint.MID;
             instance.overShoot = 0;
-        } else if(instance.controller.getRawButton(4)) {//Y button
+        } else if(yButtonPressed) {
             instance.setpoint = ElevatorSetpoint.TOP;
             instance.overShoot = 0;
         }
@@ -200,10 +191,10 @@ public class Elevator {
         }
     }
 
-    private static void updateSmartDashboard() {
+    private static void updateSmartDashboard(double speed) {
         SmartDashboard.putString("Elev Control Mode", instance.controlMode.toString());
         SmartDashboard.putString("Elev Setpoint", instance.setpoint.toString());
-        SmartDashboard.putNumber("Elev Speed", instance.speed);
+        SmartDashboard.putNumber("Elev Speed", speed);
         SmartDashboard.putNumber("Elev Position", instance.encoderPosition);
         SmartDashboard.putNumber("Elev Target Position", instance.targetSetpoint);
         SmartDashboard.putNumber("Elev Overshoot", instance.overShoot);
