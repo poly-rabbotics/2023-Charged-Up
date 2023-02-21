@@ -90,7 +90,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         Fourbar.run(joystick.getRightY(), joystick.getLeftBumperPressed(), joystick.getBackButton(), joystick.getRightStickButtonPressed());
-        Elevator.run(joystick.getLeftY(), joystick.getRightBumperPressed(), joystick.getStartButton(), joystick.getAButton(), joystick.getBButton(), joystick.getYButton(), joystick.getPOV());
+        Elevator.run(joystick.getLeftY(), joystick.getRightBumperPressed(), joystick.getStartButton(), joystick.getAButton(), joystick.getBButton(), joystick.getXButtonPressed(), joystick.getYButton(), joystick.getPOV());
     }
 
     /** This function is called once when the robot is disabled. */

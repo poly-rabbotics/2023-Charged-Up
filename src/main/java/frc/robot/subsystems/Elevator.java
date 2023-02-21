@@ -31,7 +31,7 @@ public class Elevator {
     private double encoderPosition;
     private double overShoot;
     private int targetSetpoint;
-    private boolean rbPressed = false;
+    private boolean isCalibrating;
     private ElevatorMode controlMode;
     private ElevatorSetpoint setpoint;
 
@@ -77,15 +77,17 @@ public class Elevator {
         //resetting these in init makes it so the robot does not automatically go into position control when enabling
         instance.controlMode = ElevatorMode.MANUAL;
         instance.setpoint = ElevatorSetpoint.BOTTOM;
+        instance.isCalibrating = false;
     }
     
     /**
     * The method that will be run in teleopPeriodic
     */
-    public static void run(double speed, boolean rightBumperPressed, boolean startButtonPressed, boolean aButtonPressed, boolean bButtonPressed, boolean yButtonPressed, int dPadDirection) {
+    public static void run(double speed, boolean rightBumperPressed, boolean startButtonPressed, boolean aButtonPressed, boolean bButtonPressed, boolean xButtonPressed, boolean yButtonPressed, int dPadDirection) {
         instance.encoderPosition = instance.elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
 
-        //sets current encoder position to 0 if start button is pressed
+        //runs auto calibrate or sets current encoder position to 0 if start button is pressed
+        autoCalibrate(xButtonPressed);
         setEncoderZero(startButtonPressed);
         
         //switches between manual and position control modes
@@ -128,6 +130,11 @@ public class Elevator {
         }
 
         instance.elevatorMotor.set(ControlMode.PercentOutput, speed);
+
+        //overwrite calibration if the elevator is moving
+        if(speed != 0) {
+            instance.isCalibrating = false;
+        }
     }
 
     /**
@@ -143,6 +150,9 @@ public class Elevator {
 
         //set elevator PID position to target setpoint
         instance.elevatorMotor.set(ControlMode.Position, instance.targetSetpoint);
+
+        //overwrite calibration if the elevator is moving
+        instance.isCalibrating = false;
     }
 
     /**
@@ -175,6 +185,30 @@ public class Elevator {
         } else if(instance.setpoint == ElevatorSetpoint.TOP) {
             instance.targetSetpoint = ELEVATOR_TOP_SETPOINT;
         }
+    }
+
+    private static void autoCalibrate(boolean xButtonPressed) {
+
+        //toggle between calibrating and not calibrating
+        if(xButtonPressed) {
+            if(instance.isCalibrating) {
+                instance.isCalibrating = false;
+            } else {
+                instance.isCalibrating = true;
+            }
+        }
+
+        //calibrates encoder position
+        if(instance.isCalibrating && instance.bottomLimitSwitch.get()) {
+            instance.elevatorMotor.set(ControlMode.PercentOutput, -0.5);
+        } else if(instance.isCalibrating && !instance.bottomLimitSwitch.get()) {
+            instance.elevatorMotor.set(ControlMode.PercentOutput, 0);
+            instance.elevatorMotor.getSensorCollection().setIntegratedSensorPosition(0, 30);
+
+            instance.isCalibrating = false;
+        }
+
+        
     }
 
     private static void updateSmartDashboard(double speed, int dPadDirection) {
