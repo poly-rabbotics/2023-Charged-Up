@@ -53,18 +53,19 @@ public class Intake {
 
     }
 
-    public static void runRack() {
-        if(instance.controller.getPOV() == 90) {
+    public static void runRack(int dPadDirection) {
+        if(dPadDirection == 90) {
             instance.rackMotorSpeed = 0.2;
-        } else if(instance.controller.getPOV() == 270) {
+        } else if(dPadDirection == 270) {
             instance.rackMotorSpeed = -0.2;
         } else {
             instance.rackMotorSpeed = 0;
         }
 
-        SmartDashboard.putNumber("Rack Motor SPeed", instance.rackMotorSpeed);
-        SmartDashboard.putNumber("POV", instance.controller.getPort());
         instance.rackMotor.set(instance.rackMotorSpeed);
+
+        SmartDashboard.putNumber("Rack Motor Speed", instance.rackMotorSpeed);
+        SmartDashboard.putNumber("POV", dPadDirection);
     }
 
     private void runRoller() {
