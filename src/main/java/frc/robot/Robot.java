@@ -84,7 +84,7 @@ public class Robot extends TimedRobot {
     public void teleopInit() {
         Fourbar.init();
         Elevator.init();
-    }
+    } 
 
     /** This function is called periodically during operator control. */
     @Override

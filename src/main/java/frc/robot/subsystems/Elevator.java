@@ -14,13 +14,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Elevator {
 
-    private static final int TICKS_PER_INCH = -23890; //FINAL VAlUE DO NOT CHANGE
+    private static final int TICKS_PER_INCH = -10752; //FINAL VAlUE DO NOT CHANGE
     
     //constant variables
     private static final double MANUAL_DEADZONE = 0.3;
     private static final int ELEVATOR_MOTOR_ID = 5; //CORRECT ID
     private static final int ELEVATOR_BOTTOM_SETPOINT = 0;
-    private static final int ELEVATOR_MID_SETPOINT = TICKS_PER_INCH * 16; 
+    private static final int ELEVATOR_MID_SETPOINT = TICKS_PER_INCH * 5; 
     private static final int ELEVATOR_TOP_SETPOINT = TICKS_PER_INCH * 28; 
     
     //Motor and controller
@@ -87,7 +87,6 @@ public class Elevator {
         instance.encoderPosition = instance.elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
 
         //runs auto calibrate or sets current encoder position to 0 if start button is pressed
-        autoCalibrate(xButtonPressed);
         setEncoderZero(startButtonPressed);
         
         //switches between manual and position control modes
@@ -109,6 +108,8 @@ public class Elevator {
             positionControl();
         }
 
+        autoCalibrate(xButtonPressed);
+
         //prints variables to Smart Dashboard
         updateSmartDashboard(speed, dPadDirection);
     }
@@ -118,18 +119,18 @@ public class Elevator {
      */
     private static void manualControl(double speed, int dPadDirection) {
 
-        if(Math.abs(speed) < MANUAL_DEADZONE || (!instance.bottomLimitSwitch.get() && speed > MANUAL_DEADZONE)) {
+        if(Math.abs(speed) < MANUAL_DEADZONE || (!instance.bottomLimitSwitch.get() && speed > MANUAL_DEADZONE) || (instance.encoderPosition < -280000 && speed < -MANUAL_DEADZONE)) {
             speed = 0;
         } 
         
         //low sensitivity control using DPAD
         if(dPadDirection == 180) {
-            speed = 0.1;
+            speed = 0.2;
         } else if(dPadDirection == 0) {
-            speed = -0.1;
+            speed = -0.2;
         }
 
-        instance.elevatorMotor.set(ControlMode.PercentOutput, speed);
+        instance.elevatorMotor.set(ControlMode.PercentOutput, speed * 0.6);
 
         //overwrite calibration if the elevator is moving
         if(speed != 0) {
@@ -204,7 +205,7 @@ public class Elevator {
 
         //calibrates encoder position
         if(instance.isCalibrating && instance.bottomLimitSwitch.get()) {
-            instance.elevatorMotor.set(ControlMode.PercentOutput, -0.5);
+            instance.elevatorMotor.set(ControlMode.PercentOutput, 0.5);
         } else if(instance.isCalibrating && !instance.bottomLimitSwitch.get()) {
             instance.elevatorMotor.set(ControlMode.PercentOutput, 0);
             instance.elevatorMotor.getSensorCollection().setIntegratedSensorPosition(0, 30);
@@ -224,6 +225,7 @@ public class Elevator {
         SmartDashboard.putNumber("Elev Overshoot", instance.overShoot);
         SmartDashboard.putNumber("Elev Motor Power", instance.elevatorMotor.getMotorOutputPercent());
         SmartDashboard.putBoolean("Limit Switch", !instance.bottomLimitSwitch.get());
+        SmartDashboard.putBoolean("Auto Calibrate", instance.isCalibrating);
         SmartDashboard.putNumber("POV", dPadDirection);
     }
 }
