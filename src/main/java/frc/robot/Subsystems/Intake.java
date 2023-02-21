@@ -39,7 +39,13 @@ public class Intake {
         //leftRollerMotor = new TalonSRX(LEFT_ROLLER_MOTOR_ID);
         //rightRollerMotor = new TalonSRX(RIGHT_ROLLER_MOTOR_ID);
         //clawSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 0);
-        //pivotSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 0);
+        pivotSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 4, 5);
+    }
+
+    public static void init() {
+        instance.rackMotorSpeed = 0;
+        instance.clawOpen = false;
+        instance.pivotDown = false;
     }
 
     /**
@@ -91,10 +97,10 @@ public class Intake {
     private void runPivot(boolean leftBumperPressed) {
         if(leftBumperPressed) {
             if(!instance.pivotDown) {
-                //instance.pivotSolenoid.set(Value.kReverse);
+                instance.pivotSolenoid.set(Value.kReverse);
                 instance.pivotDown = true;
             } else {
-                //instance.pivotSolenoid.set(Value.kForward);
+                instance.pivotSolenoid.set(Value.kForward);
                 instance.pivotDown = false;
             }
         }
