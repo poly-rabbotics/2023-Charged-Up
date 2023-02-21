@@ -187,6 +187,10 @@ public class Elevator {
         }
     }
 
+    /**
+     * Runs motor until limit switch is triggered. Interrupted by entering PID mode, pressing x again, or controlling motor in manual mode
+     * @param xButtonPressed
+     */
     private static void autoCalibrate(boolean xButtonPressed) {
 
         //toggle between calibrating and not calibrating
