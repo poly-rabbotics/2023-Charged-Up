@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -76,6 +77,8 @@ public class Robot extends TimedRobot {
         }
     }
 
+    boolean test = false;
+
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
@@ -86,8 +89,8 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        Fourbar.run(joystick.getRightY(), joystick.getLeftBumper(), joystick.getBackButton(), joystick.getRightStickButton());
-        Elevator.run(joystick.getLeftY(), joystick.getRightBumper(), joystick.getStartButton(), joystick.getAButton(), joystick.getBButton(), joystick.getXButton(), joystick.getYButton(), joystick.getPOV());
+        Fourbar.run(joystick.getRightY(), joystick.getLeftBumperPressed(), joystick.getBackButton(), joystick.getRightStickButtonPressed());
+        Elevator.run(joystick.getLeftY(), joystick.getRightBumperPressed(), joystick.getStartButton(), joystick.getAButton(), joystick.getBButton(), joystick.getYButton(), joystick.getPOV());
     }
 
     /** This function is called once when the robot is disabled. */

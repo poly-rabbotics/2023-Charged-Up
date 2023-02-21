@@ -82,14 +82,14 @@ public class Elevator {
     /**
     * The method that will be run in teleopPeriodic
     */
-    public static void run(double speed, boolean switchControlMode, boolean startButtonPressed, boolean aButtonPressed, boolean bButtonPressed, boolean xButtonPressed, boolean yButtonPressed, int dPadDirection) {
+    public static void run(double speed, boolean rightBumperPressed, boolean startButtonPressed, boolean aButtonPressed, boolean bButtonPressed, boolean yButtonPressed, int dPadDirection) {
         instance.encoderPosition = instance.elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
 
         //sets current encoder position to 0 if start button is pressed
         setEncoderZero(startButtonPressed);
         
         //switches between manual and position control modes
-        if(getSwitchControlMode(switchControlMode)) {
+        if(rightBumperPressed) {
             if(instance.controlMode == ElevatorMode.POSITION) {
                 instance.controlMode = ElevatorMode.MANUAL;
             } else {
@@ -108,7 +108,7 @@ public class Elevator {
         }
 
         //prints variables to Smart Dashboard
-        updateSmartDashboard(speed);
+        updateSmartDashboard(speed, dPadDirection);
     }
 
     /**
@@ -116,12 +116,12 @@ public class Elevator {
      */
     private static void manualControl(double speed, int dPadDirection) {
 
-        if(Math.abs(speed) < MANUAL_DEADZONE) {
+        if(Math.abs(speed) < MANUAL_DEADZONE || (!instance.bottomLimitSwitch.get() && speed > MANUAL_DEADZONE)) {
             speed = 0;
         } 
         
         //low sensitivity control using DPAD
-        else if(dPadDirection == 180) {
+        if(dPadDirection == 180) {
             speed = 0.1;
         } else if(dPadDirection == 0) {
             speed = -0.1;
@@ -153,20 +153,6 @@ public class Elevator {
             instance.elevatorMotor.getSensorCollection().setIntegratedSensorPosition(0, 30);
         }
     }
-    
-    /**
-    * Gets the value of the A button to be used for switching control modes
-    * @return True once if A button is pressed 
-    */
-    private static boolean getSwitchControlMode(boolean switchControlMode) {
-        if(!instance.rbPressed && switchControlMode) {
-            instance.rbPressed = true;
-            return true;
-        } else if(instance.rbPressed && !switchControlMode) {
-            instance.rbPressed = false;
-            return false;
-        } else return false;
-    }
 
     private static void updateTargetSetpoint(boolean aButtonPressed, boolean bButtonPressed, boolean yButtonPressed) {
         //updates the setpoint enum
@@ -191,7 +177,7 @@ public class Elevator {
         }
     }
 
-    private static void updateSmartDashboard(double speed) {
+    private static void updateSmartDashboard(double speed, int dPadDirection) {
         SmartDashboard.putString("Elev Control Mode", instance.controlMode.toString());
         SmartDashboard.putString("Elev Setpoint", instance.setpoint.toString());
         SmartDashboard.putNumber("Elev Speed", speed);
@@ -200,5 +186,6 @@ public class Elevator {
         SmartDashboard.putNumber("Elev Overshoot", instance.overShoot);
         SmartDashboard.putNumber("Elev Motor Power", instance.elevatorMotor.getMotorOutputPercent());
         SmartDashboard.putBoolean("Limit Switch", !instance.bottomLimitSwitch.get());
+        SmartDashboard.putNumber("POV", dPadDirection);
     }
 }

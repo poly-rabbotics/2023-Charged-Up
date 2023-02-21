@@ -85,7 +85,7 @@ public class Fourbar {
     /**
     * The method that will be run from teleopPeriodic
     */
-    public static void run(double speed, boolean switchControlMode, boolean menuButtonPressed, boolean rightStickPressed) {
+    public static void run(double speed, boolean leftBumperPressed, boolean menuButtonPressed, boolean rightStickPressed) {
         
         //sets current encoder position to 0 if menu button is pressed
         setEncoderZero(menuButtonPressed);
@@ -93,7 +93,7 @@ public class Fourbar {
         cycleTargetSetpoint(rightStickPressed);
 
         //switches between control modes
-        if(getSwitchControlMode(switchControlMode)) {
+        if(leftBumperPressed) {
             if(instance.controlMode == ControlMode.MANUAL) {
                 instance.controlMode = ControlMode.PID;
             } else if(instance.controlMode == ControlMode.PID) {
@@ -132,38 +132,12 @@ public class Fourbar {
     }
     
     /**
-     * @return True once if left button is pressed
-     */
-    private static boolean getSwitchControlMode(boolean switchControlMode) {
-        if(!instance.menuPressed && switchControlMode) {
-            instance.menuPressed = true;
-            return true;
-        } else if(instance.menuPressed && !switchControlMode) {
-            instance.menuPressed = false;
-            return false;
-        } else return false;
-    }
-    
-    /**
-     * @return True once if right joystick is pressed down
-     */
-    private static boolean getSwitchSetpoint(boolean rightStickPressed) {
-        if(!instance.rbPressed && rightStickPressed) {
-            instance.rbPressed = true;
-            return true;
-        } else if(instance.rbPressed && !rightStickPressed) {
-            instance.rbPressed = false;
-            return false;
-        } else return false;
-    }
-    
-    /**
      * Cycles through each setpoint
      */
     private static void cycleTargetSetpoint(boolean rightStickPressed) {
 
         //set setpoint enum
-        if(getSwitchSetpoint(rightStickPressed)) {
+        if(rightStickPressed) {
             if(instance.setpoint == Setpoint.BOTTOM) {
                 instance.setpoint = Setpoint.MID;
             } else if(instance.setpoint == Setpoint.MID) {
@@ -171,7 +145,6 @@ public class Fourbar {
             } else if(instance.setpoint == Setpoint.TOP) {
                 instance.setpoint = Setpoint.BOTTOM;
             }
-            
         }
         
         //set targetSetpoint variable
