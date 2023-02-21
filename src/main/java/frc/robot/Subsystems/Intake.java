@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -29,6 +30,7 @@ public class Intake {
     private CANSparkMax rackMotor;
     private DoubleSolenoid clawSolenoid;
     private DoubleSolenoid pivotSolenoid;
+    private Compressor comp;
 
     private static Intake instance = new Intake();
 
@@ -39,7 +41,9 @@ public class Intake {
         //leftRollerMotor = new TalonSRX(LEFT_ROLLER_MOTOR_ID);
         //rightRollerMotor = new TalonSRX(RIGHT_ROLLER_MOTOR_ID);
         //clawSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 0);
-        pivotSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 4, 5);
+        pivotSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 5, 4);
+        comp = new Compressor(1, PneumaticsModuleType.CTREPCM);
+        comp.enableDigital();
     }
 
     public static void init() {
@@ -94,7 +98,8 @@ public class Intake {
             }
         } 
     }  
-    private void runPivot(boolean leftBumperPressed) {
+    
+    public static void runPivot(boolean leftBumperPressed) {
         if(leftBumperPressed) {
             if(!instance.pivotDown) {
                 instance.pivotSolenoid.set(Value.kReverse);

@@ -83,6 +83,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         Intake.runRack(joystick.getPOV());
+        Intake.runPivot(joystick.getLeftBumperPressed());
     }
 
     /** This function is called once when the robot is disabled. */
