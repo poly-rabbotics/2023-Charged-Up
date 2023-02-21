@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import pabeles.concurrency.IntRangeConsumer;;
 
 public class Intake {
-    private final int RACK_MOTOR_ID = 11;
     private static final int RACK_MOTOR_ID = 11;
     private static final int LEFT_ROLLER_MOTOR_ID = 0;
     private static final int RIGHT_ROLLER_MOTOR_ID = 0;
@@ -41,13 +40,6 @@ public class Intake {
         //rightRollerMotor = new TalonSRX(RIGHT_ROLLER_MOTOR_ID);
         //clawSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 0);
         //pivotSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 0);
-    }
-
-    /**
-     * Method to be run from teleopPeriodic
-     */
-    private void run() {
-
     }
 
     /**
