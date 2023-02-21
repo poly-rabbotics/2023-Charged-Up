@@ -16,19 +16,18 @@ import pabeles.concurrency.IntRangeConsumer;;
 
 public class Intake {
     private final int RACK_MOTOR_ID = 11;
-    private final int LEFT_ROLLER_MOTOR_ID = 0;
-    private final int RIGHT_ROLLER_MOTOR_ID = 0;
-    private final double ROLLER_DEADZONE = 0.3;
+    private static final int RACK_MOTOR_ID = 11;
+    private static final int LEFT_ROLLER_MOTOR_ID = 0;
+    private static final int RIGHT_ROLLER_MOTOR_ID = 0;
+    private static final double ROLLER_DEADZONE = 0.3;
 
     private double rackMotorSpeed;
-    private double rollerSpeed;
     private boolean clawOpen;
     private boolean pivotDown;
 
     private TalonSRX leftRollerMotor;
     private TalonSRX rightRollerMotor;
     private CANSparkMax rackMotor;
-    private XboxController controller;
     private DoubleSolenoid clawSolenoid;
     private DoubleSolenoid pivotSolenoid;
 
@@ -42,8 +41,6 @@ public class Intake {
         //rightRollerMotor = new TalonSRX(RIGHT_ROLLER_MOTOR_ID);
         //clawSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 0);
         //pivotSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 0);
-
-        controller = new XboxController(0);
     }
 
     /**
@@ -53,6 +50,9 @@ public class Intake {
 
     }
 
+    /**
+     * Runs the rack motor, operated with DPAD left/right
+     */
     public static void runRack(int dPadDirection) {
         if(dPadDirection == 90) {
             instance.rackMotorSpeed = 0.2;
@@ -68,19 +68,25 @@ public class Intake {
         SmartDashboard.putNumber("POV", dPadDirection);
     }
 
-    private void runRoller() {
-        if(Math.abs(instance.controller.getRightY()) > ROLLER_DEADZONE) {
-            rollerSpeed = instance.controller.getRightY() * 0.8;
+    /**
+     * Runs the rollers, operated with right joystick Y axis
+     */
+    private static void runRoller(double rollerSpeed) {
+        if(Math.abs(rollerSpeed) > ROLLER_DEADZONE) { // scales down the speed of the motor
+            rollerSpeed *= 0.8;
         } else {
             rollerSpeed = 0;
         }
 
-        //rightRollerMotor.set(ControlMode.PercentOutput, rollerSpeed);
+        //instance.rightRollerMotor.set(ControlMode.PercentOutput, rollerSpeed);
+
+        //makes the left roller follow the right roller
+        //instance.leftRollerMotor.follow(instance.rightRollerMotor);
+        //instance.leftRollerMotor.setInverted(true);
     }
 
-    private void runClaw() {
-        if(instance.controller.getXButton()) {
-
+    private static void runClaw(boolean xButtonPressed) {
+        if(xButtonPressed) {
             if(!instance.clawOpen) {
                 //instance.clawSolenoid.set(Value.kReverse);
                 instance.clawOpen = true;
@@ -90,8 +96,8 @@ public class Intake {
             }
         } 
     }  
-    private void runPivot() {
-        if(instance.controller.getLeftBumper()) {
+    private void runPivot(boolean leftBumperPressed) {
+        if(leftBumperPressed) {
             if(!instance.pivotDown) {
                 //instance.pivotSolenoid.set(Value.kReverse);
                 instance.pivotDown = true;
