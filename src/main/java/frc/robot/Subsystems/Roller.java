@@ -13,7 +13,7 @@ public class Roller {
         leftRollerMotor = new TalonSRX(leftRollerID);
     }
 
-    public void setRoller(double speed) {
+    public void setSpeed(double speed) {
         rightRollerMotor.set(ControlMode.PercentOutput, speed);
 
         leftRollerMotor.follow(rightRollerMotor);

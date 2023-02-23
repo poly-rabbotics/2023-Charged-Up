@@ -1,16 +1,16 @@
 package frc.robot.Subsystems;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 public class Rack {
-    private CANSparkMax motor;
+    private TalonSRX motor;
 
     public Rack(int motorID) {
-        motor = new CANSparkMax(motorID, MotorType.kBrushless);
+        motor = new TalonSRX(motorID);
     }
 
     public void setSpeed(double speed) {
-        motor.set(speed);
+        motor.set(ControlMode.PercentOutput, speed);
     }
 }
