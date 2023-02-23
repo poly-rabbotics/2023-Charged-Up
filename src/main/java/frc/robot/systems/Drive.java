@@ -12,6 +12,7 @@ import com.revrobotics.CANSparkMax.ControlType;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Drive {
     private static final int LEFT_LEADER_CAN_ID = 0;
@@ -33,6 +34,7 @@ public class Drive {
     private SparkMaxPIDController rightController;
     private SparkMaxPIDController leftController;
     private DoubleSolenoid gearPancake;
+    private GearMode gearMode;
     
     private static final double P = 0.0000001;
     private static final double I = 0;
@@ -54,10 +56,15 @@ public class Drive {
         rightController = rightUnit.getController();
         leftController = leftUnit.getController();
     }
+
+    private enum GearMode {
+        HIGH_TORQUE, HIGH_SPEED
+    }
     
     public static void init() {
         instance.isBalancing = false;
         instance.highGearActive = false;
+        instance.gearMode = GearMode.HIGH_SPEED;
     }
     
     /**
@@ -81,6 +88,8 @@ public class Drive {
                 instance.leftUnit.set(joystickY - joystickX);
             }
         }
+
+        updateSmartDashboard(runRockMode);
     }
     
     /**
@@ -145,13 +154,23 @@ public class Drive {
     
     private static void gearShift(boolean toggleGearShift) {
         if(toggleGearShift) {
-            if(instance.highGearActive) {
-                instance.highGearActive = false;
-                instance.gearPancake.set(Value.kReverse);
+            if(instance.gearMode == GearMode.HIGH_SPEED) {
+                instance.gearMode = GearMode.HIGH_TORQUE;
             } else {
-                instance.highGearActive = true;
-                instance.gearPancake.set(Value.kForward);
+                instance.gearMode = GearMode.HIGH_SPEED;
             }
         }
+
+        if(instance.gearMode == GearMode.HIGH_SPEED) {
+            instance.gearPancake.set(Value.kForward);
+        } else {
+            instance.gearPancake.set(Value.kReverse);
+        }
+    }
+
+    private static void updateSmartDashboard(boolean rockModeActive) {
+        SmartDashboard.putString("Gear Mode", instance.gearMode.toString());
+        SmartDashboard.putBoolean("Is Balancing", instance.isBalancing);
+        SmartDashboard.putBoolean("Rock Mode Active", rockModeActive);
     }
 }
