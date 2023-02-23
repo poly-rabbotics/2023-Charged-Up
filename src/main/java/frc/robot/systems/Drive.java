@@ -5,10 +5,13 @@
 package frc.robot.systems;
 
 import frc.robot.subsystems.DriveUnit;
-import frc.robot.Controls.*;
+
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
-import edu.wpi.first.wpilibj.XboxController;
+
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 public class Drive {
     private static final int LEFT_LEADER_CAN_ID = 0;
@@ -17,25 +20,32 @@ public class Drive {
     private static final int RIGHT_FOLLOWER_CAN_ID = 3;
     private static final int TILT_DEADZONE = 10;
     private static final int BALANCING_RPM = 300;
+    private static final int ROCK_MODE_RPM = 300;
+    private static final double DRIVE_DEADZONE = 0.3;
+    private static final int PANCAKE_FORWARD_CHANNEL_ID = 0; //PLACEHOLDERS, REPLACE LATER
+    private static final int PANCAKE_REVERSE_CHANNEL_ID = 1;
 
     private static Drive instance = new Drive();
-    private static XboxController controller = new XboxController(0);
 
     private DriveUnit rightUnit;
     private DriveUnit leftUnit;
     
     private SparkMaxPIDController rightController;
     private SparkMaxPIDController leftController;
+    private DoubleSolenoid gearPancake;
 
     private static final double P = 0.0000001;
     private static final double I = 0;
     private static final double D = 0;
     private double velocitySetPoint = 0;
-    private static boolean isBalancing = false;
+
+    private boolean highGearActive;
 
     private Drive() {
         rightUnit = new DriveUnit(RIGHT_LEADER_CAN_ID, RIGHT_FOLLOWER_CAN_ID);
         leftUnit = new DriveUnit(LEFT_LEADER_CAN_ID, LEFT_FOLLOWER_CAN_ID);
+
+        gearPancake = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, PANCAKE_FORWARD_CHANNEL_ID, PANCAKE_REVERSE_CHANNEL_ID);
 
         rightUnit.settupPID(P, I, D);
         leftUnit.settupPID(P, I, D);
@@ -47,20 +57,24 @@ public class Drive {
     /**
      * Method to run the drive system during teleop
      */
-    public static void run() {
-
-        //gets the x and y axes of the left joystick
-        double joystickX = DriveJoystick.getMoveX();
-        double joystickY = DriveJoystick.getMoveY();
+    public static void run(double joystickX, double joystickY, boolean runAutoBalance, int dPadDirection, boolean runRockMode, boolean toggleGearShift) {
         
-        if(DriveJoystick.getRunAutoBalance()) {
-            instance.autoBalance();
-            return;
-        }
+        if(runAutoBalance) { //if auto balance button is held
+            autoBalance();
+        } else if(runRockMode) { //if rock mode button ins held
+            rockMode(joystickX, joystickY);
+        } else { //if no special mode is active
+            //runs if dpad is pressed
+            lowSensitivityMode(dPadDirection);
 
-        // rotates joystick axes by 45 degrees & sets units to left and right axes
-        instance.rightUnit.set(joystickX + joystickY);
-        instance.leftUnit.set(joystickY - joystickX);
+            gearShift(toggleGearShift);
+
+            // rotates joystick axes by 45 degrees & sets units to left and right axes
+            if(Math.abs(joystickX) > DRIVE_DEADZONE) {
+                instance.rightUnit.set(joystickX + joystickY);
+                instance.leftUnit.set(joystickY - joystickX);
+            }
+        }
     }
 
     /**
@@ -68,7 +82,7 @@ public class Drive {
      * Detects whether to go forwards or backwards by checking the pitch of the robot
      * and the rate of change of the pitch
      */
-    private void autoBalance() {
+    private static void autoBalance() {
         if (Pigeon.getRelativePitch() <= -TILT_DEADZONE && Pigeon.getChangePerSecond().pitch > 0.1) { //if robot is tilted forwards
             instance.velocitySetPoint = -BALANCING_RPM;
         } else if (Pigeon.getRelativePitch() >= TILT_DEADZONE && Pigeon.getChangePerSecond().pitch > 0.1) { //if robot is tilted backwards
@@ -77,10 +91,51 @@ public class Drive {
             instance.velocitySetPoint = 0;
         }
 
-        instance.rightController.setReference(velocitySetPoint, ControlType.kVelocity);
-        instance.leftController.setReference(-velocitySetPoint, ControlType.kVelocity);
+        instance.rightController.setReference(instance.velocitySetPoint, ControlType.kVelocity);
+        instance.leftController.setReference(instance.velocitySetPoint, ControlType.kVelocity);
 
-        instance.rightUnit.setController(rightController);
-        instance.leftUnit.setController(leftController);
+        instance.rightUnit.setController(instance.rightController);
+        instance.leftUnit.setController(instance.leftController);
+    }
+
+    private static void lowSensitivityMode(int dPadDirection) {
+        if(dPadDirection == 0) { //if dPad is pressed up, move forward
+            instance.rightUnit.set(0.5);
+            instance.leftUnit.set(0.5);
+        } else if(dPadDirection == 180) { //if dPad is pressed down, move backward
+            instance.rightUnit.set(-0.5);
+            instance.leftUnit.set(-0.5);
+        } else if(dPadDirection == 90) { //if dPad is pressed right, turn right
+            instance.rightUnit.set(-0.5);
+            instance.leftUnit.set(0.5);
+        } else if(dPadDirection == 270) { //if dPad is pressed left, turn left
+            instance.rightUnit.set(0.5);
+            instance.leftUnit.set(-0.5);
+        } else { //if dPad is not pressed
+            instance.rightUnit.set(0);
+            instance.leftUnit.set(0);
+        }
+    }
+
+    private static void rockMode(double joystickX, double joystickY) {
+        if(Math.abs(joystickX) > DRIVE_DEADZONE) {
+            instance.rightController.setReference((joystickX + joystickY) * ROCK_MODE_RPM, ControlType.kVelocity);
+            instance.leftController.setReference((joystickY - joystickX) * ROCK_MODE_RPM, ControlType.kVelocity);
+        } else {
+            instance.rightController.setReference(0, ControlType.kVelocity);
+            instance.leftController.setReference(0, ControlType.kVelocity);
+        }
+    }
+
+    private static void gearShift(boolean toggleGearShift) {
+        if(toggleGearShift) {
+            if(instance.highGearActive) {
+                instance.highGearActive = false;
+                instance.gearPancake.set(Value.kReverse);
+            } else {
+                instance.highGearActive = true;
+                instance.gearPancake.set(Value.kForward);
+            }
+        }
     }
 }

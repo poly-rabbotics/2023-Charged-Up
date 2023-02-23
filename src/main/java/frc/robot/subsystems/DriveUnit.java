@@ -11,8 +11,8 @@ import com.revrobotics.SparkMaxPIDController;
 
 /** Add your docs here. */
 public class DriveUnit {
-    private static final double PID_OUTPUT_MAX = 1;
-    private static final double PID_OUTPUT_MIN = -1;
+    private static final double PID_OUTPUT_MAX = 0.5;
+    private static final double PID_OUTPUT_MIN = -0.5;
     private CANSparkMax leader;
     private CANSparkMax follower;
     private SparkMaxPIDController controller;
