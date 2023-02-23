@@ -2,6 +2,7 @@ package frc.robot.systems;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Compressor;
@@ -20,21 +21,20 @@ public class Intake {
     private boolean clawOpen;
     private boolean pivotDown;
 
-    private TalonSRX leftRollerMotor;
-    private TalonSRX rightRollerMotor;
-    private CANSparkMax rackMotor;
+    
     private DoubleSolenoid clawSolenoid;
     private Compressor comp;
 
     private static Intake instance = new Intake();
     private static Rack rack;
     private static Pivot pivot;
+    private static Roller roller;
 
     public Intake() {
         rack = new Rack(RACK_MOTOR_ID);
+
         //UNCOMMENT LATER
-        //leftRollerMotor = new TalonSRX(LEFT_ROLLER_MOTOR_ID);
-        //rightRollerMotor = new TalonSRX(RIGHT_ROLLER_MOTOR_ID);
+        //roller = new Roller(RIGHT_ROLLER_ID, LEFT_ROLLER_ID);
         //clawSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 0);
         pivot = new Pivot(PneumaticsModuleType.CTREPCM, 5, 4);
         comp = new Compressor(1, PneumaticsModuleType.CTREPCM);
@@ -52,9 +52,9 @@ public class Intake {
      */
     public static void runRack(int dPadDirection) {
         if(dPadDirection == 90) {
-            instance.rackMotorSpeed = 0.2;
+            instance.rackMotorSpeed = 0.8;
         } else if(dPadDirection == 270) {
-            instance.rackMotorSpeed = -0.2;
+            instance.rackMotorSpeed = -0.8;
         } else {
             instance.rackMotorSpeed = 0;
         }
@@ -75,11 +75,7 @@ public class Intake {
             rollerSpeed = 0;
         }
 
-        //instance.rightRollerMotor.set(ControlMode.PercentOutput, rollerSpeed);
-
-        //makes the left roller follow the right roller
-        //instance.leftRollerMotor.follow(instance.rightRollerMotor);
-        //instance.leftRollerMotor.setInverted(true);
+        //roller.setRoller(rollerSpeed)
     }
 
     private static void runClaw(boolean xButtonPressed) {
