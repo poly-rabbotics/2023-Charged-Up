@@ -7,13 +7,16 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Subsystems.*;
 
 public class Intake {
+    //ID constants
     private static final int RACK_MOTOR_ID = 11;
-    private static final int LEFT_ROLLER_MOTOR_ID = 0;
-    private static final int RIGHT_ROLLER_MOTOR_ID = 0;
+    private static final int LEFT_ROLLER_ID = 0;
+    private static final int RIGHT_ROLLER_ID = 0;
     private static final int CLAW_FORWARD_CHANNEL = 0;
     private static final int CLAW_REVERSE_CHANNEL = 0;
     private static final int PIVOT_FORWARD_CHANNEL = 5;
     private static final int PIVOT_REVERSE_CHANNEL = 4;
+
+    //The deadzone for roller joystick control
     private static final double ROLLER_DEADZONE = 0.3;
 
     private double rackMotorSpeed;
