@@ -17,8 +17,6 @@ public class Intake {
     private static final double ROLLER_DEADZONE = 0.3;
 
     private double rackMotorSpeed;
-    private boolean clawOpen;
-    private boolean pivotDown;
 
     private Compressor comp;
     private static Rack rack;
@@ -53,10 +51,26 @@ public class Intake {
     }
 
     /**
+     * The method to be run from teleopPeriodic
+     * @param dPadDirection - the direction of the DPAD
+     * @param rollerSpeed - The speed of the roller
+     * @param clawButton - The button to extend/retract the claw
+     * @param pivotButton - The button to extend/retract the pivot
+     */
+    public static void run(int dPadDirection, double rollerSpeed, boolean clawButton, boolean pivotButton) {
+        runRack(dPadDirection);
+        //runRoller(rollerSpeed);
+        //runClaw(clawButton);
+        runPivot(pivotButton);
+
+        updateSmartDashboard(rollerSpeed);
+    }
+
+    /**
      * Runs the rack motor, operated with DPAD left/right
      * @param dPadDirection the direction of the DPAD
      */
-    public static void runRack(int dPadDirection) {
+    private static void runRack(int dPadDirection) {
         if(dPadDirection == 90) {
             instance.rackMotorSpeed = 0.8;
         } else if(dPadDirection == 270) {
@@ -82,7 +96,7 @@ public class Intake {
             rollerSpeed = 0;
         }
 
-        //roller.setRoller(rollerSpeed)
+        //roller.setSpeed(rollerSpeed);
     }
 
     /**
@@ -109,7 +123,7 @@ public class Intake {
      * Extends or retracts the pivot, toggled with button press
      * @param switchPivotState
      */
-    public static void runPivot(boolean switchPivotState) {
+    private static void runPivot(boolean switchPivotState) {
         if(switchPivotState) {
             if(instance.pivotState == SolenoidState.RETRACTED) {
                 instance.pivotState = SolenoidState.EXTENDED;
@@ -123,6 +137,17 @@ public class Intake {
         } else {
             pivot.setPivot(Value.kReverse);
         }
+    }
+
+    /**
+     * Updates Smart Dashboard with important variables
+     * @param rollerSpeed
+     */
+    private static void updateSmartDashboard(double rollerSpeed) {
+        SmartDashboard.putString("Claw State", instance.clawState.toString());
+        SmartDashboard.putString("Pivot State", instance.pivotState.toString());
+        SmartDashboard.putNumber("Rack Speed", instance.rackMotorSpeed);
+        SmartDashboard.putNumber("Roller Speed", rollerSpeed);
     }
     
 }
