@@ -12,8 +12,10 @@ import java.util.concurrent.TimeUnit;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 public class Pigeon {
-    private static final int PIGEON_CAN_ID = 9;
+    private static final int PIGEON_CAN_ID = 20;
 
     private static Pigeon instance = new Pigeon(PIGEON_CAN_ID);
 
@@ -28,8 +30,9 @@ public class Pigeon {
 
         /* 
          * Starts the thread so that it calls 'run()' every 40 ms (25hz). This
-         * automatically updates the changePerSecond* feilds at that rate.
-         */ 
+         * automatically updates the changePerSecond feilds at that rate.
+         */
+
         OrientationalChangeCalculator angularChangeCalculator = new OrientationalChangeCalculator(this);
         changeRateThread = Executors.newSingleThreadScheduledExecutor();
         changeRateThread.scheduleAtFixedRate(angularChangeCalculator, 0, 40, TimeUnit.MILLISECONDS);
@@ -49,7 +52,7 @@ public class Pigeon {
      * forward has not been set then it simply returns the absolute rotaton.
      */
     public static double getRelativeRotationDegrees() {
-        return (getAbsoluteRotationDegrees() - instance.relativeForward) % 360.0;
+        return (getAbsoluteRotationDegrees() - instance.relativeForward + 360.0) % 360.0;
     }
 
     /**
@@ -126,6 +129,10 @@ public class Pigeon {
             double changePitch = (pitch - previousPitch) / differenceSeconds;
 
             pigeon.changePerSecond = new OrientationalChange(changeYaw, changeRoll, changePitch);
+
+            SmartDashboard.putNumber("Pigon Yaw", yaw);
+            SmartDashboard.putNumber("Pigon Pitch", pitch);
+            SmartDashboard.putNumber("Pigon Roll", roll);
         }
     }
 }

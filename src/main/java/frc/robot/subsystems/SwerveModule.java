@@ -6,8 +6,8 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.sensors.CANCoder;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import frc.robot.systems.SwerveDrive;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -22,103 +22,77 @@ public class SwerveModule {
     private CANSparkMax movementMotor;
     private CANCoder rotationalEncoder;
     private PIDController controller;
-    private double CANCoderOffset; //in degrees
+    private double canCoderOffset;
+    private double coefficient;
 
-    private double ENCODER_COUNTS_PER_DEGREE = 4096.0 / 360.0 * 21.42; //4096 encoder counts per revolution, 360 degrees per revolution, 21.42:1 gearing
-
-    private class DirectionSet {
-        public double movement;
-        public boolean invert;
-
-        public DirectionSet(double movement, boolean invert) {
-            this.movement = movement;
-            this.invert = invert;
-        }
-    }
-
-    public SwerveModule(int movementMotorID, int rotationalMotorID, int canCoderID, double CANCoderOffset) {
+    public SwerveModule(int movementMotorID, int rotationalMotorID, int canCoderID, double canCoderOffset, double coefficient) {
         rotationalMotor = new CANSparkMax(rotationalMotorID, MotorType.kBrushless);
+        rotationalMotor.setInverted(false);
+        
         movementMotor = new CANSparkMax(movementMotorID, MotorType.kBrushless);
+        movementMotor.setInverted(false);
+        movementMotor.setIdleMode(IdleMode.kBrake);
+
         rotationalEncoder = new CANCoder(canCoderID);
         controller = new PIDController(PID_P, PID_I, PID_D);
-        this.CANCoderOffset = CANCoderOffset;
-        controller.setTolerance(0.5); // 0.5 degrees, maybe change this later
-    }
+        controller.enableContinuousInput(0.0, 360.0);
+        this.canCoderOffset = canCoderOffset;
 
-    private DirectionSet convertAngleToDirection(double setpoint1) {
-        double currentPosition = rotationalEncoder.getPosition() - CANCoderOffset;
-        
-        // We're going to start finding the quickest way to get to either the
-        // given point, or 180 degrees from it. In the case of the latter we
-        // will invert the motor.
+        controller.setTolerance(0.5); // 0.5 degrees, maybe change this 
+        rotationalEncoder.setPosition(0.0);
 
-        double setpoint2 = (setpoint1 + 180.0) % 360.0;
-
-        double movement1 = setpoint1 - currentPosition;
-        double movement2 = 360.0 - movement1;
-        double movement3 = setpoint2 - currentPosition;
-        double movement4 = 360.0 - movement3;
-
-        double minimumMovement = Math.min(Math.min(movement1, movement2), Math.min(movement3, movement4));
-        boolean inversionRequired = (minimumMovement == movement3) || (minimumMovement == movement4);
-
-        return new DirectionSet(minimumMovement, inversionRequired);
+        this.coefficient = coefficient;
     }
 
     /**
      * Applies the given movement vector to the swerve module.
+     * @param speed Desired velocity in meters per second.
      * @param rotation Rotation in degrees.
-     * @param speed Native motor speed, 1.0 to -1.0.
      */
     public void setMovementVector(double rotation, double speed) {
-        adjustPIDs();
-        controller.setSetpoint(rotation);
-        controller.reset();
-
-        double currentPosition = rotationalEncoder.getPosition() % 360.0;
-        DirectionSet directionSet = convertAngleToDirection(rotation);
-        double calculation = controller.calculate(currentPosition, (currentPosition + directionSet.movement) % 360.0);
+        double currentPosition = (rotationalEncoder.getPosition() + canCoderOffset) % 360.0;
+        double calculation = controller.calculate(currentPosition, rotation % 360.0);
         
         SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " Calculation", calculation);
+        SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " Rotation", rotation);
+        SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " Position", rotationalEncoder.getPosition());
+        SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " Position mod 360", rotationalEncoder.getPosition() % 360);
 
-        if (directionSet.invert)
-            rotationalMotor.setInverted(!rotationalMotor.getInverted());
-        
-        rotationalMotor.set(calculation);
+        rotationalMotor.set(calculation * coefficient);
         movementMotor.set(speed);
     }
-    //for making PID adjustments faster rather than changing the code and re-deploying
-    public void adjustPIDs() {
-        SmartDashboard.putNumber("P", PID_P);
-        SmartDashboard.putNumber("I", PID_I);
-        SmartDashboard.putNumber("D", PID_D);
 
-        if (SwerveDrive.testController.getRawButton(6)) { //right bumper increases P
-            PID_P += 0.00000001;
-        } 
-        else if (SwerveDrive.testController.getRawButton(5)) { //left bumper decreases P
-            PID_P -= 0.00000001;
-        }
-        if (SwerveDrive.testController.getRawButton(1)) { //A increases I
-            PID_I += 0.00000001;
-        } 
-        else if (SwerveDrive.testController.getRawButton(4)) { //Y decreases I
-            PID_I -= 0.00000001;
-        } 
-        if (SwerveDrive.testController.getPOV() == 180) { //down increases D
-            PID_D += 0.00000001;
-        } 
-        else if (SwerveDrive.testController.getPOV() == 0) { //up decreases D
-            PID_D -= 0.00000001;
-        }
+    public void addToP(double increment) {
+        PID_P += increment;
+
+        if (PID_P < 0.0)
+            PID_P = 0.0;
+
+        SmartDashboard.putNumber("Swerve " + rotationalEncoder.getDeviceID() + "  P", PID_P);
 
         controller.setP(PID_P);
+    }
+    public void addToI(double increment) {
+        PID_I += increment;
+
+        if (PID_I < 0.0)
+            PID_I = 0.0;
+
+        SmartDashboard.putNumber("Swerve " + rotationalEncoder.getDeviceID() + "  I", PID_I);
+
         controller.setI(PID_I);
+    }
+    public void addToD(double increment) {
+        PID_D += increment;
+        
+        if (PID_D < 0.0)
+            PID_D = 0.0;
+        
+        SmartDashboard.putNumber("Swerve " + rotationalEncoder.getDeviceID() + "  D", PID_D);
+
         controller.setD(PID_D);
-        SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " Speed", rotationalMotor.getAppliedOutput());
-        SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " CANCoder", Math.abs(rotationalEncoder.getPosition() % 360));
-        SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " Error", controller.getPositionError());
-        SmartDashboard.putNumber("Module " + rotationalEncoder.getDeviceID() + " Enc Counts", rotationalMotor.getEncoder().getPosition());
-        //MAKE SOME OF THESE PLOTS IN SHUFFLEBOARD TO SEE PID GRAPHS
+    }
+    public void resetPos() {
+        rotationalEncoder.setPosition(0.0);
     }
 }

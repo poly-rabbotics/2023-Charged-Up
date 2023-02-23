@@ -5,9 +5,10 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.systems.*;
+import edu.wpi.first.wpilibj.XboxController;
+import frc.robot.subsystems.SwerveMode;
+import frc.robot.systems.Pigeon;
+import frc.robot.systems.SwerveDrive;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -16,21 +17,14 @@ import frc.robot.systems.*;
  * project.
  */
 public class Robot extends TimedRobot {
-    private static final String kDefaultAuto = "Default";
-    private static final String kCustomAuto = "My Auto";
-    private String m_autoSelected;
-    private final SendableChooser<String> m_chooser = new SendableChooser<>();
-
+    public static XboxController testController = new XboxController(1);
+    
     /**
      * This function is run when the robot is first started up and should be used for any
      * initialization code.
      */
     @Override
-    public void robotInit() {
-        m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-        m_chooser.addOption("My Auto", kCustomAuto);
-        SmartDashboard.putData("Auto choices", m_chooser);
-    }
+    public void robotInit() {}
 
     /**
      * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -53,34 +47,67 @@ public class Robot extends TimedRobot {
      * chooser code above as well.
      */
     @Override
-    public void autonomousInit() {
-        m_autoSelected = m_chooser.getSelected();
-        // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-        System.out.println("Auto selected: " + m_autoSelected);
-    }
+    public void autonomousInit() {}
 
     /** This function is called periodically during autonomous. */
     @Override
-    public void autonomousPeriodic() {
-        switch (m_autoSelected) {
-            case kCustomAuto:
-                // Put custom auto code here
-                break;
-            case kDefaultAuto:
-            default:
-                // Put default auto code here
-                break;
-        }
-    }
+    public void autonomousPeriodic() {}
 
     /** This function is called once when teleop is enabled. */
     @Override
-    public void teleopInit() {}
+    public void teleopInit() {
+        Pigeon.setRelativeForward();
+    }
 
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        SwerveDrive.test();
+        double leftX = testController.getLeftX();
+        double leftY = testController.getLeftY();
+        double speed = Math.sqrt(leftX*leftX + leftY*leftY);
+        
+        if (Math.abs(leftX) < 0.15 && Math.abs(leftY) < 0.15)
+            speed = 0.0;
+        
+        speed *= speed * speed;
+
+        SwerveDrive.run(leftX, leftY, testController.getRightX(), speed);
+
+        if (testController.getLeftStickButtonReleased()) {
+            if (SwerveDrive.getMode() == SwerveMode.Headless) {
+                SwerveDrive.setMode(SwerveMode.Relative);
+            } else {
+                SwerveDrive.setMode(SwerveMode.Headless);
+            }
+        }
+
+        if (testController.getRightBumperReleased()) {
+            SwerveDrive.addToP(0.0001);
+        }
+
+        if (testController.getLeftBumperReleased()) {
+            SwerveDrive.addToP(-0.0001);
+        }
+
+        if (testController.getYButtonReleased()) {
+            SwerveDrive.addToI(0.0000001);
+        }
+
+        if (testController.getAButtonReleased()) {
+            SwerveDrive.addToI(-0.0000001);
+        }
+
+        if (testController.getXButtonReleased()) {
+            SwerveDrive.addToD(0.0000001);
+        }
+
+        if (testController.getBButtonReleased()) {
+            SwerveDrive.addToD(-0.0000001);
+        }
+
+        if (testController.getStartButtonReleased()) {
+            SwerveDrive.resetPos();
+        }
     }
 
     /** This function is called once when the robot is disabled. */
