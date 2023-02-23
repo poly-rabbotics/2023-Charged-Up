@@ -1,11 +1,10 @@
-package frc.robot.subsystems;
+package frc.robot.systems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** 
@@ -32,8 +31,6 @@ public class Fourbar {
 
     //variables
     private double targetSetpoint;
-    private boolean menuPressed;
-    private boolean rbPressed;
     private ControlMode controlMode;
     private Setpoint setpoint;
     
@@ -83,17 +80,21 @@ public class Fourbar {
     }
     
     /**
-    * The method that will be run from teleopPeriodic
-    */
-    public static void run(double speed, boolean leftBumperPressed, boolean menuButtonPressed, boolean rightStickPressed) {
+     * The method that will be run from teleopPeriodic
+     * @param speed - The speed the motor will run at
+     * @param switchControlMode - toggles between manual and position control
+     * @param setPositionZero - sets the current encoder position to zero
+     * @param changeSetpoint - cycles through the top, mid, and bottom setpoints
+     */
+    public static void run(double speed, boolean switchControlMode, boolean setPositionZero, boolean changeSetpoint) {
         
         //sets current encoder position to 0 if menu button is pressed
-        setEncoderZero(menuButtonPressed);
+        setEncoderZero(setPositionZero);
 
-        cycleTargetSetpoint(rightStickPressed);
+        cycleTargetSetpoint(setPositionZero);
 
         //switches between control modes
-        if(leftBumperPressed) {
+        if(switchControlMode) {
             if(instance.controlMode == ControlMode.MANUAL) {
                 instance.controlMode = ControlMode.PID;
             } else if(instance.controlMode == ControlMode.PID) {
@@ -134,10 +135,10 @@ public class Fourbar {
     /**
      * Cycles through each setpoint
      */
-    private static void cycleTargetSetpoint(boolean rightStickPressed) {
+    private static void cycleTargetSetpoint(boolean setPositionZero) {
 
         //set setpoint enum
-        if(rightStickPressed) {
+        if(setPositionZero) {
             if(instance.setpoint == Setpoint.BOTTOM) {
                 instance.setpoint = Setpoint.MID;
             } else if(instance.setpoint == Setpoint.MID) {
@@ -160,8 +161,8 @@ public class Fourbar {
     /**
      * Sets the relative encoder position to zero if menu button is pressed
      */
-    private static void setEncoderZero(boolean menuButtonPressed) {
-        if(menuButtonPressed) {
+    private static void setEncoderZero(boolean setPositionZero) {
+        if(setPositionZero) {
             instance.relativeEncoder.setPosition(0);
         }
     }

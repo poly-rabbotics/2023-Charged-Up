@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.systems;
 
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
@@ -56,6 +56,9 @@ public class Elevator {
         elevatorMotor.config_kI(0, I);
         elevatorMotor.config_kD(0, D);
         elevatorMotor.selectProfileSlot(0, 0);
+
+        elevatorMotor.configPeakOutputForward(0.7);
+        elevatorMotor.configPeakOutputReverse(-0.7);
         
         //Configures motor to brake when not being used
         elevatorMotor.setNeutralMode(NeutralMode.Brake);
@@ -81,16 +84,24 @@ public class Elevator {
     }
     
     /**
-    * The method that will be run in teleopPeriodic
-    */
-    public static void run(double speed, boolean rightBumperPressed, boolean startButtonPressed, boolean aButtonPressed, boolean bButtonPressed, boolean xButtonPressed, boolean yButtonPressed, int dPadDirection) {
+     * The method that will be run in teleopPeriodic
+     * @param speed - the speed of the elevator in manual mode
+     * @param switchControlMode - toggles between manual and position control
+     * @param resetEncoderPosition - sets the encoder position to zero
+     * @param setPositionBottom - Sets the setpoint to the zero position 
+     * @param setPositionMid - Sets the setpoint to the mid position
+     * @param runAutoCalibrate - If pressed, robot will automatically determine zero point
+     * @param setPositionTop - Sets the setpoint to the top position
+     * @param dPadDirection - The direction of the dpad for low sensitivity control
+     */
+    public static void run(double speed, boolean switchControlMode, boolean resetEncoderPosition, boolean setPositionBottom, boolean setPositionMid, boolean runAutoCalibrate, boolean setPositionTop, int dPadDirection) {
         instance.encoderPosition = instance.elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
 
         //runs auto calibrate or sets current encoder position to 0 if start button is pressed
-        setEncoderZero(startButtonPressed);
+        setEncoderZero(resetEncoderPosition);
         
         //switches between manual and position control modes
-        if(rightBumperPressed) {
+        if(switchControlMode) {
             if(instance.controlMode == ElevatorMode.POSITION) {
                 instance.controlMode = ElevatorMode.MANUAL;
             } else {
@@ -99,7 +110,7 @@ public class Elevator {
         }
 
         //switches between setpoints
-        updateTargetSetpoint(aButtonPressed, bButtonPressed, yButtonPressed);
+        updateTargetSetpoint(setPositionBottom, setPositionMid, setPositionTop);
         
         //runs control mode
         if(instance.controlMode == ElevatorMode.MANUAL) { //manual control
@@ -108,7 +119,7 @@ public class Elevator {
             positionControl();
         }
 
-        autoCalibrate(xButtonPressed);
+        autoCalibrate(runAutoCalibrate);
 
         //prints variables to Smart Dashboard
         updateSmartDashboard(speed, dPadDirection);
@@ -159,21 +170,21 @@ public class Elevator {
     /**
     * Sets the encoder position to 0 if the start button is pressed
     */
-    private static void setEncoderZero(boolean startButtonPressed) {
-        if(startButtonPressed || !instance.bottomLimitSwitch.get()) {
+    private static void setEncoderZero(boolean resetEncoderPosition) {
+        if(resetEncoderPosition || !instance.bottomLimitSwitch.get()) {
             instance.elevatorMotor.getSensorCollection().setIntegratedSensorPosition(0, 30);
         }
     }
 
-    private static void updateTargetSetpoint(boolean aButtonPressed, boolean bButtonPressed, boolean yButtonPressed) {
+    private static void updateTargetSetpoint(boolean setPositionBottom, boolean setPositionMid, boolean setPositionTop) {
         //updates the setpoint enum
-        if(aButtonPressed) {
+        if(setPositionBottom) {
             instance.setpoint = ElevatorSetpoint.BOTTOM;
             instance.overShoot = 0;
-        } else if(bButtonPressed) {
+        } else if(setPositionMid) {
             instance.setpoint = ElevatorSetpoint.MID;
             instance.overShoot = 0;
-        } else if(yButtonPressed) {
+        } else if(setPositionTop) {
             instance.setpoint = ElevatorSetpoint.TOP;
             instance.overShoot = 0;
         }
@@ -190,12 +201,12 @@ public class Elevator {
 
     /**
      * Runs motor until limit switch is triggered. Interrupted by entering PID mode, pressing x again, or controlling motor in manual mode
-     * @param xButtonPressed
+     * @param runAutoCalibrate
      */
-    private static void autoCalibrate(boolean xButtonPressed) {
+    private static void autoCalibrate(boolean runAutoCalibrate) {
 
         //toggle between calibrating and not calibrating
-        if(xButtonPressed) {
+        if(runAutoCalibrate) {
             if(instance.isCalibrating) {
                 instance.isCalibrating = false;
             } else {
