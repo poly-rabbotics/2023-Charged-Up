@@ -17,7 +17,7 @@ import frc.robot.systems.SwerveDrive;
  * project.
  */
 public class Robot extends TimedRobot {
-    public static XboxController testController = new XboxController(1);
+    public static XboxController controllerOne = new XboxController(1);
     
     /**
      * This function is run when the robot is first started up and should be used for any
@@ -62,10 +62,10 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        SwerveDrive.run(testController.getLeftX(), testController.getLeftY(), testController.getRightX());
+        SwerveDrive.run(controllerOne.getLeftX(), controllerOne.getLeftY(), controllerOne.getRightX());
 
         // Left stick changes between headless and relative control modes.
-        if (testController.getLeftStickButtonReleased()) {
+        if (controllerOne.getLeftStickButtonReleased()) {
             if (SwerveDrive.getMode() == SwerveMode.Headless) {
                 SwerveDrive.setMode(SwerveMode.Relative);
             } else {
@@ -73,31 +73,31 @@ public class Robot extends TimedRobot {
             }
         }
 
-        if (testController.getRightBumperReleased()) {
+        if (controllerOne.getRightBumperReleased()) {
             SwerveDrive.addToP(0.0001);
         }
 
-        if (testController.getLeftBumperReleased()) {
+        if (controllerOne.getLeftBumperReleased()) {
             SwerveDrive.addToP(-0.0001);
         }
 
-        if (testController.getYButtonReleased()) {
+        if (controllerOne.getYButtonReleased()) {
             SwerveDrive.addToI(0.0000001);
         }
 
-        if (testController.getAButtonReleased()) {
+        if (controllerOne.getAButtonReleased()) {
             SwerveDrive.addToI(-0.0000001);
         }
 
-        if (testController.getXButtonReleased()) {
+        if (controllerOne.getXButtonReleased()) {
             SwerveDrive.addToD(0.0000001);
         }
 
-        if (testController.getBButtonReleased()) {
+        if (controllerOne.getBButtonReleased()) {
             SwerveDrive.addToD(-0.0000001);
         }
 
-        if (testController.getStartButtonReleased()) {
+        if (controllerOne.getStartButtonReleased()) {
             SwerveDrive.resetEncoderPositions();
         }
     }
