@@ -1,19 +1,14 @@
-package frc.robot.Subsystems;
+package frc.robot.systems;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator.Validity;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import pabeles.concurrency.IntRangeConsumer;;
+import frc.robot.Subsystems.*;
 
 public class Intake {
     private static final int RACK_MOTOR_ID = 11;
@@ -29,19 +24,19 @@ public class Intake {
     private TalonSRX rightRollerMotor;
     private CANSparkMax rackMotor;
     private DoubleSolenoid clawSolenoid;
-    private DoubleSolenoid pivotSolenoid;
     private Compressor comp;
 
     private static Intake instance = new Intake();
+    private static Rack rack;
+    private static Pivot pivot;
 
     public Intake() {
-        rackMotor = new CANSparkMax(RACK_MOTOR_ID, MotorType.kBrushless);
-
+        rack = new Rack(RACK_MOTOR_ID);
         //UNCOMMENT LATER
         //leftRollerMotor = new TalonSRX(LEFT_ROLLER_MOTOR_ID);
         //rightRollerMotor = new TalonSRX(RIGHT_ROLLER_MOTOR_ID);
         //clawSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 0);
-        pivotSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 5, 4);
+        pivot = new Pivot(PneumaticsModuleType.CTREPCM, 5, 4);
         comp = new Compressor(1, PneumaticsModuleType.CTREPCM);
         comp.enableDigital();
     }
@@ -64,7 +59,7 @@ public class Intake {
             instance.rackMotorSpeed = 0;
         }
 
-        instance.rackMotor.set(instance.rackMotorSpeed);
+        rack.setSpeed(instance.rackMotorSpeed);
 
         SmartDashboard.putNumber("Rack Motor Speed", instance.rackMotorSpeed);
         SmartDashboard.putNumber("POV", dPadDirection);
@@ -102,10 +97,10 @@ public class Intake {
     public static void runPivot(boolean leftBumperPressed) {
         if(leftBumperPressed) {
             if(!instance.pivotDown) {
-                instance.pivotSolenoid.set(Value.kReverse);
+                pivot.setPivot(Value.kReverse);
                 instance.pivotDown = true;
             } else {
-                instance.pivotSolenoid.set(Value.kForward);
+                pivot.setPivot(Value.kForward);
                 instance.pivotDown = false;
             }
         }
