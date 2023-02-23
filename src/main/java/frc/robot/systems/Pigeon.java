@@ -14,15 +14,17 @@ import com.ctre.phoenix.sensors.Pigeon2;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+/*
+ * Manages the robot's pigeon.
+ */
 public class Pigeon {
     private static final int PIGEON_CAN_ID = 20;
+    private static final Pigeon instance = new Pigeon(PIGEON_CAN_ID);
 
-    private static Pigeon instance = new Pigeon(PIGEON_CAN_ID);
+    private final Pigeon2 pigeon;
+    private final ScheduledExecutorService changeRateThread;
 
-    private Pigeon2 pigeon;
-    private ScheduledExecutorService changeRateThread;
     private double relativeForward = 0.0;
-
     private OrientationalChange changePerSecond;
 
     private Pigeon(int canID) {
@@ -74,14 +76,14 @@ public class Pigeon {
      * calculated from the Pigeon.
      */
     public static class OrientationalChange {
-        public final double yaw;
-        public final double roll;
-        public final double pitch;
+        public final double yawPerSecond;
+        public final double rollPerSecond;
+        public final double pitchPerSecond;
 
         private OrientationalChange(double yaw, double roll, double pitch) {
-            this.yaw = yaw;
-            this.roll = roll;
-            this.pitch = pitch;
+            this.yawPerSecond = yaw;
+            this.rollPerSecond = roll;
+            this.pitchPerSecond = pitch;
         }
     }
 
@@ -90,26 +92,23 @@ public class Pigeon {
      * run the whole Pigeon on a thread in Robot.java
      */
     private class OrientationalChangeCalculator implements Runnable {
-        // This will only be a reference to the containing class.
-        private Pigeon pigeon;
+        private final Pigeon pigeon;  // Reference to containing pigeon.
+        private final Clock clock;    // Clock used to get current instant.
 
+        private Instant recordedInstant;
+        
         private double previousYaw;
         private double previousRoll;
         private double previousPitch;
 
-        // System clock and the instant in which the above doubles where recorded.
-        private Clock clock;
-        private Instant recordedInstant;
-
         private OrientationalChangeCalculator(Pigeon pigeon) {
-            clock = Clock.systemDefaultZone();
             this.pigeon = pigeon;
-
+            clock = Clock.systemDefaultZone();
+            recordedInstant = clock.instant();
+            
             previousYaw = pigeon.pigeon.getYaw();
             previousRoll = pigeon.pigeon.getRoll();
             previousPitch = pigeon.pigeon.getPitch();
-
-            recordedInstant = clock.instant();
         }
 
         @Override

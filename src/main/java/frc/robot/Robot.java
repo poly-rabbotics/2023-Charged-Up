@@ -66,13 +66,15 @@ public class Robot extends TimedRobot {
         double leftY = testController.getLeftY();
         double speed = Math.sqrt(leftX*leftX + leftY*leftY);
         
-        if (Math.abs(leftX) < 0.15 && Math.abs(leftY) < 0.15)
+        if (speed < 0.15)
             speed = 0.0;
         
-        speed *= speed * speed;
+        // Cude it for a bit of a better response curve.
+        speed = speed * speed * speed;
 
         SwerveDrive.run(leftX, leftY, testController.getRightX(), speed);
 
+        // Left stick changes between headless and relative control modes.
         if (testController.getLeftStickButtonReleased()) {
             if (SwerveDrive.getMode() == SwerveMode.Headless) {
                 SwerveDrive.setMode(SwerveMode.Relative);
@@ -106,7 +108,7 @@ public class Robot extends TimedRobot {
         }
 
         if (testController.getStartButtonReleased()) {
-            SwerveDrive.resetPos();
+            SwerveDrive.resetEncoderPositions();
         }
     }
 

@@ -12,20 +12,26 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-/** Add your docs here. */
+/** 
+ * Class for managing and manipulating a swerve module. 
+ */
 public class SwerveModule {
     private static double PID_P = 0.000001;
     private static double PID_I = 0;
     private static double PID_D = 0;
 
-    private CANSparkMax rotationalMotor;
-    private CANSparkMax movementMotor;
-    private CANCoder rotationalEncoder;
-    private PIDController controller;
-    private double canCoderOffset;
-    private double coefficient;
+    private final CANSparkMax rotationalMotor;  // The motor responsible for rotating the module.
+    private final CANSparkMax movementMotor;    // The motor responsible for creating movement in the module.
+    private final CANCoder rotationalEncoder;   // Cancoder responsible for tracking the angle of the module.
+
+    private final PIDController controller;
+    private final double canCoderOffset;
+    private final double coefficient;
 
     public SwerveModule(int movementMotorID, int rotationalMotorID, int canCoderID, double canCoderOffset, double coefficient) {
+        this.canCoderOffset = canCoderOffset;
+        this.coefficient = coefficient;
+
         rotationalMotor = new CANSparkMax(rotationalMotorID, MotorType.kBrushless);
         rotationalMotor.setInverted(false);
         
@@ -34,19 +40,15 @@ public class SwerveModule {
         movementMotor.setIdleMode(IdleMode.kBrake);
 
         rotationalEncoder = new CANCoder(canCoderID);
+
         controller = new PIDController(PID_P, PID_I, PID_D);
         controller.enableContinuousInput(0.0, 360.0);
-        this.canCoderOffset = canCoderOffset;
-
-        controller.setTolerance(0.5); // 0.5 degrees, maybe change this 
-        rotationalEncoder.setPosition(0.0);
-
-        this.coefficient = coefficient;
+        controller.setTolerance(0.5); // 0.5 degrees, maybe change this later 
     }
 
     /**
      * Applies the given movement vector to the swerve module.
-     * @param speed Desired velocity in meters per second.
+     * @param speed Speed in native motor speed units, -1.0 to 1.0.
      * @param rotation Rotation in degrees.
      */
     public void setMovementVector(double rotation, double speed) {
@@ -72,6 +74,7 @@ public class SwerveModule {
 
         controller.setP(PID_P);
     }
+
     public void addToI(double increment) {
         PID_I += increment;
 
@@ -82,6 +85,7 @@ public class SwerveModule {
 
         controller.setI(PID_I);
     }
+
     public void addToD(double increment) {
         PID_D += increment;
         
@@ -92,7 +96,8 @@ public class SwerveModule {
 
         controller.setD(PID_D);
     }
-    public void resetPos() {
+
+    public void resetEncoderPosition() {
         rotationalEncoder.setPosition(0.0);
     }
 }
