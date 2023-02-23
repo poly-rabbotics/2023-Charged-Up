@@ -69,7 +69,7 @@ public class Robot extends TimedRobot {
         if (speed < 0.15)
             speed = 0.0;
         
-        // Cude it for a bit of a better response curve.
+        // Cube it for a bit of a better response curve.
         speed = speed * speed * speed;
 
         SwerveDrive.run(leftX, leftY, testController.getRightX(), speed);
