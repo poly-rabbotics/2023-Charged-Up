@@ -68,6 +68,24 @@ public class SwerveDrive {
     }
 
     /**
+     * Runs swerve, behavior changes based on the drive's mode. Derives speed
+     * from directional inputs.
+     * @param directionalX The X axis of the directional control, between 1 and -1
+     * @param directionalY The Y axis of the directional control, between 1 and -1.
+     * @param turn A value between 1 and -1 that determines the turning angle.
+     */
+    public static void run(double directionalX, double directionalY, double turn) {
+        double speed = Math.sqrt(directionalX*directionalX + directionalY*directionalY);
+        
+        if (speed < 0.15)
+            speed = 0.0;
+
+        speed = speed * speed * speed;
+
+        run(directionalX, directionalY, turn, Math.sqrt(directionalX*directionalX + directionalY*directionalY));
+    }
+
+    /**
      * Runs swerve, behavior changes based on the drive's mode.
      * @param directionalX The X axis of the directional control, between 1 and -1
      * @param directionalY The Y axis of the directional control, between 1 and -1.

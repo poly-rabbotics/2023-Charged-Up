@@ -62,17 +62,7 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        double leftX = testController.getLeftX();
-        double leftY = testController.getLeftY();
-        double speed = Math.sqrt(leftX*leftX + leftY*leftY);
-        
-        if (speed < 0.15)
-            speed = 0.0;
-        
-        // Cube it for a bit of a better response curve.
-        speed = speed * speed * speed;
-
-        SwerveDrive.run(leftX, leftY, testController.getRightX(), speed);
+        SwerveDrive.run(testController.getLeftX(), testController.getLeftY(), testController.getRightX());
 
         // Left stick changes between headless and relative control modes.
         if (testController.getLeftStickButtonReleased()) {
