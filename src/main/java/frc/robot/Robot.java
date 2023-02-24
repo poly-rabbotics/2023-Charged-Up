@@ -105,7 +105,18 @@ public class Robot extends TimedRobot {
         }
 
         //RUN THE INTAKE MECHANISM
-        Intake.run(controllerOne.getPOV(), controllerTwo.getPOV(), controllerOne.getRightTriggerAxis(), controllerOne.getLeftTriggerAxis(), controllerTwo.getRightTriggerAxis(), controllerTwo.getLeftTriggerAxis(), controllerTwo.getXButtonPressed()); 
+        Intake.run(
+            controllerOne.getPOV(), 
+            controllerTwo.getPOV(),
+            
+            controllerOne.getRightTriggerAxis(), 
+            controllerOne.getLeftTriggerAxis(), 
+            controllerTwo.getRightTriggerAxis(), 
+            controllerTwo.getLeftTriggerAxis(),
+
+            controllerOne.getXButtonReleased() || controllerTwo.getXButtonReleased(), 
+            controllerOne.getYButtonReleased() || controllerTwo.getYButtonReleased()
+        ); 
     }
 
     /** This function is called once when the robot is disabled. */

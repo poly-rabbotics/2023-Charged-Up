@@ -3,6 +3,7 @@ package frc.robot.systems;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Limelight;
 import frc.robot.subsystems.*;
 
 public class Intake {
@@ -18,12 +19,13 @@ public class Intake {
     private static final double ROLLER_DEADZONE = 0.3;
 
     private double rackMotorSpeed;
+    private boolean isAutoAligning = false;
 
-    private Compressor comp;
-    private static Rack rack;
-    private static Pivot pivot;
-    private static Roller roller;
-    private static Claw claw;
+    private final Compressor compressor;
+    private final Rack rack;
+    private final Pivot pivot;
+    private final Roller roller;
+    private final Claw claw;
 
     private SolenoidState clawState;
     private SolenoidState pivotState;
@@ -31,8 +33,8 @@ public class Intake {
     private static Intake instance = new Intake();
 
     public Intake() {
-        comp = new Compressor(1, PneumaticsModuleType.CTREPCM);
-        comp.enableDigital();
+        compressor = new Compressor(1, PneumaticsModuleType.CTREPCM);
+        compressor.enableDigital();
 
         //UNCOMMENT LATER
         roller = new Roller(ROLLER_ID);
@@ -58,7 +60,23 @@ public class Intake {
      * @param clawButton - The button to extend/retract the claw
      * @param pivotButton - The button to extend/retract the pivot
      */
-    public static void run(int dPadDirectionOne, int dPadDirectionTwo, double rightTriggerOne, double leftTriggerOne, double rightTriggerTwo, double leftTriggerTwo, boolean clawToggle) {
+    public static void run(int dPadDirectionOne, int dPadDirectionTwo, double rightTriggerOne, double leftTriggerOne, double rightTriggerTwo, double leftTriggerTwo, boolean clawToggle, boolean autoAlignToggle) {
+        if (autoAlignToggle) {
+            instance.isAutoAligning = !instance.isAutoAligning;
+        }
+
+        if (instance.isAutoAligning) {
+            double xOffset = Limelight.getDegreesOffsetX();
+
+            if (xOffset > 0.0) {
+                dPadDirectionOne = dPadDirectionTwo = 90;
+            } else if (xOffset < 0.0) {
+                dPadDirectionOne = dPadDirectionTwo = 270;
+            } else {
+                dPadDirectionOne = dPadDirectionTwo = 0;
+            }
+        }
+
         if(Math.max(rightTriggerOne, rightTriggerTwo) > ROLLER_DEADZONE ) {
             runRoller(Math.max(rightTriggerOne, rightTriggerTwo));
         } else if(Math.max(leftTriggerOne, leftTriggerTwo) > ROLLER_DEADZONE) {
@@ -81,7 +99,7 @@ public class Intake {
     private static void runRack(int dPadDirectionOne, int dPadDirectionTwo) {
         //Cancels out switching pivot if the two dpads are facing opposite directions
         if(Math.abs(dPadDirectionOne - dPadDirectionTwo) == 180) {
-            rack.setSpeed(0);
+            instance.rack.setSpeed(0);
             return;
         }
 
@@ -93,7 +111,7 @@ public class Intake {
             instance.rackMotorSpeed = 0;
         }
 
-        rack.setSpeed(instance.rackMotorSpeed);
+        instance.rack.setSpeed(instance.rackMotorSpeed);
     }
 
     /**
@@ -107,7 +125,7 @@ public class Intake {
             rollerSpeed = 0;
         }
 
-        roller.setSpeed(rollerSpeed);
+        instance.roller.setSpeed(rollerSpeed);
     }
 
     /**
@@ -124,9 +142,9 @@ public class Intake {
         } 
 
         if(instance.clawState == SolenoidState.OPEN) {
-            claw.open();
+            instance.claw.open();
         } else {
-            claw.close();
+            instance.claw.close();
         }
     }  
     
@@ -148,9 +166,9 @@ public class Intake {
         }
 
         if(instance.pivotState == SolenoidState.DOWN) {
-            pivot.down();
+            instance.pivot.down();
         } else {
-            pivot.up();
+            instance.pivot.up();
         }
     }
 
@@ -163,5 +181,4 @@ public class Intake {
         SmartDashboard.putString("Pivot State", instance.pivotState.toString());
         SmartDashboard.putNumber("Rack Speed", instance.rackMotorSpeed);
     }
-    
 }

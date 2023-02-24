@@ -1,11 +1,6 @@
 package frc.robot; 
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-import java.util.concurrent.*;
-
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -35,8 +30,6 @@ public class Limelight implements Runnable {
 	//IN BROWSER, while connected to robot,
 	//TRY limelight.local:5801
 
-	private ScheduledExecutorService executorService;
-
 	private enum LimelightProfile {
 		CUBE,
 		CONE,
@@ -50,10 +43,7 @@ public class Limelight implements Runnable {
 	 * Creates a new instance of {@link Limelight}. There may only be one instance of this class and more than one warrants
 	 * undocumented behavior or failure.
 	 */
-	private Limelight() {
-		executorService = Executors.newSingleThreadScheduledExecutor();
-		//executorService.scheduleAtFixedRate(instance, 0, 20, TimeUnit.MILLISECONDS);
-	}
+	private Limelight() {}
 
 	/**
 	 * Gets the X position of this {@link Limelight}'s target.
