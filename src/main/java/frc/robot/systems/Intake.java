@@ -26,8 +26,8 @@ public class Intake {
     private static Roller roller;
     private static Claw claw;
 
-    private SolenoidState clawState = SolenoidState.RETRACTED;
-    private SolenoidState pivotState = SolenoidState.RETRACTED;
+    private SolenoidState clawState;
+    private SolenoidState pivotState;
 
     private static Intake instance = new Intake();
 
@@ -43,13 +43,13 @@ public class Intake {
     }
 
     private enum SolenoidState {
-        EXTENDED, RETRACTED
+        OPEN, CLOSED, UP, DOWN
     }
 
     public static void init() {
         instance.rackMotorSpeed = 0;
-        instance.pivotState = SolenoidState.EXTENDED;
-        instance.clawState = SolenoidState.RETRACTED;
+        instance.pivotState = SolenoidState.UP;
+        instance.clawState = SolenoidState.OPEN;
     }
 
     /**
@@ -104,17 +104,17 @@ public class Intake {
      */
     private static void runClaw(boolean switchClawState) {
         if(switchClawState) {
-            if(instance.clawState == SolenoidState.RETRACTED) {
-                instance.clawState = SolenoidState.EXTENDED;
+            if(instance.clawState == SolenoidState.OPEN) {
+                instance.clawState = SolenoidState.CLOSED;
         } else {
-                instance.clawState = SolenoidState.RETRACTED;
+                instance.clawState = SolenoidState.OPEN;
             }
         } 
 
-        if(instance.clawState == SolenoidState.RETRACTED) {
-            claw.setClaw(Value.kForward);
+        if(instance.clawState == SolenoidState.OPEN) {
+            claw.open();
         } else {
-            claw.setClaw(Value.kReverse);
+            claw.close();
         }
     }  
     
@@ -124,17 +124,17 @@ public class Intake {
      */
     private static void runPivot(boolean switchPivotState) {
         if(switchPivotState) {
-            if(instance.pivotState == SolenoidState.RETRACTED) {
-                instance.pivotState = SolenoidState.EXTENDED;
+            if(instance.pivotState == SolenoidState.UP) {
+                instance.pivotState = SolenoidState.DOWN;
             } else {
-                instance.pivotState = SolenoidState.RETRACTED;
+                instance.pivotState = SolenoidState.UP;
             }
         }
 
-        if(instance.pivotState == SolenoidState.RETRACTED) {
-            pivot.setPivot(Value.kForward);
+        if(instance.pivotState == SolenoidState.DOWN) {
+            pivot.down();
         } else {
-            pivot.setPivot(Value.kReverse);
+            pivot.up();
         }
     }
 

@@ -3,8 +3,7 @@ package frc.robot.Subsystems;
 import edu.wpi.first.wpilibj.motorcontrol.PWMTalonSRX;
 
 public class Roller {
-    PWMTalonSRX rollerMotor;
-    PWMTalonSRX leftRollerMotor;
+    private final PWMTalonSRX rollerMotor;
 
     public Roller(int rightRollerID) {
         rollerMotor = new PWMTalonSRX(rightRollerID);
