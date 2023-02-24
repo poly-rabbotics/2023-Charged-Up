@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * Class to control the fourbar mechanism 
  */
 public class Fourbar {
-    
     /* Not currently utilized, may be implemented in the future
     private static final int FOURBAR_UPPER_LIMIT = 80;
     private static final int FOURBAR_LOWER_LIMIT = -40; 
@@ -24,28 +23,28 @@ public class Fourbar {
     private static final double MID_SETPOINT = 35;
     private static final double TOP_SETPOINT = 65;
     
+    //PID constants
+    private static final double P = 0.1;
+    private static final double I = 0.0;
+    private static final double D = 1;
+    private static final double F = 0.0;
+
+    //self-initializes the class
+    private static final Fourbar instance = new Fourbar();
+
     //Motor and controller
-    private CANSparkMax fourbarMotor;
-    private RelativeEncoder relativeEncoder;
-    private SparkMaxPIDController pidController;
+    private final CANSparkMax fourbarMotor;
+    private final RelativeEncoder relativeEncoder;
+    private final SparkMaxPIDController pidController;
 
     //variables
     private double targetSetpoint;
     private ControlMode controlMode;
     private Setpoint setpoint;
     
-    //PID constants
-    private static final double P = 0.1;
-    private static final double I = 0.0;
-    private static final double D = 1;
-    private static final double F = 0.0;
-    
-    //self-initializes the class
-    private static Fourbar instance = new Fourbar();
-    
     /**
-    * Sets up fourbar motor and Xbox controller, configures PID
-    */
+     * Sets up fourbar motor and Xbox controller, configures PID
+     */
     public Fourbar(){
         fourbarMotor = new CANSparkMax(MOTOR_ID, MotorType.kBrushless);
         relativeEncoder = fourbarMotor.getEncoder();
@@ -71,8 +70,8 @@ public class Fourbar {
     }
     
     /**
-    * The method to be run in teleopInit to reset variables
-    */
+     * The method to be run in teleopInit to reset variables
+     */
     public static void init() {
         instance.controlMode = ControlMode.MANUAL;
         instance.setpoint = Setpoint.BOTTOM;
@@ -87,7 +86,6 @@ public class Fourbar {
      * @param changeSetpoint - cycles through the top, mid, and bottom setpoints
      */
     public static void run(double speed, boolean switchControlMode, boolean setPositionZero, boolean changeSetpoint) {
-        
         //sets current encoder position to 0 if menu button is pressed
         setEncoderZero(setPositionZero);
 
@@ -114,8 +112,8 @@ public class Fourbar {
     }
     
     /**
-    * Allows for cycling between setpoints using PID
-    */
+     * Allows for cycling between setpoints using PID
+     */
     private static void pidControl(){
         //set elevator PID position to target setpoint
         instance.pidController.setReference(instance.targetSetpoint, CANSparkMax.ControlType.kPosition);
@@ -125,7 +123,7 @@ public class Fourbar {
      * Allows for manual control of motor output using the right joystick
      */
     private static void manualControl(double speed){
-        if(Math.abs(speed) < MANUAL_DEADZONE) { //if joystick is inside of deadzone
+        if (Math.abs(speed) < MANUAL_DEADZONE) { //if joystick is inside of deadzone
             speed = 0;
         }
 
@@ -136,14 +134,13 @@ public class Fourbar {
      * Cycles through each setpoint
      */
     private static void cycleTargetSetpoint(boolean setPositionZero) {
-
         //set setpoint enum
-        if(setPositionZero) {
-            if(instance.setpoint == Setpoint.BOTTOM) {
+        if (setPositionZero) {
+            if (instance.setpoint == Setpoint.BOTTOM) {
                 instance.setpoint = Setpoint.MID;
-            } else if(instance.setpoint == Setpoint.MID) {
+            } else if (instance.setpoint == Setpoint.MID) {
                 instance.setpoint = Setpoint.TOP;
-            } else if(instance.setpoint == Setpoint.TOP) {
+            } else if (instance.setpoint == Setpoint.TOP) {
                 instance.setpoint = Setpoint.BOTTOM;
             }
         }
