@@ -24,35 +24,44 @@ public class Limelight implements Runnable {
 	private static final NetworkTableEntry tx = table.getEntry("tx");
 	private static final NetworkTableEntry ty = table.getEntry("ty");
 	private static final NetworkTableEntry ta = table.getEntry("ta");
-	//public static final Servo servo = RobotMap.limelightServo;
+	private static final NetworkTableEntry tv = table.getEntry("tv");
 
-	private double x, y, area;
-	private int limelightProfile;
+	private double x, y, area, v;
+	private int limelightProfileNum;
+	private LimelightProfile limelightProfile;
 
-    private int dial;
+    private int dial; //UPDATE THESE FROM MECHANISMS JOYSTICK
     private int aprilTagDial;
 
 	//HOW TO CONNECT TO LIMELIGHT INTERFACE:
 	//IN BROWSER, while connected to robot,
 	//TRY limelight.local:5801
 
+	private enum LimelightProfile {
+		CUBE,
+		CONE,
+		PEG,
+		ATAG1, ATAG2, ATAG3, ATAG4, ATAG5, ATAG6, ATAG7, ATAG8
+	}
+
+	private static Limelight instance = new Limelight();
 	/**
 	 * Creates a new instance of {@link Limelight}. There may only be one instance of this class and more than one warrants
 	 * undocumented behavior or failure.
 	 */
-	public Limelight() { }
+	private Limelight() { }
 
 	/**
 	 * Gets the X position of this {@link Limelight}'s target.
 	 */
-	public double getX() {
+	public double getDegreesOffsetX() {
 		return x;
 	}
 
 	/**
 	 * Gets the Y position of this {@link Limelight}'s target.
 	 */
-	public double getY() {
+	public double getDegreesOffsetY() {
 		return y;
 	}
 
@@ -61,6 +70,22 @@ public class Limelight implements Runnable {
 	 */
 	public double getArea() {
 		return area;
+	}
+
+	/**
+	 * @return true if limelight has a target in the current pipeline 
+	 */
+	public boolean getTargetFound() {
+		SmartDashboard.putBoolean("Tv?",table.containsKey("tv"));
+		v = tv.getDouble(0);
+		return (v == 0.0) ? false : true;
+	}
+
+	/**
+	 * @return Current LimelightProfile 
+	 */
+	public LimelightProfile getLimelightProfile() {
+		return limelightProfile;
 	}
 
 	/**
@@ -84,32 +109,59 @@ public class Limelight implements Runnable {
 	private void updateTrackingMode() {
 
         if(dial <= 2) {
-			limelightProfile = dial;
+			limelightProfileNum = dial;
 		} else {
-			limelightProfile = aprilTagDial;
+			limelightProfileNum = aprilTagDial;
 		}
 
-		switchNetworkTablePipeline(limelightProfile);
-		SmartDashboard.putNumber("Limelight Profile", limelightProfile);
+		switch (limelightProfileNum) {
+			case 0:
+				limelightProfile = LimelightProfile.CUBE;
+				break;
+			case 1:
+				limelightProfile = LimelightProfile.CONE;
+				break;
+			case 2:
+				limelightProfile = LimelightProfile.PEG;
+				break;
+			case 3:
+				limelightProfile = LimelightProfile.ATAG1;
+				break;
+			case 4:
+				limelightProfile = LimelightProfile.ATAG2;
+				break;
+			case 5:
+				limelightProfile = LimelightProfile.ATAG3;
+				break;
+			case 6:
+				limelightProfile = LimelightProfile.ATAG4;
+				break;
+			case 7:
+				limelightProfile = LimelightProfile.ATAG5;
+				break;
+			case 8:
+				limelightProfile = LimelightProfile.ATAG6;
+				break;
+			case 9:
+				limelightProfile = LimelightProfile.ATAG7;
+				break;
+			case 10:
+				limelightProfile = LimelightProfile.ATAG8;
+				break;
+		}
+
+		switchNetworkTablePipeline(limelightProfileNum);
+		SmartDashboard.putNumber("Limelight Profile", limelightProfileNum);
 	}
 
-	// Updates servo's position based on limelightProfile.
-	/*private void updateServoPosition() {
-		
-		if (limelightProfile == 2) {
-			//REPLACE THESE SERVO VALUES FOR NEW SERVO
-			servo.setAngle(180); 
-		} else {
-			servo.setAngle(70);
-		} 
-		SmartDashboard.putNumber("limelight servo", servo.getAngle());
-	}*/
+	
 
 	// Updates feild based on network table data.
 	private void retreiveNetworkTableData() {
 		x = tx.getDouble(0.0);
 		y = ty.getDouble(0.0);
 		area = ta.getDouble(0.0);
+		v = tv.getDouble(0.0);
 	}
 
 	/**
@@ -138,23 +190,12 @@ public class Limelight implements Runnable {
 	 */
 	public void run() {
 		updateTrackingMode();
-		//updateServoPosition();
 		retreiveNetworkTableData();
 
 		SmartDashboard.putNumber("LimelightX", x);
 		SmartDashboard.putNumber("LimelightY", y);
 		SmartDashboard.putNumber("LimelightArea", area);
 	}
-
-	/* private boolean getTargetFound() {
-		SmartDashboard.putBoolean("Tv?",table.containsKey("tv"));
-		double v = tv.getDouble(0);
-		if (v == 0.0) {
-			return false;
-		} else {
-			return true;
-		}
-	} */
 
 	/* private void trackingMode() {
 		camMode.setDouble(0);
