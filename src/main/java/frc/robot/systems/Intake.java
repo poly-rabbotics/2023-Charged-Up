@@ -9,8 +9,7 @@ import frc.robot.Subsystems.*;
 public class Intake {
     //ID constants
     private static final int RACK_MOTOR_ID = 11;
-    private static final int LEFT_ROLLER_ID = 0;
-    private static final int RIGHT_ROLLER_ID = 0;
+    private static final int ROLLER_ID = 0;
     private static final int CLAW_FORWARD_CHANNEL = 0;
     private static final int CLAW_REVERSE_CHANNEL = 0;
     private static final int PIVOT_FORWARD_CHANNEL = 5;
@@ -37,7 +36,7 @@ public class Intake {
         comp.enableDigital();
 
         //UNCOMMENT LATER
-        //roller = new Roller(RIGHT_ROLLER_ID, LEFT_ROLLER_ID);
+        //roller = new Roller(ROLLER_ID);
         //claw = new Claw(PneumaticsModuleType.CTREPCM, CLAW_FORWARD_CHANNEL, CLAW_REVERSE_CHANNEL);
         pivot = new Pivot(PneumaticsModuleType.CTREPCM, PIVOT_FORWARD_CHANNEL, PIVOT_REVERSE_CHANNEL);
         rack = new Rack(RACK_MOTOR_ID);

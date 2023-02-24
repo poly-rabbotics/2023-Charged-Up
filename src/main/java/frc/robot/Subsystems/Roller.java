@@ -5,18 +5,14 @@ import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 public class Roller {
-    TalonSRX rightRollerMotor;
+    TalonSRX rollerMotor;
     TalonSRX leftRollerMotor;
 
-    public Roller(int rightRollerID, int leftRollerID) {
-        rightRollerMotor = new TalonSRX(rightRollerID);
-        leftRollerMotor = new TalonSRX(leftRollerID);
+    public Roller(int rightRollerID) {
+        rollerMotor = new TalonSRX(rightRollerID);
     }
 
     public void setSpeed(double speed) {
-        rightRollerMotor.set(ControlMode.PercentOutput, speed);
-
-        leftRollerMotor.follow(rightRollerMotor);
-        leftRollerMotor.setInverted(InvertType.InvertMotorOutput);
+        rollerMotor.set(ControlMode.PercentOutput, speed);
     }
 }
