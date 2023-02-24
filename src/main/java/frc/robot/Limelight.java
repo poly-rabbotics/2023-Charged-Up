@@ -1,23 +1,21 @@
 package frc.robot; 
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import java.util.concurrent.*;
+
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.Servo;
+
 
 //The "eyes" of the robot
 public class Limelight implements Runnable {
-	/* private static double CENTERING_TOLLERANCE = 1.5;
-	private static final NetworkTableEntry tv = table.getEntry("tv");
-	private NetworkTableEntry ledMode;
-	private NetworkTableEntry camMode; 
-	private boolean isTracking = false; */
-
-	/* private static final double LOOP_INTERVAL = 0.010;
-	private static final Timer timer = new Timer();
-	private boolean threadRunning = false; */
+	private static double CENTERING_TOLERANCE = 1.5; 
+	private boolean isTracking = false;
+	public boolean isCentered = false;
 
 	private static final NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
 	private static final NetworkTableEntry pipeline = table.getEntry("pipeline");
@@ -30,12 +28,14 @@ public class Limelight implements Runnable {
 	private int limelightProfileNum;
 	private LimelightProfile limelightProfile;
 
-    private int dial; //UPDATE THESE FROM MECHANISMS JOYSTICK
-    private int aprilTagDial;
+    private int dial = 1; //UPDATE THESE FROM MECHANISMS JOYSTICK
+    private int aprilTagDial = 8;
 
 	//HOW TO CONNECT TO LIMELIGHT INTERFACE:
 	//IN BROWSER, while connected to robot,
 	//TRY limelight.local:5801
+
+	private ScheduledExecutorService executorService;
 
 	private enum LimelightProfile {
 		CUBE,
@@ -44,48 +44,52 @@ public class Limelight implements Runnable {
 		ATAG1, ATAG2, ATAG3, ATAG4, ATAG5, ATAG6, ATAG7, ATAG8
 	}
 
-	private static Limelight instance = new Limelight();
+	public static Limelight instance = new Limelight();
+
 	/**
 	 * Creates a new instance of {@link Limelight}. There may only be one instance of this class and more than one warrants
 	 * undocumented behavior or failure.
 	 */
-	private Limelight() { }
+	private Limelight() {
+		executorService = Executors.newSingleThreadScheduledExecutor();
+		//executorService.scheduleAtFixedRate(instance, 0, 20, TimeUnit.MILLISECONDS);
+	}
 
 	/**
 	 * Gets the X position of this {@link Limelight}'s target.
 	 */
-	public double getDegreesOffsetX() {
-		return x;
+	public static double getDegreesOffsetX() {
+		return instance.x;
 	}
 
 	/**
 	 * Gets the Y position of this {@link Limelight}'s target.
 	 */
-	public double getDegreesOffsetY() {
-		return y;
+	public static double getDegreesOffsetY() {
+		return instance.y;
 	}
 
 	/**
 	 * Gets the area of this {@link Limelight}'s target.
 	 */
-	public double getArea() {
-		return area;
+	public static double getArea() {
+		return instance.area;
 	}
 
 	/**
 	 * @return true if limelight has a target in the current pipeline 
 	 */
-	public boolean getTargetFound() {
+	public static boolean getTargetFound() {
 		SmartDashboard.putBoolean("Tv?",table.containsKey("tv"));
-		v = tv.getDouble(0);
-		return (v == 0.0) ? false : true;
+		instance.v = tv.getDouble(0);
+		return (instance.v == 0.0) ? false : true;
 	}
 
 	/**
 	 * @return Current LimelightProfile 
 	 */
-	public LimelightProfile getLimelightProfile() {
-		return limelightProfile;
+	public static LimelightProfile getLimelightProfile() {
+		return instance.limelightProfile;
 	}
 
 	/**
@@ -154,8 +158,6 @@ public class Limelight implements Runnable {
 		SmartDashboard.putNumber("Limelight Profile", limelightProfileNum);
 	}
 
-	
-
 	// Updates feild based on network table data.
 	private void retreiveNetworkTableData() {
 		x = tx.getDouble(0.0);
@@ -166,28 +168,8 @@ public class Limelight implements Runnable {
 
 	/**
 	 * Updates all feilds and properties of this {@link Limelight}.
-	 * Note that this method blocks the current thread and loops, see <code>runNonBlocking()</code>.
 	 */
-	/* public void run() {
-		while (threadRunning)
-		{
-			timer.reset();
-			timer.start();
-			// Run actual limelight code.
-			runNonBlocking();
-			// Waits for the specified interval to be reached.
-			while (timer.get() < LOOP_INTERVAL) {
-				try {
-					// Wait a millisecond.
-					timer.wait(1);
-				} catch (InterruptedException e) { }
-			}
-		}
-	} */
-
-	/**
-	 * Updates all feilds and properties of this {@link Limelight}.
-	 */
+	@Override
 	public void run() {
 		updateTrackingMode();
 		retreiveNetworkTableData();
@@ -195,6 +177,18 @@ public class Limelight implements Runnable {
 		SmartDashboard.putNumber("LimelightX", x);
 		SmartDashboard.putNumber("LimelightY", y);
 		SmartDashboard.putNumber("LimelightArea", area);
+		SmartDashboard.putBoolean("Target centered?", isCentered);
+
+		if (getTargetFound() && isTracking) {
+			if (x < -CENTERING_TOLERANCE || x > CENTERING_TOLERANCE) {
+				isCentered = false;
+			} else {
+				isCentered = true;
+			}
+		} else {
+			isTracking = false;
+			isCentered = false;
+		}
 	}
 
 	/* private void trackingMode() {
