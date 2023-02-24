@@ -10,8 +10,8 @@ public class Intake {
     //ID constants
     private static final int RACK_MOTOR_ID = 1;
     private static final int ROLLER_ID = 0;
-    private static final int CLAW_FORWARD_CHANNEL = 0;
-    private static final int CLAW_REVERSE_CHANNEL = 0;
+    private static final int CLAW_FORWARD_CHANNEL = 2;
+    private static final int CLAW_REVERSE_CHANNEL = 3;
     private static final int PIVOT_FORWARD_CHANNEL = 4;
     private static final int PIVOT_REVERSE_CHANNEL = 5;
 
@@ -37,7 +37,7 @@ public class Intake {
 
         //UNCOMMENT LATER
         roller = new Roller(ROLLER_ID);
-        //claw = new Claw(PneumaticsModuleType.CTREPCM, CLAW_FORWARD_CHANNEL, CLAW_REVERSE_CHANNEL);
+        claw = new Claw(PneumaticsModuleType.CTREPCM, CLAW_FORWARD_CHANNEL, CLAW_REVERSE_CHANNEL);
         pivot = new Pivot(PIVOT_FORWARD_CHANNEL, PIVOT_REVERSE_CHANNEL);
         rack = new Rack(RACK_MOTOR_ID);
     }
@@ -62,7 +62,7 @@ public class Intake {
     public static void run(int dPadDirection, double rollerSpeed, boolean clawButton, boolean pivotButton) {
         runRack(dPadDirection);
         runRoller(rollerSpeed);
-        //runClaw(clawButton);
+        runClaw(clawButton);
         runPivot(pivotButton);
 
         updateSmartDashboard(rollerSpeed);
@@ -112,9 +112,9 @@ public class Intake {
         } 
 
         if(instance.clawState == SolenoidState.RETRACTED) {
-            //claw.setClaw(Value.kForward);
+            claw.setClaw(Value.kForward);
         } else {
-            //claw.setClaw(Value.kReverse);
+            claw.setClaw(Value.kReverse);
         }
     }  
     
