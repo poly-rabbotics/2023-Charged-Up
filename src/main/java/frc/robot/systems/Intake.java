@@ -8,12 +8,12 @@ import frc.robot.Subsystems.*;
 
 public class Intake {
     //ID constants
-    private static final int RACK_MOTOR_ID = 11;
+    private static final int RACK_MOTOR_ID = 1;
     private static final int ROLLER_ID = 0;
     private static final int CLAW_FORWARD_CHANNEL = 0;
     private static final int CLAW_REVERSE_CHANNEL = 0;
-    private static final int PIVOT_FORWARD_CHANNEL = 5;
-    private static final int PIVOT_REVERSE_CHANNEL = 4;
+    private static final int PIVOT_FORWARD_CHANNEL = 4;
+    private static final int PIVOT_REVERSE_CHANNEL = 5;
 
     //The deadzone for roller joystick control
     private static final double ROLLER_DEADZONE = 0.3;
@@ -38,7 +38,7 @@ public class Intake {
         //UNCOMMENT LATER
         roller = new Roller(ROLLER_ID);
         //claw = new Claw(PneumaticsModuleType.CTREPCM, CLAW_FORWARD_CHANNEL, CLAW_REVERSE_CHANNEL);
-        pivot = new Pivot(PneumaticsModuleType.CTREPCM, PIVOT_FORWARD_CHANNEL, PIVOT_REVERSE_CHANNEL);
+        pivot = new Pivot(PIVOT_FORWARD_CHANNEL, PIVOT_REVERSE_CHANNEL);
         rack = new Rack(RACK_MOTOR_ID);
     }
 
@@ -48,7 +48,7 @@ public class Intake {
 
     public static void init() {
         instance.rackMotorSpeed = 0;
-        instance.clawState = SolenoidState.RETRACTED;
+        instance.pivotState = SolenoidState.EXTENDED;
         instance.clawState = SolenoidState.RETRACTED;
     }
 
@@ -82,9 +82,6 @@ public class Intake {
         }
 
         rack.setSpeed(instance.rackMotorSpeed);
-
-        SmartDashboard.putNumber("Rack Motor Speed", instance.rackMotorSpeed);
-        SmartDashboard.putNumber("POV", dPadDirection);
     }
 
     /**

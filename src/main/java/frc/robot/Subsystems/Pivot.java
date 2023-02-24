@@ -7,8 +7,8 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 public class Pivot {
     private DoubleSolenoid pivotSolenoid;
 
-    public Pivot(PneumaticsModuleType moduleType, int forwardChannel, int reverseChannel) {
-        pivotSolenoid = new DoubleSolenoid(moduleType, forwardChannel, reverseChannel);
+    public Pivot(int forwardChannel, int reverseChannel) {
+        pivotSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, forwardChannel, reverseChannel);
     }
 
     public void setPivot(Value value) {

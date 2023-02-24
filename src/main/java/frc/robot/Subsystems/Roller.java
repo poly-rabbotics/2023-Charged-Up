@@ -1,6 +1,5 @@
 package frc.robot.Subsystems;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import edu.wpi.first.wpilibj.motorcontrol.PWMTalonSRX;
 
 public class Roller {

@@ -1,16 +1,15 @@
 package frc.robot.Subsystems;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import edu.wpi.first.wpilibj.motorcontrol.PWMTalonSRX;
 
 public class Rack {
-    private TalonSRX motor;
+    private PWMTalonSRX motor;
 
     public Rack(int motorID) {
-        motor = new TalonSRX(motorID);
+        motor = new PWMTalonSRX(motorID);
     }
-
+    
     public void setSpeed(double speed) {
-        motor.set(ControlMode.PercentOutput, speed);
+        motor.set(speed);
     }
 }
