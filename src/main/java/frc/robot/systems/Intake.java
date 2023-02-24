@@ -36,7 +36,7 @@ public class Intake {
         comp.enableDigital();
 
         //UNCOMMENT LATER
-        //roller = new Roller(ROLLER_ID);
+        roller = new Roller(ROLLER_ID);
         //claw = new Claw(PneumaticsModuleType.CTREPCM, CLAW_FORWARD_CHANNEL, CLAW_REVERSE_CHANNEL);
         pivot = new Pivot(PneumaticsModuleType.CTREPCM, PIVOT_FORWARD_CHANNEL, PIVOT_REVERSE_CHANNEL);
         rack = new Rack(RACK_MOTOR_ID);
@@ -61,7 +61,7 @@ public class Intake {
      */
     public static void run(int dPadDirection, double rollerSpeed, boolean clawButton, boolean pivotButton) {
         runRack(dPadDirection);
-        //runRoller(rollerSpeed);
+        runRoller(rollerSpeed);
         //runClaw(clawButton);
         runPivot(pivotButton);
 
@@ -98,7 +98,7 @@ public class Intake {
             rollerSpeed = 0;
         }
 
-        //roller.setSpeed(rollerSpeed);
+        roller.setSpeed(rollerSpeed);
     }
 
     /**
