@@ -2,9 +2,8 @@ package frc.robot.systems;
 
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Subsystems.*;
+import frc.robot.subsystems.*;
 
 public class Intake {
     //ID constants
@@ -59,23 +58,36 @@ public class Intake {
      * @param clawButton - The button to extend/retract the claw
      * @param pivotButton - The button to extend/retract the pivot
      */
-    public static void run(int dPadDirection, double rollerSpeed, boolean clawButton, boolean pivotButton) {
-        runRack(dPadDirection);
-        runRoller(rollerSpeed);
-        runClaw(clawButton);
-        runPivot(pivotButton);
+    public static void run(int dPadDirectionOne, int dPadDirectionTwo, double rightTriggerOne, double leftTriggerOne, double rightTriggerTwo, double leftTriggerTwo, boolean clawToggle) {
+        if(Math.max(rightTriggerOne, rightTriggerTwo) > ROLLER_DEADZONE ) {
+            runRoller(Math.max(rightTriggerOne, rightTriggerTwo));
+        } else if(Math.max(leftTriggerOne, leftTriggerTwo) > ROLLER_DEADZONE) {
+            runRoller(-Math.max(leftTriggerOne, leftTriggerTwo));
+        } else {
+            runRoller(0);
+        }
 
-        updateSmartDashboard(rollerSpeed);
+        runRack(dPadDirectionOne, dPadDirectionTwo);
+        runClaw(clawToggle);
+        runPivot(dPadDirectionOne, dPadDirectionTwo);
+
+        updateSmartDashboard();
     }
 
     /**
      * Runs the rack motor, operated with DPAD left/right
      * @param dPadDirection the direction of the DPAD
      */
-    private static void runRack(int dPadDirection) {
-        if(dPadDirection == 90) {
+    private static void runRack(int dPadDirectionOne, int dPadDirectionTwo) {
+        //Cancels out switching pivot if the two dpads are facing opposite directions
+        if(Math.abs(dPadDirectionOne - dPadDirectionTwo) == 180) {
+            rack.setSpeed(0);
+            return;
+        }
+
+        if(dPadDirectionOne == 90 || dPadDirectionTwo == 90) {
             instance.rackMotorSpeed = 0.8;
-        } else if(dPadDirection == 270) {
+        } else if(dPadDirectionOne == 270 || dPadDirectionTwo == 270) {
             instance.rackMotorSpeed = -0.8;
         } else {
             instance.rackMotorSpeed = 0;
@@ -122,13 +134,17 @@ public class Intake {
      * Extends or retracts the pivot, toggled with button press
      * @param switchPivotState
      */
-    private static void runPivot(boolean switchPivotState) {
-        if(switchPivotState) {
-            if(instance.pivotState == SolenoidState.UP) {
-                instance.pivotState = SolenoidState.DOWN;
-            } else {
-                instance.pivotState = SolenoidState.UP;
-            }
+    private static void runPivot(int dPadDirectionOne, int dPadDirectionTwo) {
+
+        //Cancels out switching pivot if the two dpads are facing opposite directions
+        if(Math.abs(dPadDirectionOne - dPadDirectionTwo) == 180) {
+            return;
+        } 
+
+        if(dPadDirectionOne == 0 || dPadDirectionTwo == 0) {
+            instance.pivotState = SolenoidState.UP;
+        } else if(dPadDirectionOne == 180 || dPadDirectionTwo == 180) {
+            instance.pivotState = SolenoidState.DOWN;
         }
 
         if(instance.pivotState == SolenoidState.DOWN) {
@@ -142,11 +158,10 @@ public class Intake {
      * Updates Smart Dashboard with important variables
      * @param rollerSpeed
      */
-    private static void updateSmartDashboard(double rollerSpeed) {
+    private static void updateSmartDashboard() {
         SmartDashboard.putString("Claw State", instance.clawState.toString());
         SmartDashboard.putString("Pivot State", instance.pivotState.toString());
         SmartDashboard.putNumber("Rack Speed", instance.rackMotorSpeed);
-        SmartDashboard.putNumber("Roller Speed", rollerSpeed);
     }
     
 }

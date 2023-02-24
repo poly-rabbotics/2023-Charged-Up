@@ -18,8 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * Manages the robot's pigeon.
  */
 public class Pigeon {
-    private static final int PIGEON_CAN_ID = 20;
-    private static final Pigeon instance = new Pigeon(PIGEON_CAN_ID);
+    private static Pigeon instance;// = new Pigeon(PIGEON_CAN_ID);
 
     private final Pigeon2 pigeon;
     private final ScheduledExecutorService changeRateThread;

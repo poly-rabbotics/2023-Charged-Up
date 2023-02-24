@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.subsystems.SwerveMode;
+import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
 
@@ -17,7 +18,8 @@ import frc.robot.systems.SwerveDrive;
  * project.
  */
 public class Robot extends TimedRobot {
-    public static XboxController controllerOne = new XboxController(1);
+    public static XboxController controllerOne = new XboxController(0);
+    public static XboxController controllerTwo = new XboxController(1);
     
     /**
      * This function is run when the robot is first started up and should be used for any
@@ -57,6 +59,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         Pigeon.setRelativeForward();
+        Intake.init();
     }
 
     /** This function is called periodically during operator control. */
@@ -100,6 +103,9 @@ public class Robot extends TimedRobot {
         if (controllerOne.getStartButtonReleased()) {
             SwerveDrive.resetEncoderPositions();
         }
+
+        //RUN THE INTAKE MECHANISM
+        Intake.run(controllerOne.getPOV(), controllerTwo.getPOV(), controllerOne.getRightTriggerAxis(), controllerOne.getLeftTriggerAxis(), controllerTwo.getRightTriggerAxis(), controllerTwo.getLeftTriggerAxis(), controllerTwo.getXButtonPressed()); 
     }
 
     /** This function is called once when the robot is disabled. */
