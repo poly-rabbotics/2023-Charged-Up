@@ -6,10 +6,10 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.systems.Elevator;
-import frc.robot.systems.Fourbar;
+import frc.robot.subsystems.SwerveMode;
+import frc.robot.systems.Intake;
+import frc.robot.systems.Pigeon;
+import frc.robot.systems.SwerveDrive;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -18,22 +18,15 @@ import frc.robot.systems.Fourbar;
  * project.
  */
 public class Robot extends TimedRobot {
-    private static final String kDefaultAuto = "Default";
-    private static final String kCustomAuto = "My Auto";
-    private String m_autoSelected;
-    private final SendableChooser<String> m_chooser = new SendableChooser<>();
-    private final XboxController joystick = new XboxController(0);
-
+    public static XboxController controllerOne = new XboxController(0);
+    public static XboxController controllerTwo = new XboxController(1);
+    
     /**
      * This function is run when the robot is first started up and should be used for any
      * initialization code.
      */
     @Override
-    public void robotInit() {
-        m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-        m_chooser.addOption("My Auto", kCustomAuto);
-        SmartDashboard.putData("Auto choices", m_chooser);
-    }
+    public void robotInit() {}
 
     /**
      * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -56,40 +49,63 @@ public class Robot extends TimedRobot {
      * chooser code above as well.
      */
     @Override
-    public void autonomousInit() {
-        m_autoSelected = m_chooser.getSelected();
-        // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-        System.out.println("Auto selected: " + m_autoSelected);
-    }
+    public void autonomousInit() {}
 
     /** This function is called periodically during autonomous. */
     @Override
-    public void autonomousPeriodic() {
-        switch (m_autoSelected) {
-            case kCustomAuto:
-                // Put custom auto code here
-                break;
-            case kDefaultAuto:
-            default:
-                // Put default auto code here
-                break;
-        }
-    }
-
-    boolean test = false;
+    public void autonomousPeriodic() {}
 
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        Fourbar.init();
-        Elevator.init();
-    } 
+        Pigeon.setRelativeForward();
+        Intake.init();
+    }
 
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        Fourbar.run(joystick.getRightY(), false, false, false);
-        Elevator.run(joystick.getLeftY(), joystick.getRightBumperPressed(), joystick.getStartButton(), joystick.getAButton(), joystick.getBButton(), joystick.getXButtonPressed(), joystick.getYButton(), joystick.getPOV());
+        SwerveDrive.run(controllerOne.getLeftX(), controllerOne.getLeftY(), controllerOne.getRightX());
+
+        // Left stick changes between headless and relative control modes.
+        if (controllerOne.getLeftStickButtonReleased()) {
+            if (SwerveDrive.getMode() == SwerveMode.Headless) {
+                SwerveDrive.setMode(SwerveMode.Relative);
+            } else {
+                SwerveDrive.setMode(SwerveMode.Headless);
+            }
+        }
+
+        if (controllerOne.getRightBumperReleased()) {
+            SwerveDrive.addToP(0.0001);
+        }
+
+        if (controllerOne.getLeftBumperReleased()) {
+            SwerveDrive.addToP(-0.0001);
+        }
+
+        if (controllerOne.getYButtonReleased()) {
+            SwerveDrive.addToI(0.0000001);
+        }
+
+        if (controllerOne.getAButtonReleased()) {
+            SwerveDrive.addToI(-0.0000001);
+        }
+
+        if (controllerOne.getXButtonReleased()) {
+            SwerveDrive.addToD(0.0000001);
+        }
+
+        if (controllerOne.getBButtonReleased()) {
+            SwerveDrive.addToD(-0.0000001);
+        }
+
+        if (controllerOne.getStartButtonReleased()) {
+            SwerveDrive.resetEncoderPositions();
+        }
+
+        //RUN THE INTAKE MECHANISM
+        Intake.run(controllerOne.getPOV(), controllerTwo.getPOV(), controllerOne.getRightTriggerAxis(), controllerOne.getLeftTriggerAxis(), controllerTwo.getRightTriggerAxis(), controllerTwo.getLeftTriggerAxis(), controllerTwo.getXButtonPressed()); 
     }
 
     /** This function is called once when the robot is disabled. */
