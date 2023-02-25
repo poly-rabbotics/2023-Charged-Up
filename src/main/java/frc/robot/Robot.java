@@ -49,7 +49,9 @@ public class Robot extends TimedRobot {
      * chooser code above as well.
      */
     @Override
-    public void autonomousInit() {}
+    public void autonomousInit() {
+        Pigeon.setRelativeForward();
+    }
 
     /** This function is called periodically during autonomous. */
     @Override
@@ -58,7 +60,6 @@ public class Robot extends TimedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        Pigeon.setRelativeForward();
         Intake.init();
     }
 
@@ -84,28 +85,20 @@ public class Robot extends TimedRobot {
             SwerveDrive.addToP(-0.0001);
         }
 
-        if (controllerOne.getYButtonReleased()) {
-            SwerveDrive.addToI(0.0000001);
-        }
-
-        if (controllerOne.getAButtonReleased()) {
-            SwerveDrive.addToI(-0.0000001);
-        }
-
-        if (controllerOne.getXButtonReleased()) {
-            SwerveDrive.addToD(0.0000001);
-        }
-
-        if (controllerOne.getBButtonReleased()) {
-            SwerveDrive.addToD(-0.0000001);
-        }
-
         if (controllerOne.getStartButtonReleased()) {
             SwerveDrive.resetEncoderPositions();
         }
 
         //RUN THE INTAKE MECHANISM
-        Intake.run(controllerOne.getPOV(), controllerTwo.getPOV(), controllerOne.getRightTriggerAxis(), controllerOne.getLeftTriggerAxis(), controllerTwo.getRightTriggerAxis(), controllerTwo.getLeftTriggerAxis(), controllerTwo.getXButtonPressed()); 
+        Intake.run(
+            controllerOne.getPOV(), 
+            controllerTwo.getPOV(), 
+            controllerOne.getRightTriggerAxis(), 
+            controllerOne.getLeftTriggerAxis(), 
+            controllerTwo.getRightTriggerAxis(), 
+            controllerTwo.getLeftTriggerAxis(), 
+            controllerOne.getXButtonReleased() || controllerTwo.getXButtonReleased()
+        );
     }
 
     /** This function is called once when the robot is disabled. */
