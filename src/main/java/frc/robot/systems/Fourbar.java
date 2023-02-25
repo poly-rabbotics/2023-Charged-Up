@@ -49,7 +49,6 @@ public class Fourbar {
         fourbarMotor = new CANSparkMax(MOTOR_ID, MotorType.kBrushless);
         relativeEncoder = fourbarMotor.getEncoder();
         pidController = fourbarMotor.getPIDController();
-        fourbarMotor.setIdleMode(IdleMode.kBrake);
         
         pidController.setP(P);
         pidController.setI(I);
@@ -87,9 +86,9 @@ public class Fourbar {
      */
     public static void run(double speed, boolean switchControlMode, boolean setPositionZero, boolean changeSetpoint) {
         //sets current encoder position to 0 if menu button is pressed
-        setEncoderZero(setPositionZero);
+        //setEncoderZero(setPositionZero);
 
-        cycleTargetSetpoint(setPositionZero);
+        //cycleTargetSetpoint(setPositionZero);
 
         //switches between control modes
         if(switchControlMode) {
