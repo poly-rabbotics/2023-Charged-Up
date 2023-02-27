@@ -105,6 +105,9 @@ public class SwerveDrive {
             directionAngle = instance.currentDirection;
         }
 
+        if (Math.abs(speed) < 0.15)
+            speed = 0;
+
         // Turn, since its either turning or not, doesnt change the angle on a 
         // scale, so turning less that 0.5 wont turn at all. When turning 
         // however the turn value is the motor's speed.

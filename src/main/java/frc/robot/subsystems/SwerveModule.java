@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * Class for managing and manipulating a swerve module. 
  */
 public class SwerveModule {
-    private static double PID_P = 0.000001;
+    private static double PID_P = 0.005301;
     private static double PID_I = 0;
     private static double PID_D = 0;
 

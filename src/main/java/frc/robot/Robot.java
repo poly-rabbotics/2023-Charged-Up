@@ -7,6 +7,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.subsystems.SwerveMode;
+import frc.robot.systems.Elevator;
+import frc.robot.systems.Fourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
@@ -50,7 +52,6 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void autonomousInit() {
-        Pigeon.setRelativeForward();
     }
 
     /** This function is called periodically during autonomous. */
@@ -61,6 +62,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         Intake.init();
+        Pigeon.setRelativeForward();
     }
 
     /** This function is called periodically during operator control. */
@@ -77,19 +79,6 @@ public class Robot extends TimedRobot {
             }
         }
 
-        if (controllerOne.getRightBumperReleased()) {
-            SwerveDrive.addToP(0.0001);
-        }
-
-        if (controllerOne.getLeftBumperReleased()) {
-            SwerveDrive.addToP(-0.0001);
-        }
-
-        if (controllerOne.getStartButtonReleased()) {
-            SwerveDrive.resetEncoderPositions();
-        }
-
-        //RUN THE INTAKE MECHANISM
         Intake.run(
             controllerOne.getPOV(), 
             controllerTwo.getPOV(), 
@@ -99,6 +88,9 @@ public class Robot extends TimedRobot {
             controllerTwo.getLeftTriggerAxis(), 
             controllerOne.getXButtonReleased() || controllerTwo.getXButtonReleased()
         );
+
+        //Fourbar.run(controllerTwo.getRightY(), false, false, false);
+        //Elevator.run(controllerTwo.getLeftY(), false, false, false, false, false, false, 0);
     }
 
     /** This function is called once when the robot is disabled. */
