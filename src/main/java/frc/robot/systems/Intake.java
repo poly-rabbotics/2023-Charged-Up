@@ -7,7 +7,6 @@ import frc.robot.subsystems.*;
 
 public class Intake {
     //ID constants
-    private static final int RACK_MOTOR_ID = 1;
     private static final int ROLLER_ID = 0;
     private static final int CLAW_FORWARD_CHANNEL = 2;
     private static final int CLAW_REVERSE_CHANNEL = 3;
@@ -20,7 +19,6 @@ public class Intake {
     private double rackMotorSpeed;
 
     private Compressor comp;
-    private static Rack rack;
     private static Pivot pivot;
     private static Roller roller;
     private static Claw claw;
@@ -34,11 +32,10 @@ public class Intake {
         comp = new Compressor(1, PneumaticsModuleType.CTREPCM);
         comp.enableDigital();
 
-        //UNCOMMENT LATER
+        //initiali
         roller = new Roller(ROLLER_ID);
         claw = new Claw(PneumaticsModuleType.CTREPCM, CLAW_FORWARD_CHANNEL, CLAW_REVERSE_CHANNEL);
         pivot = new Pivot(PIVOT_FORWARD_CHANNEL, PIVOT_REVERSE_CHANNEL);
-        rack = new Rack(RACK_MOTOR_ID);
     }
 
     private enum SolenoidState {
@@ -67,33 +64,10 @@ public class Intake {
             runRoller(0);
         }
 
-        runRack(dPadDirectionOne, dPadDirectionTwo);
         runClaw(clawToggle);
         runPivot(dPadDirectionOne, dPadDirectionTwo);
 
         updateSmartDashboard();
-    }
-
-    /**
-     * Runs the rack motor, operated with DPAD left/right
-     * @param dPadDirection the direction of the DPAD
-     */
-    private static void runRack(int dPadDirectionOne, int dPadDirectionTwo) {
-        //Cancels out switching pivot if the two dpads are facing opposite directions
-        if(Math.abs(dPadDirectionOne - dPadDirectionTwo) == 180) {
-            rack.setSpeed(0);
-            return;
-        }
-
-        if(dPadDirectionOne == 90 || dPadDirectionTwo == 90) {
-            instance.rackMotorSpeed = 0.8;
-        } else if(dPadDirectionOne == 270 || dPadDirectionTwo == 270) {
-            instance.rackMotorSpeed = -0.8;
-        } else {
-            instance.rackMotorSpeed = 0;
-        }
-
-        rack.setSpeed(instance.rackMotorSpeed);
     }
 
     /**

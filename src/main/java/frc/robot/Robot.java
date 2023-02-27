@@ -80,13 +80,13 @@ public class Robot extends TimedRobot {
         }
 
         Intake.run(
-            controllerOne.getPOV(), 
-            controllerTwo.getPOV(), 
-            controllerOne.getRightTriggerAxis(), 
-            controllerOne.getLeftTriggerAxis(), 
-            controllerTwo.getRightTriggerAxis(), 
-            controllerTwo.getLeftTriggerAxis(), 
-            controllerOne.getXButtonReleased() || controllerTwo.getXButtonReleased()
+            controllerOne.getPOV(), //controller one dpad to control pivot
+            controllerTwo.getPOV(), //controller two dpad to control pivot
+            controllerOne.getRightTriggerAxis(), //controller one right trigger to intake
+            controllerOne.getLeftTriggerAxis(), //controller one left trigger to outtake
+            controllerTwo.getRightTriggerAxis(), //controller two right trigger to intake
+            controllerTwo.getLeftTriggerAxis(), //controller two left trigger to outtake
+            controllerOne.getXButtonReleased() || controllerTwo.getXButtonReleased() //controller one or two x button to toggle claw
         );
 
         //Fourbar.run(controllerTwo.getRightY(), false, false, false);
