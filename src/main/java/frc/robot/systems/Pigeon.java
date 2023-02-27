@@ -25,6 +25,7 @@ public class Pigeon {
     private final ScheduledExecutorService changeRateThread;
 
     private double relativeForward = 0.0;
+    private double startingAngle = 0.0;
     private OrientationalChange changePerSecond;
 
     private Pigeon(int canID) {
@@ -46,7 +47,11 @@ public class Pigeon {
      * the robot is in at the point this method is called.
      */
     public static void setRelativeForward() {
-        instance.relativeForward = getAbsoluteRotationDegrees();
+        instance.relativeForward = getAbsoluteRotationDegrees() ;
+    }
+
+    public static void setStartingAngle(double angle) {
+        instance.startingAngle = angle;
     }
 
     /**
@@ -54,7 +59,7 @@ public class Pigeon {
      * forward has not been set then it simply returns the absolute rotaton.
      */
     public static double getRelativeRotationDegrees() {
-        return (getAbsoluteRotationDegrees() - instance.relativeForward + 360.0) % 360.0;
+        return (getAbsoluteRotationDegrees() - (instance.relativeForward + instance.startingAngle) + (2 * 360.0)) % 360.0;
     }
 
     /**

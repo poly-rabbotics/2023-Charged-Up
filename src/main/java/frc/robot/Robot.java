@@ -79,7 +79,7 @@ public class Robot extends TimedRobot {
             }
         }
 
-        Intake.run(
+        /* Intake.run(
             controllerOne.getPOV(), //controller one dpad to control pivot
             controllerTwo.getPOV(), //controller two dpad to control pivot
             controllerOne.getRightTriggerAxis(), //controller one right trigger to intake
@@ -87,7 +87,7 @@ public class Robot extends TimedRobot {
             controllerTwo.getRightTriggerAxis(), //controller two right trigger to intake
             controllerTwo.getLeftTriggerAxis(), //controller two left trigger to outtake
             controllerOne.getXButtonReleased() || controllerTwo.getXButtonReleased() //controller one or two x button to toggle claw
-        );
+        ); */
 
         //Fourbar.run(controllerTwo.getRightY(), false, false, false);
         //Elevator.run(controllerTwo.getLeftY(), false, false, false, false, false, false, 0);
