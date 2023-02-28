@@ -61,36 +61,28 @@ public class Robot extends TimedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        Intake.init();
-        Pigeon.setRelativeForward();
+        Fourbar.init();
+        Elevator.init();
     }
 
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        SwerveDrive.run(controllerOne.getLeftX(), controllerOne.getLeftY(), controllerOne.getRightX());
-
-        // Left stick changes between headless and relative control modes.
-        if (controllerOne.getLeftStickButtonReleased()) {
-            if (SwerveDrive.getMode() == SwerveMode.Headless) {
-                SwerveDrive.setMode(SwerveMode.Relative);
-            } else {
-                SwerveDrive.setMode(SwerveMode.Headless);
-            }
-        }
-
-        Intake.run(
-            controllerOne.getPOV(), //controller one dpad to control pivot
-            controllerTwo.getPOV(), //controller two dpad to control pivot
-            controllerOne.getRightTriggerAxis(), //controller one right trigger to intake
-            controllerOne.getLeftTriggerAxis(), //controller one left trigger to outtake
-            controllerTwo.getRightTriggerAxis(), //controller two right trigger to intake
-            controllerTwo.getLeftTriggerAxis(), //controller two left trigger to outtake
-            controllerOne.getXButtonReleased() || controllerTwo.getXButtonReleased() //controller one or two x button to toggle claw
+        Fourbar.run(controllerOne.getLeftY(), 
+            controllerOne.getLeftBumperPressed(), 
+            controllerOne.getBackButton(), 
+            controllerOne.getLeftStickButtonPressed()
         );
-
-        //Fourbar.run(controllerTwo.getRightY(), false, false, false);
-        //Elevator.run(controllerTwo.getLeftY(), false, false, false, false, false, false, 0);
+        Elevator.run(
+            controllerOne.getRightY(), 
+            controllerOne.getRightBumperPressed(), 
+            controllerOne.getStartButton(), 
+            controllerOne.getAButton(), 
+            controllerOne.getBButton(), 
+            controllerOne.getXButton(), 
+            controllerOne.getYButton(), 
+            controllerOne.getPOV()
+        );
     }
 
     /** This function is called once when the robot is disabled. */

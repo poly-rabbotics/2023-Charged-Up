@@ -1,10 +1,17 @@
 package frc.robot.systems;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.EncoderType;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxAbsoluteEncoder;
 import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkMaxRelativeEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
+import com.revrobotics.AbsoluteEncoder; 
+import com.revrobotics.SparkMaxAlternateEncoder;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** 
@@ -34,8 +41,9 @@ public class Fourbar {
 
     //Motor and controller
     private final CANSparkMax fourbarMotor;
-    private final RelativeEncoder relativeEncoder;
     private final SparkMaxPIDController pidController;
+    private SparkMaxAbsoluteEncoder absoluteEncoder;
+    private RelativeEncoder relativeEncoder;
 
     //variables
     private double targetSetpoint;
@@ -47,7 +55,9 @@ public class Fourbar {
      */
     public Fourbar(){
         fourbarMotor = new CANSparkMax(MOTOR_ID, MotorType.kBrushless);
+
         relativeEncoder = fourbarMotor.getEncoder();
+        absoluteEncoder = fourbarMotor.getAbsoluteEncoder(Type.kDutyCycle);
         pidController = fourbarMotor.getPIDController();
         
         pidController.setP(P);
@@ -55,9 +65,9 @@ public class Fourbar {
         pidController.setD(D);
         pidController.setFF(F);
         pidController.setOutputRange(-0.5, 0.5);
-        
-        //Configures motor to brake when not being used
+
         fourbarMotor.setIdleMode(IdleMode.kBrake);
+        relativeEncoder.setPositionConversionFactor(1);
     }
     
     private enum ControlMode {
@@ -86,9 +96,9 @@ public class Fourbar {
      */
     public static void run(double speed, boolean switchControlMode, boolean setPositionZero, boolean changeSetpoint) {
         //sets current encoder position to 0 if menu button is pressed
-        //setEncoderZero(setPositionZero);
+        setEncoderZero(setPositionZero);
 
-        //cycleTargetSetpoint(setPositionZero);
+        cycleTargetSetpoint(changeSetpoint);
 
         //switches between control modes
         if(switchControlMode) {
