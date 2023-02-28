@@ -64,7 +64,7 @@ public class Fourbar {
         pidController.setI(I);
         pidController.setD(D);
         pidController.setFF(F);
-        pidController.setOutputRange(-0.5, 0.5);
+        pidController.setOutputRange(-0.4, 0.4);
 
         fourbarMotor.setIdleMode(IdleMode.kBrake);
         relativeEncoder.setPositionConversionFactor(1);
