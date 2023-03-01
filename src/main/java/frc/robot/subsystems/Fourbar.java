@@ -1,4 +1,4 @@
-package frc.robot.systems;
+package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.EncoderType;
@@ -13,6 +13,8 @@ import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.SparkMaxAlternateEncoder;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.systems.ElevFourbar.ControlType;
+import frc.robot.systems.ElevFourbar.Setpoint;
 
 /** 
  * Class to control the fourbar mechanism 
@@ -26,9 +28,13 @@ public class Fourbar {
     //constant variables
     private static final int MOTOR_ID = 2; //CORRECT ID
     private static final double MANUAL_DEADZONE = 0.3;
-    private static final double BOTTOM_SETPOINT = 0;
-    private static final double MID_SETPOINT = 35;
-    private static final double TOP_SETPOINT = 65;
+
+    //position constants, in degrees
+    private static final int SUBSTATION_INTAKE_SETPOINT = 0;
+    private static final int GROUND_INTAKE_SETPOINT = 0;
+    private static final int MID_SCORING_SETPOINT = 55;
+    private static final int HIGH_SCORING_SETPOINT = 30;
+    private static final int STOWED_SETPOINT = 0;
     
     //PID constants
     private static final double P = 0.1;
@@ -47,8 +53,6 @@ public class Fourbar {
 
     //variables
     private double targetSetpoint;
-    private ControlMode controlMode;
-    private Setpoint setpoint;
     
     /**
      * Sets up fourbar motor and Xbox controller, configures PID
@@ -70,23 +74,6 @@ public class Fourbar {
         relativeEncoder.setPositionConversionFactor(1);
     }
     
-    private enum ControlMode {
-        MANUAL, PID
-    }
-    
-    private enum Setpoint {
-        BOTTOM, MID, TOP
-    }
-    
-    /**
-     * The method to be run in teleopInit to reset variables
-     */
-    public static void init() {
-        instance.controlMode = ControlMode.MANUAL;
-        instance.setpoint = Setpoint.BOTTOM;
-        instance.targetSetpoint = 0;
-    }
-    
     /**
      * The method that will be run from teleopPeriodic
      * @param speed - The speed the motor will run at
@@ -94,25 +81,19 @@ public class Fourbar {
      * @param setPositionZero - sets the current encoder position to zero
      * @param changeSetpoint - cycles through the top, mid, and bottom setpoints
      */
-    public static void run(double speed, boolean switchControlMode, boolean setPositionZero, boolean changeSetpoint) {
+    public static void run(double speed, boolean setPositionZero, Setpoint setpoint, ControlType controlType) {
+
+        updateTargetSetpoint(setpoint);
+
         //sets current encoder position to 0 if menu button is pressed
-        setEncoderZero(setPositionZero);
-
-        cycleTargetSetpoint(changeSetpoint);
-
-        //switches between control modes
-        if(switchControlMode) {
-            if(instance.controlMode == ControlMode.MANUAL) {
-                instance.controlMode = ControlMode.PID;
-            } else if(instance.controlMode == ControlMode.PID) {
-                instance.controlMode = ControlMode.MANUAL;
-            }
+        if(setPositionZero) {
+            instance.relativeEncoder.setPosition(0);
         }
         
         //runs selected control mode
-        if(instance.controlMode == ControlMode.MANUAL) {
+        if(controlType == ControlType.MANUAL) {
             manualControl(speed);
-        } else if(instance.controlMode == ControlMode.PID) {
+        } else if(controlType == ControlType.POSITION) {
             pidControl();
         }
         
@@ -138,38 +119,24 @@ public class Fourbar {
 
         instance.fourbarMotor.set(-speed/3);
     }
-    
-    /**
-     * Cycles through each setpoint
-     */
-    private static void cycleTargetSetpoint(boolean setPositionZero) {
-        //set setpoint enum
-        if (setPositionZero) {
-            if (instance.setpoint == Setpoint.BOTTOM) {
-                instance.setpoint = Setpoint.MID;
-            } else if (instance.setpoint == Setpoint.MID) {
-                instance.setpoint = Setpoint.TOP;
-            } else if (instance.setpoint == Setpoint.TOP) {
-                instance.setpoint = Setpoint.BOTTOM;
-            }
-        }
-        
-        //set targetSetpoint variable
-        if(instance.setpoint == Setpoint.BOTTOM) {
-            instance.targetSetpoint = BOTTOM_SETPOINT;
-        } else if(instance.setpoint == Setpoint.MID) {
-            instance.targetSetpoint = MID_SETPOINT;
-        } else if(instance.setpoint == Setpoint.TOP) {
-            instance.targetSetpoint = TOP_SETPOINT;
-        }
-    }
 
-    /**
-     * Sets the relative encoder position to zero if menu button is pressed
-     */
-    private static void setEncoderZero(boolean setPositionZero) {
-        if(setPositionZero) {
-            instance.relativeEncoder.setPosition(0);
+    private static void updateTargetSetpoint(Setpoint setpoint) {
+        switch (setpoint) {
+            case SUBSTATION_INTAKE:
+                instance.targetSetpoint = SUBSTATION_INTAKE_SETPOINT;
+                break;
+            case GROUND_INTAKE:
+                instance.targetSetpoint = GROUND_INTAKE_SETPOINT;
+                break;
+            case MID_SCORING:
+                instance.targetSetpoint = MID_SCORING_SETPOINT;
+                break;
+            case HIGH_SCORING:
+                instance.targetSetpoint = HIGH_SCORING_SETPOINT;
+                break;
+            case STOWED:
+                instance.targetSetpoint = STOWED_SETPOINT;
+                break;
         }
     }
 
@@ -178,8 +145,6 @@ public class Fourbar {
      */
     private static void updateSmartDashboard(double speed) {
         SmartDashboard.putNumber("FB Speed", speed);
-        SmartDashboard.putString("FB Setpoint", instance.setpoint.toString());
-        SmartDashboard.putString("FB Control Mode", instance.controlMode.toString());
         SmartDashboard.putNumber("FB Position", instance.relativeEncoder.getPosition());
         SmartDashboard.putNumber("FB Target Setpoint", instance.targetSetpoint);
         SmartDashboard.putNumber("FB Motor Power", instance.fourbarMotor.get()); //doesn't update correctly, fix later

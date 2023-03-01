@@ -6,9 +6,9 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import frc.robot.subsystems.Fourbar;
 import frc.robot.subsystems.SwerveMode;
-import frc.robot.systems.Elevator;
-import frc.robot.systems.Fourbar;
+import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
@@ -61,27 +61,25 @@ public class Robot extends TimedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        Fourbar.init();
-        Elevator.init();
+        ElevFourbar.init();
     }
 
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        Fourbar.run(controllerOne.getLeftY(), 
-            controllerOne.getLeftBumperPressed(), 
-            controllerOne.getBackButton(), 
-            controllerOne.getLeftStickButtonPressed()
-        );
-        Elevator.run(
-            controllerOne.getRightY(), 
-            controllerOne.getRightBumperPressed(), 
-            controllerOne.getStartButton(), 
-            controllerOne.getAButton(), 
-            controllerOne.getBButton(), 
-            controllerOne.getXButton(), 
-            controllerOne.getYButton(), 
-            controllerOne.getPOV()
+        ElevFourbar.run(
+            controllerOne.getRightY(),
+            controllerOne.getLeftY(),
+            controllerOne.getStartButtonPressed(),
+            controllerOne.getBackButtonPressed(),
+            controllerOne.getRightBumperPressed(),
+            controllerOne.getPOV(),
+            false,
+            controllerOne.getAButton(),
+            controllerOne.getBButton(),
+            controllerOne.getYButton(),
+            controllerOne.getXButton(),
+            controllerOne.getLeftBumperPressed()
         );
     }
 
