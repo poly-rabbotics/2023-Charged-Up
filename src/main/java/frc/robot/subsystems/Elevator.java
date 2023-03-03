@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * Controls the elevator
  */
 public class Elevator {
-    private static final int TICKS_PER_INCH = -10752; //FINAL VAlUE DO NOT CHANGE
+    private static final double TICKS_PER_INCH = -10752.0; //FINAL VAlUE DO NOT CHANGE
     
     //constant variables
     private static final double MANUAL_DEADZONE = 0.3;
@@ -205,7 +205,7 @@ public class Elevator {
     private static void updateSmartDashboard(double speed, int dPadDirection) {
         SmartDashboard.putNumber("Elev Speed", speed);
         SmartDashboard.putNumber("Elev Position", instance.encoderPosition/TICKS_PER_INCH);
-        SmartDashboard.putNumber("Elev Target Position", instance.targetSetpoint/TICKS_PER_INCH);
+        SmartDashboard.putNumber("Elev Target Position", instance.targetSetpoint);
         SmartDashboard.putNumber("Elev Overshoot", instance.overShoot);
         SmartDashboard.putNumber("Elev Motor Power", instance.elevatorMotor.getMotorOutputPercent());
         SmartDashboard.putBoolean("Limit Switch", !instance.bottomLimitSwitch.get());

@@ -1,17 +1,17 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.EncoderType;
+import com.revrobotics.MotorFeedbackSensor;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
 import com.revrobotics.SparkMaxPIDController;
-import com.revrobotics.SparkMaxRelativeEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
-import com.revrobotics.AbsoluteEncoder; 
-import com.revrobotics.SparkMaxAlternateEncoder;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.systems.ElevFourbar.ControlType;
 import frc.robot.systems.ElevFourbar.Setpoint;
@@ -20,10 +20,9 @@ import frc.robot.systems.ElevFourbar.Setpoint;
  * Class to control the fourbar mechanism 
  */
 public class Fourbar {
-    /* Not currently utilized, may be implemented in the future
-    private static final int FOURBAR_UPPER_LIMIT = 80;
-    private static final int FOURBAR_LOWER_LIMIT = -40; 
-    */
+    //Not currently utilized, may be implemented in the future
+    private static final int FOURBAR_UPPER_LIMIT = 0;
+    private static final int FOURBAR_LOWER_LIMIT = 90; 
     
     //constant variables
     private static final int MOTOR_ID = 2; //CORRECT ID
@@ -37,9 +36,9 @@ public class Fourbar {
     private static final int STOWED_SETPOINT = 0;
     
     //PID constants
-    private static final double P = 0.1;
+    private static final double P = 0.0001;
     private static final double I = 0.0;
-    private static final double D = 1;
+    private static final double D = 0.0001;
     private static final double F = 0.0;
 
     //self-initializes the class
@@ -53,6 +52,7 @@ public class Fourbar {
 
     //variables
     private double targetSetpoint;
+    private double encoderPosition;
     
     /**
      * Sets up fourbar motor and Xbox controller, configures PID
@@ -68,7 +68,9 @@ public class Fourbar {
         pidController.setI(I);
         pidController.setD(D);
         pidController.setFF(F);
-        pidController.setOutputRange(-0.4, 0.4);
+        pidController.setOutputRange(-0.1, 0.1);
+
+        pidController.setFeedbackDevice(absoluteEncoder);
 
         fourbarMotor.setIdleMode(IdleMode.kBrake);
         relativeEncoder.setPositionConversionFactor(1);
@@ -82,6 +84,7 @@ public class Fourbar {
      * @param changeSetpoint - cycles through the top, mid, and bottom setpoints
      */
     public static void run(double speed, boolean setPositionZero, Setpoint setpoint, ControlType controlType) {
+        instance.encoderPosition = instance.relativeEncoder.getPosition() * 360;
 
         updateTargetSetpoint(setpoint);
 
@@ -106,14 +109,14 @@ public class Fourbar {
      */
     private static void pidControl(){
         //set elevator PID position to target setpoint
-        instance.pidController.setReference(instance.targetSetpoint, CANSparkMax.ControlType.kPosition);
+        instance.pidController.setReference(instance.targetSetpoint / 360, CANSparkMax.ControlType.kPosition);
     }
     
     /**
      * Allows for manual control of motor output using the right joystick
      */
     private static void manualControl(double speed){
-        if (Math.abs(speed) < MANUAL_DEADZONE) { //if joystick is inside of deadzone
+        if (Math.abs(speed) < MANUAL_DEADZONE || (instance.encoderPosition < FOURBAR_LOWER_LIMIT) || instance.encoderPosition > FOURBAR_UPPER_LIMIT) { //if joystick is inside of deadzone
             speed = 0;
         }
 
@@ -145,7 +148,7 @@ public class Fourbar {
      */
     private static void updateSmartDashboard(double speed) {
         SmartDashboard.putNumber("FB Speed", speed);
-        SmartDashboard.putNumber("FB Position", instance.relativeEncoder.getPosition());
+        SmartDashboard.putNumber("FB Position", instance.encoderPosition * 360);
         SmartDashboard.putNumber("FB Target Setpoint", instance.targetSetpoint);
         SmartDashboard.putNumber("FB Motor Power", instance.fourbarMotor.get()); //doesn't update correctly, fix later
     }
