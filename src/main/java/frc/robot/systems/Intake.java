@@ -1,6 +1,7 @@
 package frc.robot.systems;
 
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.*;
@@ -38,7 +39,7 @@ public class Intake {
         pivot = new Pivot(PIVOT_FORWARD_CHANNEL, PIVOT_REVERSE_CHANNEL);
     }
 
-    private enum SolenoidState {
+    public enum SolenoidState {
         OPEN, CLOSED, UP, DOWN
     }
 
@@ -84,6 +85,10 @@ public class Intake {
         roller.setSpeed(rollerSpeed);
     }
 
+    public static void rollerAuto(double rollerSpeed) {
+        roller.setSpeed(rollerSpeed);
+    }
+
     /**
      * Extends or retracts the claw, toggled with button press
      * @param switchClawState
@@ -102,7 +107,16 @@ public class Intake {
         } else {
             claw.close();
         }
-    }  
+    }
+    
+    public static void clawAuto(SolenoidState state) {
+        instance.clawState = state;
+        if(instance.clawState == SolenoidState.OPEN) {
+            claw.open();
+        } else {
+            claw.close();
+        }
+    }
     
     /**
      * Extends or retracts the pivot, toggled with button press

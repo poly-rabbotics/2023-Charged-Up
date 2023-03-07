@@ -6,12 +6,15 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.systems.Elevator;
 import frc.robot.systems.Fourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
+import frc.robot.commands.IntakeAuto;
+import frc.robot.commands.OuttakeAuto;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -22,6 +25,10 @@ import frc.robot.systems.SwerveDrive;
 public class Robot extends TimedRobot {
     public static XboxController controllerOne = new XboxController(0);
     public static XboxController controllerTwo = new XboxController(1);
+
+    private final CommandBase[] modeOne = { new IntakeAuto(0.5, 1), new OuttakeAuto(0.5, 1) };
+    private CommandBase currentCommand;
+    private int autoIndex = 0;
     
     /**
      * This function is run when the robot is first started up and should be used for any
@@ -51,8 +58,7 @@ public class Robot extends TimedRobot {
      * chooser code above as well.
      */
     @Override
-    public void autonomousInit() {
-    }
+    public void autonomousInit() {}
 
     /** This function is called periodically during autonomous. */
     @Override
