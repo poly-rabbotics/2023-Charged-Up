@@ -73,6 +73,11 @@ public class Elevator {
     public static void init() {
         instance.isCalibrating = false;
     }
+
+    public static void autonomousInit() {
+        instance.isCalibrating = false;
+        instance.targetSetpoint = STOWED_SETPOINT;
+    }
     
     /**
      * The method that will be run from the elevfourbar system
@@ -100,7 +105,7 @@ public class Elevator {
         if(controlType == ControlType.MANUAL) {
             manualControl(speed, dPadDirection);
         } else if(controlType == ControlType.POSITION) {
-            positionControl(setpoint);
+            pidControl();
         }
 
         autoCalibrate(runAutoCalibrate);
@@ -133,11 +138,25 @@ public class Elevator {
         }
     }
 
+    public static void autonomousRun(Setpoint setpoint) {
+        instance.encoderPosition = instance.elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
+
+        //runs auto calibrate or sets current encoder position to 0 if start button is pressed
+        if(!instance.bottomLimitSwitch.get()) {
+            setEncoderZero();
+        }
+
+        //switches between setpoints
+        updateTargetSetpoint(setpoint);
+        
+        pidControl();
+    }
+
     /**
      * PID Control of the elevator, cycles through
      * setpoints bottom, mid, top
      */
-    private static void positionControl(Setpoint target) {
+    private static void pidControl() {
         //calculates the overshoot in encoder ticks, used for tuning PID
         if (Math.abs(instance.encoderPosition) - Math.abs(instance.targetSetpoint)  > instance.overShoot && Math.abs(instance.encoderPosition) > Math.abs(instance.targetSetpoint)) {
             instance.overShoot = Math.abs(instance.encoderPosition) - Math.abs(instance.targetSetpoint);
@@ -200,6 +219,10 @@ public class Elevator {
 
             instance.isCalibrating = false;
         }
+    }
+
+    public static boolean getIsFinished() {
+        return Math.abs(instance.encoderPosition - (instance.targetSetpoint * TICKS_PER_INCH)) < 1000;
     }
 
     private static void updateSmartDashboard(double speed, int dPadDirection) {

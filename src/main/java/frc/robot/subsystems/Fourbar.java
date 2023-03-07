@@ -103,6 +103,14 @@ public class Fourbar {
         //prints variables to Smart Dashboard
         updateSmartDashboard(speed);
     }
+
+    public static void autonomousRun(Setpoint setpoint) {
+        instance.encoderPosition = instance.relativeEncoder.getPosition() * 360;
+
+        updateTargetSetpoint(setpoint);
+
+        pidControl();
+    }
     
     /**
      * Allows for cycling between setpoints using PID
@@ -141,6 +149,10 @@ public class Fourbar {
                 instance.targetSetpoint = STOWED_SETPOINT;
                 break;
         }
+    }
+
+    public static boolean getIsFinished() {
+        return Math.abs(instance.encoderPosition - instance.targetSetpoint) < 1;
     }
 
     /**

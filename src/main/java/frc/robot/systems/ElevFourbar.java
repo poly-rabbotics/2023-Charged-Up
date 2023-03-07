@@ -82,5 +82,17 @@ public class ElevFourbar {
         SmartDashboard.putString("Control Type", instance.controlType.toString());
     }
 
+    public static void autonomousRun(Setpoint setpoint) {
+        Elevator.autonomousRun(setpoint);
+        Fourbar.autonomousRun(setpoint);
+    }
+
+    public static void autonomousInit() {
+        Elevator.autonomousInit();
+    }
+
+    public static boolean getIsFinished() {
+        return Elevator.getIsFinished() && Fourbar.getIsFinished();
+    }
 
 }
