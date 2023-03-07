@@ -6,6 +6,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.RobotMap;
 
 /** 
  * Class to control the fourbar mechanism 
@@ -17,7 +18,7 @@ public class Fourbar {
     */
     
     //constant variables
-    private static final int MOTOR_ID = 2; //CORRECT ID
+    private static final int MOTOR_ID = RobotMap.ELEVATOR_MOTOR_ID; 
     private static final double MANUAL_DEADZONE = 0.3;
     private static final double BOTTOM_SETPOINT = 0;
     private static final double MID_SETPOINT = 35;
