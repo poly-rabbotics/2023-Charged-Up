@@ -8,6 +8,7 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.RobotMap;
 
 /**
  * Controls the elevator
@@ -17,7 +18,7 @@ public class Elevator {
     
     //constant variables
     private static final double MANUAL_DEADZONE = 0.3;
-    private static final int ELEVATOR_MOTOR_ID = 5; //CORRECT ID
+    private static final int ELEVATOR_MOTOR_ID = RobotMap.ELEVATOR_MOTOR_ID;
     private static final int ELEVATOR_BOTTOM_SETPOINT = 0;
     private static final int ELEVATOR_MID_SETPOINT = TICKS_PER_INCH * 5; 
     private static final int ELEVATOR_TOP_SETPOINT = TICKS_PER_INCH * 28; 
