@@ -84,7 +84,7 @@ public class Fourbar {
      * @param changeSetpoint - cycles through the top, mid, and bottom setpoints
      */
     public static void run(double speed, boolean setPositionZero, Setpoint setpoint, ControlType controlType) {
-        instance.encoderPosition = instance.relativeEncoder.getPosition() * 360;
+        instance.encoderPosition = instance.relativeEncoder.getPosition()
 
         updateTargetSetpoint(setpoint);
 
@@ -160,7 +160,7 @@ public class Fourbar {
      */
     private static void updateSmartDashboard(double speed) {
         SmartDashboard.putNumber("FB Speed", speed);
-        SmartDashboard.putNumber("FB Position", instance.encoderPosition * 360);
+        SmartDashboard.putNumber("FB Position", instance.encoderPosition);
         SmartDashboard.putNumber("FB Target Setpoint", instance.targetSetpoint);
         SmartDashboard.putNumber("FB Motor Power", instance.fourbarMotor.get()); //doesn't update correctly, fix later
     }
