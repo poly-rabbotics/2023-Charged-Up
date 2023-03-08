@@ -71,12 +71,12 @@ public class ElevFourbar {
             instance.controlType
         );
 
-        Fourbar.run(
+        /* Fourbar.run(
             fourbarSpeed,
             fourbarResetEncoder,
             instance.setpoint,
             instance.controlType
-        );
+        ); */
         
         SmartDashboard.putString("Setpoint", instance.setpoint.toString());
         SmartDashboard.putString("Control Type", instance.controlType.toString());

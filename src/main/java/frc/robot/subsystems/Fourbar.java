@@ -25,7 +25,7 @@ public class Fourbar {
     private static final int FOURBAR_LOWER_LIMIT = 90; 
     
     //constant variables
-    private static final int MOTOR_ID = 2; //CORRECT ID
+    private static final int MOTOR_ID = 62; //CORRECT ID
     private static final double MANUAL_DEADZONE = 0.3;
 
     //position constants, in degrees
@@ -124,7 +124,7 @@ public class Fourbar {
      * Allows for manual control of motor output using the right joystick
      */
     private static void manualControl(double speed){
-        if (Math.abs(speed) < MANUAL_DEADZONE || (instance.encoderPosition < FOURBAR_LOWER_LIMIT) || instance.encoderPosition > FOURBAR_UPPER_LIMIT) { //if joystick is inside of deadzone
+        if (Math.abs(speed) < MANUAL_DEADZONE) { //if joystick is inside of deadzone
             speed = 0;
         }
 

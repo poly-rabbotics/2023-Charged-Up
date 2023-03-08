@@ -119,7 +119,7 @@ public class Elevator {
      */
     private static void manualControl(double speed, int dPadDirection) {
 
-        if (Math.abs(speed) < MANUAL_DEADZONE || (!instance.bottomLimitSwitch.get() && speed > MANUAL_DEADZONE) || (instance.encoderPosition < -280000 && speed < -MANUAL_DEADZONE)) {
+        if (Math.abs(speed) < MANUAL_DEADZONE || (!instance.bottomLimitSwitch.get() && speed > MANUAL_DEADZONE) || (instance.encoderPosition < 30 * TICKS_PER_INCH && speed < -MANUAL_DEADZONE)) {
             speed = 0;
         } 
         
