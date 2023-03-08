@@ -68,23 +68,11 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         Intake.init();
-        Pigeon.setRelativeForward();
     }
 
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        SwerveDrive.run(controllerOne.getLeftX(), controllerOne.getLeftY(), controllerOne.getRightX());
-
-        // Left stick changes between headless and relative control modes.
-        if (controllerOne.getLeftStickButtonReleased()) {
-            if (SwerveDrive.getMode() == SwerveMode.Headless) {
-                SwerveDrive.setMode(SwerveMode.Relative);
-            } else {
-                SwerveDrive.setMode(SwerveMode.Headless);
-            }
-        }
-
         Intake.run(
             controllerOne.getPOV(), //controller one dpad to control pivot
             controllerTwo.getPOV(), //controller two dpad to control pivot
