@@ -1,7 +1,7 @@
 package frc.robot.patterns;
 
 import edu.wpi.first.wpilibj.util.Color;
-import frc.robot.subsystems.helperClasses.LightPattern;
+import frc.robot.subsystems.LightPattern;
 
 /**
  * A pattern that creates a swell up and down effect using brightness.
@@ -43,6 +43,17 @@ public class Breathe implements LightPattern {
 	@Override
 	public boolean getShouldResetTimer() {
 		return requestingReset;
+	}
+
+	@Override
+	public boolean isEqual(LightPattern pattern) {
+		if (pattern.getClass() != this.getClass()) {
+			return false;
+		}
+
+		Breathe castPattern = (Breathe)pattern;
+
+		return color == castPattern.color && speed == castPattern.speed;
 	}
 
 	private void updatePattern() {

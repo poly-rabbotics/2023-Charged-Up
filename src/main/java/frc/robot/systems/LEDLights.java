@@ -1,25 +1,37 @@
-
 package frc.robot.systems;
-import edu.wpi.first.wpilibj.AddressableLED;
-import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.Timer;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import javax.swing.Renderer;
+
+import frc.robot.patterns.Rainbow;
+import frc.robot.subsystems.LightPattern;
+import frc.robot.subsystems.LightRenderer;
 
 public class LEDLights {
-    private AddressableLED led;
-    private AddressableLEDBuffer ledBuffer;
-    private Timer timer = new Timer();
+    private static final int LED_PORT = 1;
+    private static final int LED_LENGTH = 69;
 
-    private static LEDLights instance = new LEDLights();
+    private static final LEDLights instance = new LEDLights();
 
-    public static void setLED(AddressableLED led) {
-        instance.led = led;
-    }
-    
+    private final LightRenderer renderer;
+    //private final ScheduledExecutorService executorService;
+
     private LEDLights() {
-        timer.start();
-        ledBuffer = new AddressableLEDBuffer(10);
-        led.setLength(ledBuffer.getLength());
-        led.setData(ledBuffer);
-        led.start();
+        renderer = new LightRenderer(LED_PORT, LED_LENGTH);
+        renderer.setPattern(new Rainbow(69, 100));
+
+        //executorService = Executors.newSingleThreadScheduledExecutor();
+        //executorService.scheduleAtFixedRate(renderer, 0, 20, TimeUnit.MILLISECONDS);
+    }
+
+    public static void setPatternIfNotEqual(LightPattern pattern) {
+        instance.renderer.setIfNotEqual(pattern);
+    }
+
+    public static void run() {
+        instance.renderer.run();
     }
 }

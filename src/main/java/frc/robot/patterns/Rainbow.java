@@ -1,8 +1,8 @@
 package frc.robot.patterns;
 
 import edu.wpi.first.wpilibj.util.Color;
+import frc.robot.subsystems.LightPattern;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.subsystems.helperClasses.LightPattern;
 
 public class Rainbow implements LightPattern {
 	private static final int COLOR_SATURATION = 255;
@@ -37,6 +37,17 @@ public class Rainbow implements LightPattern {
 	@Override
 	public int getPatternLength() {
 		return pattern.length;
+	}
+	
+	@Override
+	public boolean isEqual(LightPattern pattern) {
+		if (pattern.getClass() != this.getClass()) {
+			return false;
+		}
+
+		Rainbow castPattern = (Rainbow)pattern;
+
+		return speed == castPattern.speed;
 	}
 
 	private void updatePattern() {		

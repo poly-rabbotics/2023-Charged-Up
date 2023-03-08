@@ -1,4 +1,4 @@
-package frc.robot.subsystems.helperClasses;
+package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.util.Color;
 
@@ -31,4 +31,9 @@ public interface LightPattern {
 	 * Gets this {@link LightPattern}s length.
 	 */
 	public int getPatternLength();
+
+	/**
+	 * Returns true if the given pattern is the same/equal.
+	 */
+	public boolean isEqual(LightPattern pattern);
 }

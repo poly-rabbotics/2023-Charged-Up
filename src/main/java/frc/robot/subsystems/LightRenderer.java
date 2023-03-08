@@ -1,4 +1,4 @@
-package frc.robot.subsystems.helperClasses;
+package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
@@ -36,6 +36,15 @@ public class LightRenderer implements Runnable {
 		if (this.pattern.getClass() == pattern.getClass())
 			return;
 		
+		timer.reset();
+		this.pattern = pattern;
+	}
+
+	public void setIfNotEqual(LightPattern pattern) {
+		if (this.pattern.isEqual(pattern)) {
+			return;
+		}
+
 		timer.reset();
 		this.pattern = pattern;
 	}
@@ -95,8 +104,6 @@ public class LightRenderer implements Runnable {
 
 		if (pattern.getShouldResetTimer())
 			timer.reset();
-
-		SmartDashboard.putNumber("thing", timer.get());
 
 		lightStrip.setData(ledBuffer);
 		lightStrip.start();

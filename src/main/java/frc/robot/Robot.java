@@ -9,10 +9,9 @@ import java.util.concurrent.*;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.patterns.*;
-import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.util.*;
-import frc.robot.subsystems.helperClasses.*;
+import frc.robot.systems.LEDLights;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -21,29 +20,12 @@ import frc.robot.subsystems.helperClasses.*;
  * project.
  */
 public class Robot extends TimedRobot {
-	private static final String kDefaultAuto = "Default";
-	private static final String kCustomAuto = "My Auto";
-	private String m_autoSelected;
-	private final SendableChooser<String> m_chooser = new SendableChooser<>();
-
-	private final int BUFFER_LENGTH = 65;
-	private LightRenderer lightRenderer = new LightRenderer(1, BUFFER_LENGTH);
-	private ScheduledExecutorService lightRendererService;
-
 	/**
 	 * This function is run when the robot is first started up and should be used for any
 	 * initialization code.
 	 */
 	@Override
-	public void robotInit() {
-		m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-		m_chooser.addOption("My Auto", kCustomAuto);
-		SmartDashboard.putData("Auto choices", m_chooser);
-
-		lightRendererService = Executors.newSingleThreadScheduledExecutor();
-		lightRendererService.scheduleAtFixedRate(lightRenderer, 0, 40, TimeUnit.MILLISECONDS);
-		lightRenderer.setPattern(new Rainbow(50, 40.0));
-	}
+	public void robotInit() {}
 
 	/**
 	 * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -54,8 +36,9 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void robotPeriodic() {
-		updateLEDPattern();
+		LEDLights.run();
 	}
+
 	/**
 	 * This autonomous (along with the chooser code above) shows how to select between different
 	 * autonomous modes using the dashboard. The sendable chooser code works with the Java
@@ -67,29 +50,17 @@ public class Robot extends TimedRobot {
 	 * chooser code above as well.
 	 */
 	@Override
-	public void autonomousInit() {
-		m_autoSelected = m_chooser.getSelected();
-		// m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-		System.out.println("Auto selected: " + m_autoSelected);
-	}
+	public void autonomousInit() {}
 
 	/** This function is called periodically during autonomous. */
 	@Override
-	public void autonomousPeriodic() {
-		switch (m_autoSelected) {
-			case kCustomAuto:
-				// Put custom auto code here
-				break;
-			case kDefaultAuto:
-			default:
-				// Put default auto code here
-				break;
-		}
-	}
+	public void autonomousPeriodic() {}
 
 	/** This function is called once when teleop is enabled. */
 	@Override
-	public void teleopInit() {}
+	public void teleopInit() {
+		LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 1.0));
+	}
 
 	/** This function is called periodically during operator control. */
 	@Override
@@ -97,7 +68,9 @@ public class Robot extends TimedRobot {
 
 	/** This function is called once when the robot is disabled. */
 	@Override
-	public void disabledInit() {}
+	public void disabledInit() {
+		LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.0, 1.0, 0.0), 1.0));
+	}
 
 	/** This function is called periodically when disabled. */
 	@Override
@@ -118,11 +91,4 @@ public class Robot extends TimedRobot {
 	/** This function is called periodically whilst in simulation. */
 	@Override
 	public void simulationPeriodic() {}
-	
-	private void updateLEDPattern() {
-		if (isDisabled()) {
-			lightRenderer.setPatternIfNotSameType(new Rainbow(BUFFER_LENGTH, 500));
-		}
-	}
-
 }
