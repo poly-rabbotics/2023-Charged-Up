@@ -22,11 +22,11 @@ public class Elevator {
     private static final int ELEVATOR_MOTOR_ID = 62; //CORRECT ID
     
     //position constants, in inches
-    private static final int SUBSTATION_INTAKE_SETPOINT = 0;
-    private static final int GROUND_INTAKE_SETPOINT = 0;
-    private static final int MID_SCORING_SETPOINT = 12;
-    private static final int HIGH_SCORING_SETPOINT = 24;
-    private static final int STOWED_SETPOINT = 0;
+    private static final double SUBSTATION_INTAKE_SETPOINT = 0;
+    private static final double GROUND_INTAKE_SETPOINT = 0;
+    private static final double MID_SCORING_SETPOINT = 5;
+    private static final double HIGH_SCORING_SETPOINT = 30.6;
+    private static final double STOWED_SETPOINT = 0;
     
     //self-initializes the class
     private static final Elevator instance = new Elevator();
@@ -43,7 +43,7 @@ public class Elevator {
     //variables
     private double encoderPosition;
     private double overShoot;
-    private int targetSetpoint;
+    private double targetSetpoint;
     private boolean isCalibrating;
     
     /**

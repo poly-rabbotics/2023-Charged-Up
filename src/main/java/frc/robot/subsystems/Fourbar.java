@@ -31,14 +31,14 @@ public class Fourbar {
     //position constants, in degrees
     private static final int SUBSTATION_INTAKE_SETPOINT = 0;
     private static final int GROUND_INTAKE_SETPOINT = 0;
-    private static final int MID_SCORING_SETPOINT = 55;
-    private static final int HIGH_SCORING_SETPOINT = 30;
+    private static final int MID_SCORING_SETPOINT = 35;
+    private static final int HIGH_SCORING_SETPOINT = 60;
     private static final int STOWED_SETPOINT = 0;
     
     //PID constants
-    private static final double P = 0.0001;
+    private static final double P = 10;
     private static final double I = 0.0;
-    private static final double D = 0.0001;
+    private static final double D = 1;
     private static final double F = 0.0;
 
     //self-initializes the class
@@ -68,10 +68,12 @@ public class Fourbar {
         pidController.setI(I);
         pidController.setD(D);
         pidController.setFF(F);
-        pidController.setOutputRange(-0.1, 0.1);
+        pidController.setOutputRange(-0.4, 0.2);
 
         pidController.setFeedbackDevice(absoluteEncoder);
 
+
+        fourbarMotor.setInverted(true);
         fourbarMotor.setIdleMode(IdleMode.kBrake);
         relativeEncoder.setPositionConversionFactor(1);
     }
@@ -84,7 +86,7 @@ public class Fourbar {
      * @param changeSetpoint - cycles through the top, mid, and bottom setpoints
      */
     public static void run(double speed, boolean setPositionZero, Setpoint setpoint, ControlType controlType) {
-        instance.encoderPosition = instance.relativeEncoder.getPosition()
+        instance.encoderPosition = instance.absoluteEncoder.getPosition()*360;
 
         updateTargetSetpoint(setpoint);
 
@@ -117,18 +119,31 @@ public class Fourbar {
      */
     private static void pidControl(){
         //set elevator PID position to target setpoint
-        instance.pidController.setReference(instance.targetSetpoint / 360, CANSparkMax.ControlType.kPosition);
+        if(instance.encoderPosition > 200) {
+            instance.pidController.setOutputRange(-0.0, 0.2);
+        } else {
+            instance.pidController.setOutputRange(-0.4, 0.2);
+        }
+
+        instance.pidController.setReference(instance.targetSetpoint / 360.0, CANSparkMax.ControlType.kPosition);
     }
     
     /**
      * Allows for manual control of motor output using the right joystick
      */
     private static void manualControl(double speed){
-        if (Math.abs(speed) < MANUAL_DEADZONE) { //if joystick is inside of deadzone
+        /* if (Math.abs(speed) < MANUAL_DEADZONE) { //if joystick is inside of deadzone
             speed = 0;
-        }
+        } */
 
-        instance.fourbarMotor.set(-speed/3);
+        /* if(instance.encoderPosition >= FOURBAR_LOWER_LIMIT/360.0 && speed <= 0) {
+            speed = 0;
+        } else if (instance.encoderPosition <= FOURBAR_UPPER_LIMIT/360.0 && speed >= 0) {
+            speed = 0;
+        } */
+        double gravitybias = 0.05*Math.sin(instance.encoderPosition*3.14159/180.0);
+        double outputspeed = 1.0*speed/3.0+gravitybias;
+        instance.fourbarMotor.set(outputspeed);
     }
 
     private static void updateTargetSetpoint(Setpoint setpoint) {
@@ -162,6 +177,7 @@ public class Fourbar {
         SmartDashboard.putNumber("FB Speed", speed);
         SmartDashboard.putNumber("FB Position", instance.encoderPosition);
         SmartDashboard.putNumber("FB Target Setpoint", instance.targetSetpoint);
-        SmartDashboard.putNumber("FB Motor Power", instance.fourbarMotor.get()); //doesn't update correctly, fix later
+        SmartDashboard.putNumber("FB Motor Power", instance.fourbarMotor.getAppliedOutput()); //doesn't update correctly, fix later
+        SmartDashboard.putNumber("OutputRange", instance.pidController.getOutputMax());
     }
 }
