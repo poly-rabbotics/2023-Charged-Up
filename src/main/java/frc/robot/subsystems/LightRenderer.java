@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.util.Color;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.patterns.Rainbow;
 
 /**
@@ -16,37 +15,32 @@ public class LightRenderer implements Runnable {
 
 	private AddressableLED lightStrip;
 	private AddressableLEDBuffer ledBuffer;
-	private LightPattern pattern;
+	private LightPattern[] patterns;
+	private int[] patternBreaks;
 	private StatusedTimer timer = new StatusedTimer();
 	boolean changedPattern;
 	int patternIndex = 0;
 
-	/**
-	 * Sets the current light pattern and resets the internal timer.
-	 */
-	public void setPattern(LightPattern pattern) {
-		timer.reset();
-		this.pattern = pattern;
-	}
-	
-	/**
-	 * Sets the current light pattern and resets the internal timer.
-	 */
-	public void setPatternIfNotSameType(LightPattern pattern) {
-		if (this.pattern.getClass() == pattern.getClass())
-			return;
-		
-		timer.reset();
-		this.pattern = pattern;
+	public void setPatternBreaks(int[] patternBreaks) {
+		this.patternBreaks = patternBreaks;
 	}
 
-	public void setIfNotEqual(LightPattern pattern) {
-		if (this.pattern.isEqual(pattern)) {
-			return;
+	/**
+	 * Sets the current light pattern and resets the internal timer.
+	 */
+	public void setPatterns(LightPattern[] pattern) {
+		timer.reset();
+		this.patterns = pattern;
+	}
+
+	public void setIfNotEqual(LightPattern[] patterns) {
+		for (int i = 0; i < patterns.length; i++) {
+			if (!this.patterns[i].isEqual(patterns[i])) {
+				this.patterns[i] = patterns[i];
+			}
 		}
 
 		timer.reset();
-		this.pattern = pattern;
 	}
 
 	/**
@@ -95,15 +89,27 @@ public class LightRenderer implements Runnable {
 	 * to appear fluid.
 	 */
 	public void run() {
-		final Color[] colors = pattern.getPattern(timer.get());
-
-		for (int led = 0; led < ledBuffer.getLength(); led++) {
-			final Color color = colors[led % pattern.getPatternLength()];
-			ledBuffer.setLED(led, color);
+		if (patternBreaks.length != patterns.length) {
+			return;
 		}
 
-		if (pattern.getShouldResetTimer())
-			timer.reset();
+		int currentPattern = 0;
+
+		for (int i = 0; i < patterns.length; i++) {
+			Color[] colors = patterns[i].getPattern(timer.get());
+			Color color = colors[i % patterns[i].getPatternLength()];
+			ledBuffer.setLED(i, color);
+
+			if (patternBreaks[currentPattern] == i) {
+				currentPattern++;
+			}
+		}
+
+		for (LightPattern pattern : patterns) {
+			if (pattern.getShouldResetTimer()) {
+				timer.reset();
+			}
+		}
 
 		lightStrip.setData(ledBuffer);
 		lightStrip.start();
@@ -123,7 +129,8 @@ public class LightRenderer implements Runnable {
 		lightStrip = new AddressableLED(addressableLEDPort);
 		ledBuffer = new AddressableLEDBuffer(bufferLength);
 		lightStrip.setLength(bufferLength);
-		pattern = new Rainbow(bufferLength, DEFAULT_RAINBOW_SPEED);
+		patterns[0] = new Rainbow(bufferLength, DEFAULT_RAINBOW_SPEED);
+		patternBreaks[0] = bufferLength;
 		lightStrip.start();
 		timer.start();
 	} 
@@ -141,11 +148,12 @@ public class LightRenderer implements Runnable {
 	 * @param pattern
 	 * A {@link LightPattern} to be applied to following light renders in construction.
 	 */
-	public LightRenderer(int addressableLEDPort, int bufferLength, LightPattern pattern) {
+	public LightRenderer(int addressableLEDPort, int bufferLength, LightPattern[] patterns, int[] patternBreaks) {
 		lightStrip = new AddressableLED(addressableLEDPort);
 		ledBuffer = new AddressableLEDBuffer(bufferLength);
 		lightStrip.setLength(bufferLength);
-		this.pattern = pattern;
+		this.patterns = patterns;
+		this.patternBreaks = patternBreaks;
 		timer.start();
 	}
 }
