@@ -15,6 +15,7 @@ import frc.robot.systems.Fourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
+import frc.robot.systems.LEDLights;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
