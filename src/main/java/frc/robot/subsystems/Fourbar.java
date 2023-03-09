@@ -31,7 +31,7 @@ public class Fourbar {
     //position constants, in degrees
     private static final int SUBSTATION_INTAKE_SETPOINT = 0;
     private static final int GROUND_INTAKE_SETPOINT = 0;
-    private static final int MID_SCORING_SETPOINT = 30;
+    private static final int MID_SCORING_SETPOINT = 33;
     private static final int HIGH_SCORING_SETPOINT = 60;
     private static final int STOWED_SETPOINT = 2;
     
