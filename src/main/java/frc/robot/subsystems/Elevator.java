@@ -24,7 +24,7 @@ public class Elevator {
     //position constants, in inches
     private static final double SUBSTATION_INTAKE_SETPOINT = 0;
     private static final double GROUND_INTAKE_SETPOINT = 0;
-    private static final double MID_SCORING_SETPOINT = 5;
+    private static final double MID_SCORING_SETPOINT = 10;
     private static final double HIGH_SCORING_SETPOINT = 30.6;
     private static final double STOWED_SETPOINT = 0;
     

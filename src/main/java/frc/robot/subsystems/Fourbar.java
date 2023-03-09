@@ -31,9 +31,9 @@ public class Fourbar {
     //position constants, in degrees
     private static final int SUBSTATION_INTAKE_SETPOINT = 0;
     private static final int GROUND_INTAKE_SETPOINT = 0;
-    private static final int MID_SCORING_SETPOINT = 35;
+    private static final int MID_SCORING_SETPOINT = 30;
     private static final int HIGH_SCORING_SETPOINT = 60;
-    private static final int STOWED_SETPOINT = 0;
+    private static final int STOWED_SETPOINT = 2;
     
     //PID constants
     private static final double P = 10;
@@ -136,9 +136,9 @@ public class Fourbar {
             speed = 0;
         } */
 
-        /* if(instance.encoderPosition >= FOURBAR_LOWER_LIMIT/360.0 && speed <= 0) {
-            speed = 0;
-        } else if (instance.encoderPosition <= FOURBAR_UPPER_LIMIT/360.0 && speed >= 0) {
+        if(instance.encoderPosition >= 200) {
+            speed = 0.1;
+        } /* else if (instance.encoderPosition <= FOURBAR_UPPER_LIMIT/360.0 && speed >= 0) {
             speed = 0;
         } */
         double gravitybias = 0.05*Math.sin(instance.encoderPosition*3.14159/180.0);

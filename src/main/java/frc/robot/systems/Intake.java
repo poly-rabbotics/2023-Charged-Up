@@ -99,7 +99,7 @@ public class Intake {
 
         if(instance.clawState == SolenoidState.OPEN) {
             claw.open();
-        } else {
+        } else if(instance.clawState == SolenoidState.CLOSED) {
             claw.close();
         }
     }  
@@ -123,7 +123,7 @@ public class Intake {
 
         if(instance.pivotState == SolenoidState.DOWN) {
             pivot.down();
-        } else {
+        } else if(instance.pivotState == SolenoidState.UP) {
             pivot.up();
         }
     }

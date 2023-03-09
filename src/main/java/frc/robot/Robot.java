@@ -12,6 +12,7 @@ import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
+import frc.robot.systems.ElevFourbar.Setpoint;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -52,16 +53,21 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void autonomousInit() {
+        ElevFourbar.init();
+        Intake.comp.enableDigital();
     }
 
     /** This function is called periodically during autonomous. */
     @Override
-    public void autonomousPeriodic() {}
+    public void autonomousPeriodic() {
+        ElevFourbar.autoRun(Setpoint.MID_SCORING);
+    }
 
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
         ElevFourbar.init();
+        Intake.init();
         Intake.comp.enableDigital();
     }
 
@@ -81,7 +87,9 @@ public class Robot extends TimedRobot {
             controllerOne.getYButton(),
             controllerOne.getXButton(),
             controllerOne.getLeftBumperPressed()
-        );
+        ); 
+
+        Intake.run(controllerTwo.getPOV(), -1, controllerTwo.getRightTriggerAxis(), controllerTwo.getLeftTriggerAxis(), 0, 0, controllerTwo.getXButtonPressed());
     }
 
     /** This function is called once when the robot is disabled. */

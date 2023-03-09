@@ -82,6 +82,19 @@ public class ElevFourbar {
         SmartDashboard.putString("Control Type", instance.controlType.toString());
     }
 
+    public static void autoRun(Setpoint setpoint) {
+        Elevator.run(
+            0, 
+            false, 
+            false, 
+            0, 
+            setpoint, 
+            ControlType.POSITION
+        );
+
+        Fourbar.run(0, false, setpoint, ControlType.POSITION);
+    }
+
     public static void autonomousRun(Setpoint setpoint) {
         Elevator.autonomousRun(setpoint);
         Fourbar.autonomousRun(setpoint);
