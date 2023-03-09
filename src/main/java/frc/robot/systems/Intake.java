@@ -11,8 +11,8 @@ public class Intake {
     private static final int ROLLER_ID = 0;
     private static final int CLAW_FORWARD_CHANNEL = 2;
     private static final int CLAW_REVERSE_CHANNEL = 3;
-    private static final int PIVOT_FORWARD_CHANNEL = 4;
-    private static final int PIVOT_REVERSE_CHANNEL = 5;
+    private static final int PIVOT_FORWARD_CHANNEL = 0;
+    private static final int PIVOT_REVERSE_CHANNEL = 1;
 
     //The deadzone for roller joystick control
     private static final double ROLLER_DEADZONE = 0.3;
@@ -30,12 +30,12 @@ public class Intake {
     private static Intake instance = new Intake();
 
     public Intake() {
-        comp = new Compressor(1, PneumaticsModuleType.CTREPCM);
-        comp.enableDigital();
+        comp = new Compressor(1, PneumaticsModuleType.REVPH);
+        //comp.enableDigital();
 
         //initiali
         roller = new Roller(ROLLER_ID);
-        claw = new Claw(PneumaticsModuleType.CTREPCM, CLAW_FORWARD_CHANNEL, CLAW_REVERSE_CHANNEL);
+        claw = new Claw(PneumaticsModuleType.REVPH, CLAW_FORWARD_CHANNEL, CLAW_REVERSE_CHANNEL);
         pivot = new Pivot(PIVOT_FORWARD_CHANNEL, PIVOT_REVERSE_CHANNEL);
     }
 
@@ -47,6 +47,7 @@ public class Intake {
         instance.rackMotorSpeed = 0;
         instance.pivotState = SolenoidState.UP;
         instance.clawState = SolenoidState.OPEN;
+        instance.comp.enableDigital();
     }
 
     /**
