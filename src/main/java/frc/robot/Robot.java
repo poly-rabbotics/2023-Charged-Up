@@ -62,6 +62,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         ElevFourbar.init();
+        Intake.comp.enableDigital();
     }
 
     /** This function is called periodically during operator control. */

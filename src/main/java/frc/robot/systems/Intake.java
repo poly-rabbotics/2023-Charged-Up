@@ -8,17 +8,17 @@ import frc.robot.subsystems.*;
 public class Intake {
     //ID constants
     private static final int ROLLER_ID = 0;
-    private static final int CLAW_FORWARD_CHANNEL = 2;
-    private static final int CLAW_REVERSE_CHANNEL = 3;
-    private static final int PIVOT_FORWARD_CHANNEL = 4;
-    private static final int PIVOT_REVERSE_CHANNEL = 5;
+    private static final int CLAW_FORWARD_CHANNEL = 0;
+    private static final int CLAW_REVERSE_CHANNEL = 1;
+    private static final int PIVOT_FORWARD_CHANNEL = 2;
+    private static final int PIVOT_REVERSE_CHANNEL = 3;
 
     //The deadzone for roller joystick control
     private static final double ROLLER_DEADZONE = 0.3;
 
     private double rackMotorSpeed;
 
-    private Compressor comp;
+    public static Compressor comp;
     private static Pivot pivot;
     private static Roller roller;
     private static Claw claw;
@@ -29,8 +29,8 @@ public class Intake {
     private static Intake instance = new Intake();
 
     public Intake() {
-        comp = new Compressor(1, PneumaticsModuleType.CTREPCM);
-        comp.enableDigital();
+        comp = new Compressor(1, PneumaticsModuleType.REVPH);
+        //comp.enableDigital();
 
         //initiali
         roller = new Roller(ROLLER_ID);
