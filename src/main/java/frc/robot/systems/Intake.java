@@ -8,8 +8,8 @@ import frc.robot.subsystems.*;
 public class Intake {
     //ID constants
     private static final int ROLLER_ID = 0;
-    private static final int CLAW_FORWARD_CHANNEL = 0;
-    private static final int CLAW_REVERSE_CHANNEL = 1;
+    private static final int CLAW_FORWARD_CHANNEL = 1;
+    private static final int CLAW_REVERSE_CHANNEL = 0;
     private static final int PIVOT_FORWARD_CHANNEL = 2;
     private static final int PIVOT_REVERSE_CHANNEL = 3;
 
@@ -38,14 +38,14 @@ public class Intake {
         pivot = new Pivot(PIVOT_FORWARD_CHANNEL, PIVOT_REVERSE_CHANNEL);
     }
 
-    private enum SolenoidState {
+    public enum SolenoidState {
         OPEN, CLOSED, UP, DOWN
     }
 
     public static void init() {
-        instance.rackMotorSpeed = 0;
+        instance.rackMotorSpeed = 0;  
         instance.pivotState = SolenoidState.UP;
-        instance.clawState = SolenoidState.OPEN;
+        instance.clawState = SolenoidState.CLOSED;
     }
 
     /**
@@ -68,6 +68,22 @@ public class Intake {
         runPivot(dPadDirectionOne, dPadDirectionTwo);
 
         updateSmartDashboard();
+    }
+
+    public static void autoClaw(SolenoidState state) {
+        if(state == SolenoidState.OPEN) {
+            claw.open();
+        } else if(state == SolenoidState.CLOSED) {
+            claw.close();
+        }
+    }
+
+    public static void autoPivot(SolenoidState state) {
+        if(state == SolenoidState.DOWN) {
+            pivot.down();
+        } else {
+            pivot.up();
+        }
     }
 
     /**

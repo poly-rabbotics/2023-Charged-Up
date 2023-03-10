@@ -30,9 +30,9 @@ public class Fourbar {
 
     //position constants, in degrees
     private static final int SUBSTATION_INTAKE_SETPOINT = 0;
-    private static final int GROUND_INTAKE_SETPOINT = 0;
+    private static final int GROUND_INTAKE_SETPOINT = 145;
     private static final int MID_SCORING_SETPOINT = 33;
-    private static final int HIGH_SCORING_SETPOINT = 60;
+    private static final int HIGH_SCORING_SETPOINT = 73;
     private static final int STOWED_SETPOINT = 2;
     
     //PID constants
@@ -121,6 +121,7 @@ public class Fourbar {
         //set elevator PID position to target setpoint
         if(instance.encoderPosition > 200) {
             instance.pidController.setOutputRange(-0.0, 0.2);
+            instance.fourbarMotor.set(0.1);
         } else {
             instance.pidController.setOutputRange(-0.4, 0.2);
         }
@@ -164,6 +165,14 @@ public class Fourbar {
                 instance.targetSetpoint = STOWED_SETPOINT;
                 break;
         }
+    }
+
+    public static double getPosition() {
+        return instance.encoderPosition;
+    }
+
+    public static double getTargetSetpoint() {
+        return instance.targetSetpoint;
     }
 
     public static boolean getIsFinished() {

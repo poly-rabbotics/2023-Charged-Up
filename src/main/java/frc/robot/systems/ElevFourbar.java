@@ -6,7 +6,7 @@ import frc.robot.subsystems.Fourbar;
 
 public class ElevFourbar {
     private Setpoint setpoint = Setpoint.STOWED;
-    private ControlType controlType = ControlType.MANUAL;
+    private ControlType controlType = ControlType.POSITION;
 
     private static ElevFourbar instance = new ElevFourbar();
 
@@ -23,8 +23,7 @@ public class ElevFourbar {
     }
 
     public static void init() {
-        instance.setpoint = Setpoint.STOWED;
-        instance.controlType = ControlType.MANUAL;
+        instance.controlType = ControlType.POSITION;
 
         Elevator.init();
     }
@@ -82,7 +81,7 @@ public class ElevFourbar {
         SmartDashboard.putString("Control Type", instance.controlType.toString());
     }
 
-    public static void autoRun(Setpoint setpoint) {
+    public static boolean autoRun(Setpoint setpoint) {
         Elevator.run(
             0, 
             false, 
@@ -93,6 +92,8 @@ public class ElevFourbar {
         );
 
         Fourbar.run(0, false, setpoint, ControlType.POSITION);
+
+        return Math.abs(Fourbar.getPosition() - Fourbar.getTargetSetpoint()) < 1;
     }
 
     public static void autonomousRun(Setpoint setpoint) {
