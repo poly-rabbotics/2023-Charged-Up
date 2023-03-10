@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import java.util.concurrent.*;
 
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -74,7 +76,7 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        /* SwerveDrive.run(controllerOne.getLeftX(), controllerOne.getLeftY(), controllerOne.getRightX());
+        SwerveDrive.run(controllerOne.getLeftX(), controllerOne.getLeftY(), controllerOne.getRightX());
         
         // Left stick changes between headless and relative control modes.
         if (controllerOne.getLeftStickButtonReleased()) {
@@ -83,7 +85,7 @@ public class Robot extends TimedRobot {
             } else {
                 SwerveDrive.setMode(SwerveMode.Headless);
             }
-        } */
+        }
         
         Intake.run(
             controllerTwo.getPOV(), //controller one dpad to control pivot

@@ -19,9 +19,9 @@ public class SwerveDrive {
      * Back right
      */
 
-    private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1, 6, 3, 8 };
-    private static final int MODULE_ROTATION_CAN_IDS[] = { 10, 12, 14, 13 };
-    private static final int MODULE_CANCODER_CAN_IDS[] = { 5, 9, 7, 8 };
+    private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1, 2, 3, 4 };
+    private static final int MODULE_ROTATION_CAN_IDS[] = { 5, 6, 7, 8 };
+    private static final int MODULE_CANCODER_CAN_IDS[] = { 9, 10, 11, 12 };
     
     private static final double MODULE_TURN_OFFSETS[] = { 45, -45, 45, -45 };        // Degrees to turn for spinning.
     private static final double MODULE_CANCODER_OFFSETS[] = { 0.0, 0.0, 0.0, 0.0 };  // Degrees offset between encoder's 0 and module's 0.
@@ -31,14 +31,22 @@ public class SwerveDrive {
 
     private static final SwerveDrive instance = new SwerveDrive(MODULE_MOVEMENT_CAN_IDS, MODULE_ROTATION_CAN_IDS, MODULE_CANCODER_CAN_IDS, MODULE_CANCODER_OFFSETS);
 
+    private final SwerveModule modules[] = new SwerveModule[4];
+    //private final SwerveDriveKinematics kinematics;
     private SwerveMode mode = SwerveMode.Relative;
-    private SwerveModule modules[] = new SwerveModule[4];
     private double currentDirection = 0.0;
 
     private SwerveDrive(int moduleIDs[], int rotationIDs[], int encoderIDs[], double CANCoderOffsets[]) {
         for (int i = 0; i < moduleIDs.length; i++) {
             modules[i] = new SwerveModule(moduleIDs[i], rotationIDs[i], encoderIDs[i], CANCoderOffsets[i], MODULE_COEFFIENTS[i]);
         }
+
+        /* kinematics = new SwerveDriveKinematics(
+            new Translation2d(0.3, 0.3),
+            new Translation2d(-0.3, 0.3),
+            new Translation2d(-0.3, -0.3),
+            new Translation2d(0.3, -0.3)
+        ); */
     }
 
     /**
@@ -75,6 +83,20 @@ public class SwerveDrive {
      * @param turn A value between 1 and -1 that determines the turning angle.
      */
     public static void run(double directionalX, double directionalY, double turn) {
+        /* ChassisSpeeds chassisSpeeds;
+
+        if (instance.mode == SwerveMode.Headless) {
+            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, directionalY, turn, new Rotation2d(Pigeon.getRelativeRotationDegrees()));
+        } else {
+            chassisSpeeds = new ChassisSpeeds(directionalX, directionalY, turn);
+        }
+
+        SwerveModuleState[] moduleStates = instance.kinematics.toSwerveModuleStates(chassisSpeeds);
+
+        for (int i = 0; i < instance.modules.length; i++) {
+            instance.modules[i].setDesiredState(moduleStates[i]);
+        } */
+
         double speed = Math.sqrt(directionalX*directionalX + directionalY*directionalY);
         
         if (speed < 0.15)
@@ -144,27 +166,34 @@ public class SwerveDrive {
         }
     }
 
-    public static void addToP(double increment) {
+    /**
+     * Sets the auto setpoints.
+     * @param distance Distance from "here" in meters.
+     * @param angle Absolute angle of movement.
+     */
+    public static void autoSetSetpoints(double distance, double angle) {
         for (SwerveModule module : instance.modules) {
-            module.addToP(increment);
+            module.setAutoSetpoints(distance, angle);
         }
     }
 
-    public static void addToI(double increment) {
+    /**
+     * Runs the swerve modules with previously given setpoints.
+     * @return Whether or not the action has completed.
+     */
+    public static boolean autoRun() {
+        boolean completed = true;
+
         for (SwerveModule module : instance.modules) {
-            module.addToI(increment);
+            completed &= module.autoRun();
         }
+
+        return completed;
     }
 
-    public static void addToD(double increment) {
+    public static void zeroEncoders() {
         for (SwerveModule module : instance.modules) {
-            module.addToD(increment);
-        }
-    }
-
-    public static void resetEncoderPositions() {
-        for (SwerveModule module : instance.modules) {
-            module.resetEncoderPosition();
+            module.zeroCANCoder();
         }
     }
 }
