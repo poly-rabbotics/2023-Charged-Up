@@ -47,7 +47,7 @@ public class Pigeon {
      * the robot is in at the point this method is called.
      */
     public static void setRelativeForward() {
-        instance.relativeForward = getAbsoluteRotationDegrees() ;
+        instance.relativeForward = getAbsoluteRotationDegrees() + instance.startingAngle;
     }
 
     public static void setStartingAngle(double angle) {

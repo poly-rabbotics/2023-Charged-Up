@@ -4,11 +4,6 @@
 
 package frc.robot.systems;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.subsystems.SwerveModule;
 
@@ -37,7 +32,7 @@ public class SwerveDrive {
     private static final SwerveDrive instance = new SwerveDrive(MODULE_MOVEMENT_CAN_IDS, MODULE_ROTATION_CAN_IDS, MODULE_CANCODER_CAN_IDS, MODULE_CANCODER_OFFSETS);
 
     private final SwerveModule modules[] = new SwerveModule[4];
-    private final SwerveDriveKinematics kinematics;
+    //private final SwerveDriveKinematics kinematics;
     private SwerveMode mode = SwerveMode.Relative;
     private double currentDirection = 0.0;
 
@@ -46,12 +41,12 @@ public class SwerveDrive {
             modules[i] = new SwerveModule(moduleIDs[i], rotationIDs[i], encoderIDs[i], CANCoderOffsets[i], MODULE_COEFFIENTS[i]);
         }
 
-        kinematics = new SwerveDriveKinematics(
+        /* kinematics = new SwerveDriveKinematics(
             new Translation2d(0.3, 0.3),
             new Translation2d(-0.3, 0.3),
             new Translation2d(-0.3, -0.3),
             new Translation2d(0.3, -0.3)
-        );
+        ); */
     }
 
     /**
