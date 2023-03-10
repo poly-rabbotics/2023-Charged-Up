@@ -17,6 +17,7 @@ import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
 import frc.robot.systems.LEDLights;
+import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.patterns.*;
 
 /**
@@ -28,13 +29,16 @@ import frc.robot.patterns.*;
 public class Robot extends TimedRobot {
     public static XboxController controllerOne = new XboxController(0);
     public static XboxController controllerTwo = new XboxController(1);
+    public static Joystick controlPanel = new Joystick(2);
     
     /**
     * This function is run when the robot is first started up and should be used for any
     * initialization code.
     */
     @Override
-    public void robotInit() {}
+    public void robotInit() {
+        Pigeon.setStartingAngle(180);
+    }
     
     /**
     * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -59,7 +63,8 @@ public class Robot extends TimedRobot {
     * chooser code above as well.
     */
     @Override
-    public void autonomousInit() {}
+    public void autonomousInit() {
+    }
     
     /** This function is called periodically during autonomous. */
     @Override
@@ -68,9 +73,11 @@ public class Robot extends TimedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        //LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 1.0));
-        Intake.init();
         Pigeon.setRelativeForward();
+        //SwerveDrive.zeroEncoders();
+        //LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 1.0));
+        ElevFourbar.init();
+        Intake.init();
     }
     
     /** This function is called periodically during operator control. */
@@ -88,27 +95,25 @@ public class Robot extends TimedRobot {
         }
         
         Intake.run(
-            controllerTwo.getPOV(), //controller one dpad to control pivot
-            -1, //controller two dpad to control pivot
-            controllerTwo.getRightTriggerAxis(), //controller one right trigger to intake
-            controllerTwo.getLeftTriggerAxis(), //controller one left trigger to outtake
-            0, //controller two right trigger to intake
-        0, //controller two left trigger to outtake
-            controllerTwo.getXButtonPressed() //controller one or two x button to toggle claw
+            controlPanel.getRawButtonPressed(8), //controller one dpad to control pivot
+            controlPanel.getRawButton(9),
+            controlPanel.getRawButton(7),
+            controlPanel.getRawButtonPressed(6)
         );
         
-        ElevFourbar.run(controllerOne.getRightY(), 
-            controllerOne.getLeftY(), 
-            controllerOne.getStartButton(), 
-            false, 
-            false, 
-            -1, 
-            controllerOne.getRightBumperPressed(), 
-            controllerOne.getAButtonPressed(), 
-            controllerOne.getBButtonPressed(), 
-            controllerOne.getYButtonPressed(), 
-            controllerOne.getXButtonPressed(), 
-            controllerOne.getLeftBumperPressed()
+        ElevFourbar.run(
+            controllerTwo.getRightY(),
+            controllerTwo.getLeftY(),
+            controllerTwo.getStartButton(),
+            false,
+            false,
+            controllerTwo.getPOV(),
+            controlPanel.getRawButton(3),
+            controlPanel.getRawButton(2),
+            controlPanel.getRawButton(4),
+            controlPanel.getRawButton(5),
+            controlPanel.getRawButton(1),
+            false
         );
     }
     

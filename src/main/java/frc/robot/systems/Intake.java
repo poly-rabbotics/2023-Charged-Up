@@ -44,7 +44,7 @@ public class Intake {
 
     public static void init() {
         instance.rackMotorSpeed = 0;  
-        instance.pivotState = SolenoidState.UP;
+        instance.pivotState = SolenoidState.DOWN;
         instance.clawState = SolenoidState.CLOSED;
     }
 
@@ -55,17 +55,17 @@ public class Intake {
      * @param clawButton - The button to extend/retract the claw
      * @param pivotButton - The button to extend/retract the pivot
      */
-    public static void run(int dPadDirectionOne, int dPadDirectionTwo, double rightTriggerOne, double leftTriggerOne, double rightTriggerTwo, double leftTriggerTwo, boolean clawToggle) {
-        if(Math.max(rightTriggerOne, rightTriggerTwo) > ROLLER_DEADZONE ) {
-            runRoller(Math.max(rightTriggerOne, rightTriggerTwo));
-        } else if(Math.max(leftTriggerOne, leftTriggerTwo) > ROLLER_DEADZONE) {
-            runRoller(-Math.max(leftTriggerOne, leftTriggerTwo));
+    public static void run(boolean pivotToggle, boolean intake, boolean outtake, boolean clawToggle) {
+        if(intake) {
+            runRoller(1);
+        } else if(outtake) {
+            runRoller(-1);
         } else {
             runRoller(0);
         }
 
         runClaw(clawToggle);
-        runPivot(dPadDirectionOne, dPadDirectionTwo);
+        runPivot(pivotToggle);
 
         updateSmartDashboard();
     }
@@ -92,7 +92,7 @@ public class Intake {
      */
     private static void runRoller(double rollerSpeed) {
         if(Math.abs(rollerSpeed) > ROLLER_DEADZONE) { // scales down the speed of the motor
-            rollerSpeed *= 0.8;
+            rollerSpeed *= 0.5;
         } else {
             rollerSpeed = 0;
         }
@@ -124,17 +124,13 @@ public class Intake {
      * Extends or retracts the pivot, toggled with button press
      * @param switchPivotState
      */
-    private static void runPivot(int dPadDirectionOne, int dPadDirectionTwo) {
-
-        //Cancels out switching pivot if the two dpads are facing opposite directions
-        if(Math.abs(dPadDirectionOne - dPadDirectionTwo) == 180) {
-            return;
-        } 
-
-        if(dPadDirectionOne == 0 || dPadDirectionTwo == 0) {
-            instance.pivotState = SolenoidState.UP;
-        } else if(dPadDirectionOne == 180 || dPadDirectionTwo == 180) {
-            instance.pivotState = SolenoidState.DOWN;
+    private static void runPivot(boolean switchPivotState) {
+        if(switchPivotState) {
+            if(instance.pivotState == SolenoidState.UP) {
+                instance.pivotState = SolenoidState.DOWN;
+            } else {
+                instance.pivotState = SolenoidState.UP;
+            }
         }
 
         if(instance.pivotState == SolenoidState.DOWN) {

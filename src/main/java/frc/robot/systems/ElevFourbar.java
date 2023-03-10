@@ -7,6 +7,8 @@ import frc.robot.subsystems.Fourbar;
 public class ElevFourbar {
     private Setpoint setpoint = Setpoint.STOWED;
     private ControlType controlType = ControlType.POSITION;
+    private boolean manualControl = false;
+    static final double DEADZONE = 0.3;
 
     private static ElevFourbar instance = new ElevFourbar();
 
@@ -24,7 +26,6 @@ public class ElevFourbar {
 
     public static void init() {
         instance.controlType = ControlType.POSITION;
-
         Elevator.init();
     }
 
@@ -51,14 +52,22 @@ public class ElevFourbar {
             instance.setpoint = Setpoint.STOWED;
         }
 
-        //switches between control modes
+        if(substationIntake || groundIntake || mid || high || stowed) {
+            instance.controlType = ControlType.POSITION;
+        }
+
+        /* //switches between control modes
         if(switchControlType) {
             if(instance.controlType == ControlType.MANUAL) {
                 instance.controlType = ControlType.POSITION;
             } else {
                 instance.controlType = ControlType.MANUAL;
             }
-        }
+        } */
+
+        if(Math.abs(elevatorSpeed) > DEADZONE || Math.abs(fourbarSpeed) > DEADZONE) {
+            instance.controlType = ControlType.MANUAL;
+        } 
 
         //runs selected control mode
         Elevator.run(

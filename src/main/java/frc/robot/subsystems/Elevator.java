@@ -94,8 +94,8 @@ public class Elevator {
         instance.encoderPosition = instance.elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
 
         //runs auto calibrate or sets current encoder position to 0 if start button is pressed
-        if(resetEncoderPosition || !instance.bottomLimitSwitch.get()) {
-            setEncoderZero();
+        if(resetEncoderPosition) {
+            //setEncoderZero();
         }
 
         //switches between setpoints
@@ -119,7 +119,7 @@ public class Elevator {
      */
     private static void manualControl(double speed, int dPadDirection) {
 
-        if (Math.abs(speed) < MANUAL_DEADZONE || (!instance.bottomLimitSwitch.get() && speed > MANUAL_DEADZONE) || (instance.encoderPosition < 30 * TICKS_PER_INCH && speed < -MANUAL_DEADZONE)) {
+        if (Math.abs(speed) < MANUAL_DEADZONE) {
             speed = 0;
         } 
         
