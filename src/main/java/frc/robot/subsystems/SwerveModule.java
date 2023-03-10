@@ -55,7 +55,7 @@ public class SwerveModule {
         rotationMotor.setInverted(false);
         
         movementMotor = new CANSparkMax(movementMotorID, MotorType.kBrushless);
-        movementMotor.setInverted(false);
+        movementMotor.setInverted(true);
         movementMotor.setIdleMode(IdleMode.kBrake);
 
         angularEncoder = new CANCoder(canCoderID);

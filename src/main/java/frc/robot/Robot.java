@@ -37,7 +37,7 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void robotInit() {
-        Pigeon.setStartingAngle(180);
+        //Pigeon.setStartingAngle(180 * 2);
     }
     
     /**
@@ -64,6 +64,7 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void autonomousInit() {
+        Pigeon.setRelativeForward();
     }
     
     /** This function is called periodically during autonomous. */
@@ -73,9 +74,8 @@ public class Robot extends TimedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        Pigeon.setRelativeForward();
         //SwerveDrive.zeroEncoders();
-        //LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 1.0));
+        LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 1.0));
         ElevFourbar.init();
         Intake.init();
     }
@@ -83,6 +83,7 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
+        LEDLights.run();
         SwerveDrive.run(controllerOne.getLeftX(), controllerOne.getLeftY(), controllerOne.getRightX());
         
         // Left stick changes between headless and relative control modes.
@@ -120,12 +121,14 @@ public class Robot extends TimedRobot {
     /** This function is called once when the robot is disabled. */
     @Override
     public void disabledInit() {
-        //LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.0, 1.0, 0.0), 1.0));
+        LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.0, 1.0, 0.0), 1.0));
     }
     
     /** This function is called periodically when disabled. */
     @Override
-    public void disabledPeriodic() {}
+    public void disabledPeriodic() {
+        LEDLights.run();
+    }
     
     /** This function is called once when test mode is enabled. */
     @Override

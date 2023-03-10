@@ -29,8 +29,8 @@ public class Fourbar {
     private static final double MANUAL_DEADZONE = 0.3;
 
     //position constants, in degrees
-    private static final int SUBSTATION_INTAKE_SETPOINT = 0;
-    private static final int GROUND_INTAKE_SETPOINT = 145;
+    private static final int SUBSTATION_INTAKE_SETPOINT = 33 ;
+    private static final int GROUND_INTAKE_SETPOINT = 140;
     private static final int MID_SCORING_SETPOINT = 33;
     private static final int HIGH_SCORING_SETPOINT = 73;
     private static final int STOWED_SETPOINT = 2;
@@ -43,10 +43,10 @@ public class Fourbar {
 
     //self-initializes the class
     private static final Fourbar instance = new Fourbar();
-
+                                                      
     //Motor and controller
-    private final CANSparkMax fourbarMotor;
-    private final SparkMaxPIDController pidController;
+    private final CANSparkMax fourbarMotor;   
+    private final SparkMaxPIDController pidController; 
     private SparkMaxAbsoluteEncoder absoluteEncoder;
     private RelativeEncoder relativeEncoder;
 
@@ -120,10 +120,10 @@ public class Fourbar {
     private static void pidControl(){
         //set elevator PID position to target setpoint
         if(instance.encoderPosition > 200) {
-            instance.pidController.setOutputRange(-0.0, 0.2);
+            instance.pidController.setOutputRange(-0.0, 0.3);
             instance.fourbarMotor.set(0.1);
         } else {
-            instance.pidController.setOutputRange(-0.4, 0.2);
+            instance.pidController.setOutputRange(-0.4, 0.3);
         }
 
         instance.pidController.setReference(instance.targetSetpoint / 360.0, CANSparkMax.ControlType.kPosition);

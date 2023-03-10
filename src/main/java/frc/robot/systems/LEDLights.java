@@ -1,11 +1,5 @@
 package frc.robot.systems;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import javax.swing.Renderer;
-
 import frc.robot.patterns.Rainbow;
 import frc.robot.subsystems.LightPattern;
 import frc.robot.subsystems.LightRenderer;

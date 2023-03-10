@@ -33,7 +33,7 @@ public class SwerveDrive {
 
     private final SwerveModule modules[] = new SwerveModule[4];
     //private final SwerveDriveKinematics kinematics;
-    private SwerveMode mode = SwerveMode.Relative;
+    private SwerveMode mode = SwerveMode.Headless;
     private double currentDirection = 0.0;
 
     private SwerveDrive(int moduleIDs[], int rotationIDs[], int encoderIDs[], double CANCoderOffsets[]) {
