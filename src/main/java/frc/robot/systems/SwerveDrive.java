@@ -4,6 +4,13 @@
 
 package frc.robot.systems;
 
+import com.fasterxml.jackson.annotation.JsonCreator.Mode;
+
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.subsystems.SwerveModule;
 
@@ -16,7 +23,7 @@ public class SwerveDrive {
      * Upper right
      * Upper left
      * Back left
-     * Back right
+     * Back right - 
      */
 
     private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1, 2, 3, 4 };
@@ -24,7 +31,8 @@ public class SwerveDrive {
     private static final int MODULE_CANCODER_CAN_IDS[] = { 9, 10, 11, 12 };
     
     private static final double MODULE_TURN_OFFSETS[] = { 45, -45, 45, -45 };        // Degrees to turn for spinning.
-    private static final double MODULE_CANCODER_OFFSETS[] = { 0.0, 0.0, 0.0, 0.0 };  // Degrees offset between encoder's 0 and module's 0.
+    private static final double MODULE_CANCODER_OFFSETS[] = { -251.6307 + 90.0, -44.1210 + 90.0, -192.0409 + 90.0, -175.1659 + 90.0 };  // Degrees offset between encoder's 0 and module's 0.
+    //private static final double MODULE_CANCODER_OFFSETS[] = { 0, 0, 0, 0 };
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };    // Multiplier to the output of angular PID.
 
     private static final boolean MODULE_IS_RIGHT[] = { true, false, false, true };
@@ -32,7 +40,7 @@ public class SwerveDrive {
     private static final SwerveDrive instance = new SwerveDrive(MODULE_MOVEMENT_CAN_IDS, MODULE_ROTATION_CAN_IDS, MODULE_CANCODER_CAN_IDS, MODULE_CANCODER_OFFSETS);
 
     private final SwerveModule modules[] = new SwerveModule[4];
-    //private final SwerveDriveKinematics kinematics;
+    private final SwerveDriveKinematics kinematics;
     private SwerveMode mode = SwerveMode.Headless;
     private double currentDirection = 0.0;
 
@@ -41,12 +49,12 @@ public class SwerveDrive {
             modules[i] = new SwerveModule(moduleIDs[i], rotationIDs[i], encoderIDs[i], CANCoderOffsets[i], MODULE_COEFFIENTS[i]);
         }
 
-        /* kinematics = new SwerveDriveKinematics(
+        kinematics = new SwerveDriveKinematics(
             new Translation2d(0.3, 0.3),
             new Translation2d(-0.3, 0.3),
             new Translation2d(-0.3, -0.3),
             new Translation2d(0.3, -0.3)
-        ); */
+        );
     }
 
     /**
@@ -83,28 +91,37 @@ public class SwerveDrive {
      * @param turn A value between 1 and -1 that determines the turning angle.
      */
     public static void run(double directionalX, double directionalY, double turn) {
-        /* ChassisSpeeds chassisSpeeds;
+        ChassisSpeeds chassisSpeeds;
+
+        if (directionalX*directionalX + directionalY*directionalY < 0.1) {
+            directionalX = 0.0;
+            directionalY = 0.0;
+        }
+
+        if (Math.abs(turn) < 0.1) {
+            turn = 0.0;
+        }
 
         if (instance.mode == SwerveMode.Headless) {
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, directionalY, turn, new Rotation2d(Pigeon.getRelativeRotationDegrees()));
+            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getRelativeRotationDegrees() * Math.PI / 180.0));
         } else {
-            chassisSpeeds = new ChassisSpeeds(directionalX, directionalY, turn);
+            chassisSpeeds = new ChassisSpeeds(directionalX, -directionalY, turn);
         }
 
         SwerveModuleState[] moduleStates = instance.kinematics.toSwerveModuleStates(chassisSpeeds);
 
         for (int i = 0; i < instance.modules.length; i++) {
             instance.modules[i].setDesiredState(moduleStates[i]);
-        } */
+        }
 
-        double speed = Math.sqrt(directionalX*directionalX + directionalY*directionalY);
+        /* double speed = Math.sqrt(directionalX*directionalX + directionalY*directionalY);
         
         if (speed < 0.15)
             speed = 0.0;
 
         speed = speed * speed * speed;
 
-        run(directionalX, directionalY, turn, Math.sqrt(directionalX*directionalX + directionalY*directionalY));
+        run(directionalX, directionalY, turn, Math.sqrt(directionalX*directionalX + directionalY*directionalY)); */
     }
 
     /**
@@ -135,7 +152,9 @@ public class SwerveDrive {
         // however the turn value is the motor's speed.
         if (Math.abs(turn) > 0.5) {
             for (int i = 0; i < instance.modules.length; i++) {
-                instance.modules[i].setMovementVector(MODULE_TURN_OFFSETS[i], -(turn * turn * turn) * (MODULE_IS_RIGHT[i] ? -1 : 1));
+                double power = (turn * turn * turn);
+                power -= Math.signum(power) * 0.125;
+                instance.modules[i].setMovementVector(MODULE_TURN_OFFSETS[i], power * (MODULE_IS_RIGHT[i] ? 1 : -1));
             }
 
             return;
@@ -194,6 +213,12 @@ public class SwerveDrive {
     public static void zeroEncoders() {
         for (SwerveModule module : instance.modules) {
             module.zeroCANCoder();
+        }
+    }
+
+    public static void print() {
+        for (SwerveModule module : instance.modules) {
+            module.print();
         }
     }
 }

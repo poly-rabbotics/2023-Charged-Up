@@ -11,13 +11,18 @@ import java.util.concurrent.*;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
+import frc.robot.systems.ElevFourbar.Setpoint;
+import frc.robot.systems.Intake.SolenoidState;
+import edu.wpi.first.wpilibj.AnalogInput;
 import frc.robot.systems.LEDLights;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.patterns.*;
 
 /**
@@ -29,7 +34,11 @@ import frc.robot.patterns.*;
 public class Robot extends TimedRobot {
     public static XboxController controllerOne = new XboxController(0);
     public static XboxController controllerTwo = new XboxController(1);
+    public static AnalogInput pressureSensor = new AnalogInput(0);
     public static Joystick controlPanel = new Joystick(2);
+    Timer timer = new Timer();
+    
+    boolean autoStageOne;
     
     /**
     * This function is run when the robot is first started up and should be used for any
@@ -49,7 +58,12 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void robotPeriodic() {
+        SwerveDrive.print();
+        double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
         LEDLights.run();
+        SmartDashboard.putNumber("Comp Pressure", Math.floor(pressureValue));
+
+        SmartDashboard.putBoolean("Fully Pressurized", pressureValue > 60);
     }
     
     /**
@@ -65,17 +79,52 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         Pigeon.setRelativeForward();
+        LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.8, 0.5, 0.0), 0.5));
+        ElevFourbar.autonomousInit();
+        timer.reset();
+        timer.stop();
+        autoStageOne = false;
+        //SwerveDrive.setMode(SwerveMode.Relative);
     }
     
     /** This function is called periodically during autonomous. */
     @Override
-    public void autonomousPeriodic() {}
+    public void autonomousPeriodic() {
+        // SwerveDrive.autoSetSetpoints(0.5, Pigeon.getRelativeRotationDegrees());
+        timer.start();
+        if(timer.get() < 2)
+        return;
+
+        if(controlPanel.getRawButton(12)) {
+            if(!autoStageOne){
+                Intake.autoPivot(SolenoidState.UP);
+                if(ElevFourbar.autoRun(Setpoint.HIGH_SCORING)) {
+                    Intake.autoClaw(SolenoidState.OPEN);
+                    timer.start();
+                    autoStageOne = true;
+                } 
+            } else {
+                if(timer.get() > 5) {
+                    if(timer.get() > 5.5) Intake.autoClaw(SolenoidState.CLOSED);
+                    ElevFourbar.autoRun(Setpoint.STOWED);
+                }
+            }
+        }
+
+        if (timer.get() > 10 && timer.get() < 12) {
+           SwerveDrive.run(0.0, -0.5, 0.0);
+        } else {
+            SwerveDrive.run(0.0, 0.0, 0.0);
+        }
+    }
     
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
         //SwerveDrive.zeroEncoders();
-        LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 1.0));
+        Pigeon.setRelativeForward();
+        SwerveDrive.setMode(SwerveMode.Headless);
+        LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.0, 1.0, 0.0), 0.5));
         ElevFourbar.init();
         Intake.init();
     }
@@ -83,7 +132,6 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        LEDLights.run();
         SwerveDrive.run(controllerOne.getLeftX(), controllerOne.getLeftY(), controllerOne.getRightX());
         
         // Left stick changes between headless and relative control modes.
@@ -96,38 +144,37 @@ public class Robot extends TimedRobot {
         }
         
         Intake.run(
-            controlPanel.getRawButtonPressed(8), //controller one dpad to control pivot
-            controlPanel.getRawButton(9),
-            controlPanel.getRawButton(7),
-            controlPanel.getRawButtonPressed(6)
+        controlPanel.getRawButtonPressed(8), //controller one dpad to control pivot
+        controlPanel.getRawButton(9),
+        controlPanel.getRawButton(7),
+        controlPanel.getRawButtonPressed(6)
         );
         
         ElevFourbar.run(
-            controllerTwo.getRightY(),
-            controllerTwo.getLeftY(),
-            controllerTwo.getStartButton(),
-            false,
-            false,
-            controllerTwo.getPOV(),
-            controlPanel.getRawButton(3),
-            controlPanel.getRawButton(2),
-            controlPanel.getRawButton(4),
-            controlPanel.getRawButton(5),
-            controlPanel.getRawButton(1),
-            false
+        controllerTwo.getRightY(),
+        controllerTwo.getLeftY(),
+        controllerTwo.getStartButton(),
+        false,
+        false,
+        controllerTwo.getPOV(),
+        controlPanel.getRawButton(3),
+        controlPanel.getRawButton(2),
+        controlPanel.getRawButton(4),
+        controlPanel.getRawButton(5),
+        controlPanel.getRawButton(1),
+        false
         );
     }
     
     /** This function is called once when the robot is disabled. */
     @Override
     public void disabledInit() {
-        LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.0, 1.0, 0.0), 1.0));
+        LEDLights.setPatternIfNotEqual(new Rainbow(32, 50));
     }
     
     /** This function is called periodically when disabled. */
     @Override
     public void disabledPeriodic() {
-        LEDLights.run();
     }
     
     /** This function is called once when test mode is enabled. */

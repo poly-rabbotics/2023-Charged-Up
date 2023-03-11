@@ -6,7 +6,7 @@ import frc.robot.subsystems.LightRenderer;
 
 public class LEDLights {
     private static final int LED_PORT = 1;
-    private static final int LED_LENGTH = 69;
+    private static final int LED_LENGTH = 108;
 
     private static final LEDLights instance = new LEDLights();
 

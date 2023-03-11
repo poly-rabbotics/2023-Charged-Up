@@ -60,7 +60,7 @@ public class Elevator {
         elevatorMotor.config_kD(0, D);
         elevatorMotor.selectProfileSlot(0, 0);
 
-        elevatorMotor.configPeakOutputForward(0.7);
+        elevatorMotor.configPeakOutputForward(0.8);
         elevatorMotor.configPeakOutputReverse(-0.7);
         
         //Configures motor to brake when not being used

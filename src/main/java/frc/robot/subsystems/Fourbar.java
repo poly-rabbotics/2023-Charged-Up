@@ -120,10 +120,10 @@ public class Fourbar {
     private static void pidControl(){
         //set elevator PID position to target setpoint
         if(instance.encoderPosition > 200) {
-            instance.pidController.setOutputRange(-0.0, 0.3);
+            instance.pidController.setOutputRange(-0.0, 0.2);
             instance.fourbarMotor.set(0.1);
         } else {
-            instance.pidController.setOutputRange(-0.4, 0.3);
+            instance.pidController.setOutputRange(-0.4, 0.2);
         }
 
         instance.pidController.setReference(instance.targetSetpoint / 360.0, CANSparkMax.ControlType.kPosition);
@@ -143,7 +143,7 @@ public class Fourbar {
             speed = 0;
         } */
         double gravitybias = 0.05*Math.sin(instance.encoderPosition*3.14159/180.0);
-        double outputspeed = 1.0*speed/3.0+gravitybias;
+        double outputspeed = speed * 0.4;
         instance.fourbarMotor.set(outputspeed);
     }
 

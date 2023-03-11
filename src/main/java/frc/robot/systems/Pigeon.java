@@ -30,6 +30,7 @@ public class Pigeon {
 
     private Pigeon(int canID) {
         pigeon = new Pigeon2(canID);
+        //pigeon.setYaw(0.0);
 
         /* 
          * Starts the thread so that it calls 'run()' every 40 ms (25hz). This
@@ -47,7 +48,7 @@ public class Pigeon {
      * the robot is in at the point this method is called.
      */
     public static void setRelativeForward() {
-        instance.relativeForward = (getAbsoluteRotationDegrees() + 180.0) % 360.0;
+        instance.pigeon.setYaw(0.0);
     }
 
     /* public static void setStartingAngle(double angle) {
