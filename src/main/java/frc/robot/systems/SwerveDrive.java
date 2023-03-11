@@ -28,23 +28,28 @@ public class SwerveDrive {
     private static final int MODULE_ROTATION_CAN_IDS[] = { 5, 6, 7, 8 };
     private static final int MODULE_CANCODER_CAN_IDS[] = { 9, 10, 11, 12 };
     
-    private static final double MODULE_TURN_OFFSETS[] = { 45, -45, 45, -45 };        // Degrees to turn for spinning.
-    private static final double MODULE_CANCODER_OFFSETS[] = { -251.6307 + 90.0, -44.1210 + 90.0, -192.0409 + 90.0, -175.1659 + 90.0 };  // Degrees offset between encoder's 0 and module's 0.
-    //private static final double MODULE_CANCODER_OFFSETS[] = { 0, 0, 0, 0 };
+    // Degrees offset between encoder's 0 and module's 0.
+    private static final double MODULE_CANCODER_OFFSETS[] = {
+        -251.6307 + 90.0, 
+        -44.1210 + 90.0, 
+        -192.0409 + 90.0, 
+        -175.1659 + 90.0 
+    };
+    
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };    // Multiplier to the output of angular PID.
-
+    private static final double MODULE_TURN_OFFSETS[] = { 45, -45, 45, -45 };        // Degrees to turn for spinning.
     private static final boolean MODULE_IS_RIGHT[] = { true, false, false, true };
 
-    private static final SwerveDrive instance = new SwerveDrive(MODULE_MOVEMENT_CAN_IDS, MODULE_ROTATION_CAN_IDS, MODULE_CANCODER_CAN_IDS, MODULE_CANCODER_OFFSETS);
+    private static final SwerveDrive instance = new SwerveDrive();
 
     private final SwerveModule modules[] = new SwerveModule[4];
     private final SwerveDriveKinematics kinematics;
     private SwerveMode mode = SwerveMode.Headless;
     private double currentDirection = 0.0;
 
-    private SwerveDrive(int moduleIDs[], int rotationIDs[], int encoderIDs[], double CANCoderOffsets[]) {
-        for (int i = 0; i < moduleIDs.length; i++) {
-            modules[i] = new SwerveModule(moduleIDs[i], rotationIDs[i], encoderIDs[i], CANCoderOffsets[i], MODULE_COEFFIENTS[i]);
+    private SwerveDrive() {
+        for (int i = 0; i < MODULE_MOVEMENT_CAN_IDS.length; i++) {
+            modules[i] = new SwerveModule(MODULE_MOVEMENT_CAN_IDS[i], MODULE_ROTATION_CAN_IDS[i], MODULE_CANCODER_CAN_IDS[i], MODULE_CANCODER_OFFSETS[i], MODULE_COEFFIENTS[i]);
         }
 
         kinematics = new SwerveDriveKinematics(
