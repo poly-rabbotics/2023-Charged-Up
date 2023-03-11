@@ -2,6 +2,7 @@ package frc.robot.patterns;
 
 import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.subsystems.LightPattern;
+import frc.robot.systems.LEDLights;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Rainbow implements LightPattern {
@@ -59,6 +60,12 @@ public class Rainbow implements LightPattern {
         }
 
 		requestingReset = hueShift >= 180.0;
+	}
+
+	public Rainbow() {
+		this.speed = 50;
+		pattern = new Color[LEDLights.LED_LENGTH];
+		updatePattern();
 	}
 
 	/**

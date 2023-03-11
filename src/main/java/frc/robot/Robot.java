@@ -79,7 +79,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         Pigeon.setRelativeForward();
-        LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.8, 0.5, 0.0), 0.5));
+        LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.8, 0.3, 0.0), 0.5));
         ElevFourbar.autonomousInit();
         timer.reset();
         timer.stop();
@@ -169,7 +169,7 @@ public class Robot extends TimedRobot {
     /** This function is called once when the robot is disabled. */
     @Override
     public void disabledInit() {
-        LEDLights.setPatternIfNotEqual(new Rainbow(32, 50));
+        LEDLights.setPatternIfNotEqual(new Rainbow(LEDLights.LED_LENGTH, 50));
     }
     
     /** This function is called periodically when disabled. */
