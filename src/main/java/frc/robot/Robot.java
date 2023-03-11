@@ -45,9 +45,7 @@ public class Robot extends TimedRobot {
     * initialization code.
     */
     @Override
-    public void robotInit() {
-        //Pigeon.setStartingAngle(180 * 2);
-    }
+    public void robotInit() {}
     
     /**
     * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -61,8 +59,8 @@ public class Robot extends TimedRobot {
         SwerveDrive.print();
         double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
         LEDLights.run();
-        SmartDashboard.putNumber("Comp Pressure", Math.floor(pressureValue));
 
+        SmartDashboard.putNumber("Comp Pressure", Math.floor(pressureValue));
         SmartDashboard.putBoolean("Fully Pressurized", pressureValue > 60);
     }
     
@@ -90,7 +88,6 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during autonomous. */
     @Override
     public void autonomousPeriodic() {
-        // SwerveDrive.autoSetSetpoints(0.5, Pigeon.getRelativeRotationDegrees());
         timer.start();
         if(timer.get() < 2)
         return;
@@ -121,7 +118,6 @@ public class Robot extends TimedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        //SwerveDrive.zeroEncoders();
         Pigeon.setRelativeForward();
         SwerveDrive.setMode(SwerveMode.Headless);
         LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.0, 1.0, 0.0), 0.5));
