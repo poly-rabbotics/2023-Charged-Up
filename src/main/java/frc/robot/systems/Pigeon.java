@@ -47,8 +47,9 @@ public class Pigeon {
      * the relative rotation always return a rotation relative to the rotation
      * the robot is in at the point this method is called.
      */
-    public static void setRelativeForward() {
+    public static void setFeildZero() {
         instance.pigeon.setYaw(0.0);
+        
     }
 
     /* public static void setStartingAngle(double angle) {
@@ -59,14 +60,7 @@ public class Pigeon {
      * Gets the robot's rotation in respect to relative forward, if relative
      * forward has not been set then it simply returns the absolute rotaton.
      */
-    public static double getRelativeRotationDegrees() {
-        return (getAbsoluteRotationDegrees() - (instance.relativeForward + instance.startingAngle) + (2 * 360.0)) % 360.0;
-    }
-
-    /**
-     * Gets the absolute rotation of the Pigeon.
-     */
-    public static double getAbsoluteRotationDegrees() {
+    public static double getFeildRelativeRotation() {
         return instance.pigeon.getYaw() % 360.0;
     }
 
@@ -75,6 +69,10 @@ public class Pigeon {
      */
     public static OrientationalChange getChangePerSecond() {
         return instance.changePerSecond;
+    }
+
+    public static double getPitch() {
+        return instance.pigeon.getRoll();
     }
 
     /**

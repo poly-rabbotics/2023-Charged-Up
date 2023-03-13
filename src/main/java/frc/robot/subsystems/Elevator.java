@@ -24,7 +24,7 @@ public class Elevator {
     //position constants, in inches
     private static final double SUBSTATION_INTAKE_SETPOINT = 9;
     private static final double GROUND_INTAKE_SETPOINT = 31;
-    private static final double MID_SCORING_SETPOINT = 13;
+    private static final double MID_SCORING_SETPOINT = 11;
     private static final double HIGH_SCORING_SETPOINT = 31;
     private static final double STOWED_SETPOINT = 0;
     
@@ -60,7 +60,7 @@ public class Elevator {
         elevatorMotor.config_kD(0, D);
         elevatorMotor.selectProfileSlot(0, 0);
 
-        elevatorMotor.configPeakOutputForward(0.8);
+        elevatorMotor.configPeakOutputForward(0.95);
         elevatorMotor.configPeakOutputReverse(-0.7);
         
         //Configures motor to brake when not being used
@@ -182,7 +182,8 @@ public class Elevator {
                 instance.targetSetpoint = SUBSTATION_INTAKE_SETPOINT;
                 break;
             case GROUND_INTAKE:
-                instance.targetSetpoint = GROUND_INTAKE_SETPOINT;
+                if(Fourbar.getPosition() > 5)
+                    instance.targetSetpoint = GROUND_INTAKE_SETPOINT;
                 break;
             case MID_SCORING:
                 instance.targetSetpoint = MID_SCORING_SETPOINT;

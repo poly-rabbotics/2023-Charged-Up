@@ -140,6 +140,10 @@ public class Intake {
         }
     }
 
+    public static SolenoidState getPivotState() {
+        return instance.pivotState;
+    }
+
     /**
      * Updates Smart Dashboard with important variables
      * @param rollerSpeed

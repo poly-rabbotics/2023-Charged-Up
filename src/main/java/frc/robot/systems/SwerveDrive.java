@@ -4,11 +4,15 @@
 
 package frc.robot.systems;
 
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.subsystems.SwerveModule;
 
@@ -16,36 +20,42 @@ import frc.robot.subsystems.SwerveModule;
  * Manages the swerve drive train.
  */
 public class SwerveDrive {
-    /*
-     * IDs in order:
-     * Upper right
-     * Upper left
-     * Back left
-     * Back right - 
-     */
-
     private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1, 2, 3, 4 };
     private static final int MODULE_ROTATION_CAN_IDS[] = { 5, 6, 7, 8 };
     private static final int MODULE_CANCODER_CAN_IDS[] = { 9, 10, 11, 12 };
     
-    // Degrees offset between encoder's 0 and module's 0.
-    private static final double MODULE_CANCODER_OFFSETS[] = {
-        -251.6307 + 90.0, 
-        -44.1210 + 90.0, 
-        -192.0409 + 90.0, 
-        -175.1659 + 90.0 
+    private static final double MODULE_CANCODER_OFFSETS[] = { -251.6307 + 90.0, -44.1210 + 90.0, -192.0409 + 90.0, -175.1659 + 90.0 };
+    private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
+    private static final double LOW_SENSITIVITY_RATIO = 0.1;
+    private static final double DIRECTION_CURVE_EXPONENT = 5.0;
+    private static final double TURN_CURVE_EXPONENT = 5.0;
+
+    private static final BiFunction<Double, Double, Double> DIRECTION_CURVE = (Double directionThis, Double directionOther) -> {
+        double distance = Math.sqrt(directionThis*directionThis + directionOther*directionOther);
+
+        if (distance < 0.1) {
+            return 0.0;
+        }
+
+        double curvedDistance = Math.pow(distance, DIRECTION_CURVE_EXPONENT);
+        double distanceRatio = curvedDistance * distance;
+
+        return directionThis * distanceRatio;
     };
-    
-    private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };    // Multiplier to the output of angular PID.
-    private static final double MODULE_TURN_OFFSETS[] = { 45, -45, 45, -45 };        // Degrees to turn for spinning.
-    private static final boolean MODULE_IS_RIGHT[] = { true, false, false, true };
+
+    private static final Function<Double, Double> TURN_CURVE = (Double turn) -> {
+        if (turn < 0.1) {
+            return 0.0;
+        }
+
+        return Math.pow(turn, TURN_CURVE_EXPONENT);
+    };
 
     private static final SwerveDrive instance = new SwerveDrive();
 
     private final SwerveModule modules[] = new SwerveModule[4];
     private final SwerveDriveKinematics kinematics;
     private SwerveMode mode = SwerveMode.Headless;
-    private double currentDirection = 0.0;
 
     private SwerveDrive() {
         for (int i = 0; i < MODULE_MOVEMENT_CAN_IDS.length; i++) {
@@ -93,20 +103,26 @@ public class SwerveDrive {
      * @param directionalY The Y axis of the directional control, between 1 and -1.
      * @param turn A value between 1 and -1 that determines the turning angle.
      */
-    public static void run(double directionalX, double directionalY, double turn) {
+    public static void run(double directionalX, double directionalY, double turn, int lowSense) {
+        if (lowSense != -1) {
+            lowSense = 360 - lowSense;
+            
+            // inverted since the drive is rotated to compensate for joystick stuff
+            directionalX = -(Math.sin(lowSense * Math.PI / 180.0) * LOW_SENSITIVITY_RATIO);
+            directionalY = -(Math.cos(lowSense * Math.PI / 180.0) * LOW_SENSITIVITY_RATIO);
+            
+            runUncurved(directionalX, directionalY, turn);
+            return;
+        }
+
+        directionalX = DIRECTION_CURVE.apply(directionalX, directionalY);
+        directionalY = DIRECTION_CURVE.apply(directionalY, directionalX);
+        turn = TURN_CURVE.apply(turn);
+
         ChassisSpeeds chassisSpeeds;
 
-        if (directionalX*directionalX + directionalY*directionalY < 0.1) {
-            directionalX = 0.0;
-            directionalY = 0.0;
-        }
-
-        if (Math.abs(turn) < 0.1) {
-            turn = 0.0;
-        }
-
         if (instance.mode == SwerveMode.Headless) {
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getRelativeRotationDegrees() * Math.PI / 180.0));
+            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getFeildRelativeRotation() * Math.PI / 180.0));
         } else {
             chassisSpeeds = new ChassisSpeeds(directionalX, -directionalY, turn);
         }
@@ -116,75 +132,28 @@ public class SwerveDrive {
         for (int i = 0; i < instance.modules.length; i++) {
             instance.modules[i].setDesiredState(moduleStates[i]);
         }
-
-        /* double speed = Math.sqrt(directionalX*directionalX + directionalY*directionalY);
-        
-        if (speed < 0.15)
-            speed = 0.0;
-
-        speed = speed * speed * speed;
-
-        run(directionalX, directionalY, turn, Math.sqrt(directionalX*directionalX + directionalY*directionalY)); */
     }
 
     /**
-     * Runs swerve, behavior changes based on the drive's mode.
-     * @param directionalX The X axis of the directional control, between 1 and -1
-     * @param directionalY The Y axis of the directional control, between 1 and -1.
-     * @param turn A value between 1 and -1 that determines the turning angle.
-     * @param speed The speed of the drive, between 1 and -1, negative values run backwards.
+     * Run the swerve drive exactly by the arguments passed, no cuving will 
+     * occure on the given inputs, nor will the be deadbanded.
+     * @param directionalX Speed along the x axis. -1.0 - 1.0
+     * @param directionalY Speed along the y axis. -1.0 - 1.0
+     * @param turn Rate of turn. -1.0 - 1.0
      */
-    public static void run(double directionalX, double directionalY, double turn, double speed) {
-        double directionAngle;
+    public static void runUncurved(double directionalX, double directionalY, double turn) {
+        ChassisSpeeds chassisSpeeds;
 
-        // This makes a distance of less that 0.15 a deadzone on the joystick,
-        // used primiraly to mitigate stick drift or minute accidental 
-        // movements.
-        if (Math.sqrt(directionalX * directionalX + directionalY * directionalY) > 0.15) {
-            directionAngle = Math.atan2(directionalY, directionalX) * 180.0 / Math.PI;
-            instance.currentDirection = directionAngle;
-        } else {
-            directionAngle = instance.currentDirection;
-        }
-
-        if (Math.abs(speed) < 0.15)
-            speed = 0;
-
-        // Turn, since its either turning or not, doesnt change the angle on a 
-        // scale, so turning less that 0.5 wont turn at all. When turning 
-        // however the turn value is the motor's speed.
-        if (Math.abs(turn) > 0.5) {
-            for (int i = 0; i < instance.modules.length; i++) {
-                double power = (turn * turn * turn);
-                power -= Math.signum(power) * 0.125;
-                instance.modules[i].setMovementVector(MODULE_TURN_OFFSETS[i], power * (MODULE_IS_RIGHT[i] ? 1 : -1));
-            }
-
-            return;
-        }
-
-        // Inverts direction angle.
-        directionAngle = Math.abs(directionAngle - 360.0);
-
-        // Offsets by 90 since the joystick's zero angle is to the right, and
-        // the swerve modules' is up.
-        directionAngle = (directionAngle + 90.0) % 360.0;
-
-        // If we're in headless mode we subract the pigeon's position relative
-        // to a previously set zero position from the given angle to create an 
-        // angle relative to the pigeon's relative zero.
         if (instance.mode == SwerveMode.Headless) {
-            for (int i = 0; i < instance.modules.length; i++) {
-                instance.modules[i].setMovementVector(directionAngle - Pigeon.getRelativeRotationDegrees(), speed);
-            }
-
-            return;
+            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getFeildRelativeRotation() * Math.PI / 180.0));
+        } else {
+            chassisSpeeds = new ChassisSpeeds(directionalX, -directionalY, turn);
         }
 
-        // Assuming we had no special modes we just set the given angle and 
-        // speed.
+        SwerveModuleState[] moduleStates = instance.kinematics.toSwerveModuleStates(chassisSpeeds);
+
         for (int i = 0; i < instance.modules.length; i++) {
-            instance.modules[i].setMovementVector(directionAngle, speed);
+            instance.modules[i].setDesiredState(moduleStates[i]);
         }
     }
 
@@ -211,6 +180,41 @@ public class SwerveDrive {
         }
 
         return completed;
+    }
+
+    private double startTimeBalance = -1.0;
+    private Timer balanceTimer = new Timer();
+
+    public static boolean autoBalance() {
+        final double TOLERANCE = 12.0;
+        final double SPEED = 0.6;
+
+        /* if (Pigeon.getPitch() > TOLERANCE) {
+            run(0.0, SPEED, 0.0);
+        } else if (Pigeon.getPitch() < -TOLERANCE) {
+            run(0.0, -SPEED, 0.0);
+        } */
+
+        if (Math.abs(Pigeon.getPitch()) > TOLERANCE) {
+            if (instance.startTimeBalance == -1.0) {
+                instance.balanceTimer.reset();
+                instance.balanceTimer.start();
+                instance.startTimeBalance = instance.balanceTimer.get();
+                return false;
+            }
+
+            if (instance.startTimeBalance < 0.15) {
+                return false;
+            }
+
+            run(0.0, Math.signum(Pigeon.getPitch()) * SPEED, 0.0, -1);
+            return true;
+        }
+
+        instance.balanceTimer.stop();
+        instance.balanceTimer.reset();
+        instance.startTimeBalance = -1.0;
+        return false;
     }
 
     public static void zeroEncoders() {
