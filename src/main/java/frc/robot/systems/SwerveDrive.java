@@ -13,6 +13,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Timer;
+
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.subsystems.SwerveModule;
 
@@ -20,15 +21,19 @@ import frc.robot.subsystems.SwerveModule;
  * Manages the swerve drive train.
  */
 public class SwerveDrive {
-    private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1, 2, 3, 4 };
-    private static final int MODULE_ROTATION_CAN_IDS[] = { 5, 6, 7, 8 };
-    private static final int MODULE_CANCODER_CAN_IDS[] = { 9, 10, 11, 12 };
+    private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1,  2,   3,   4  };
+    private static final int MODULE_ROTATION_CAN_IDS[] = { 5,  6,   7,   8  };
+    private static final int MODULE_CANCODER_CAN_IDS[] = { 9,  10,  11,  12 };
     
     private static final double MODULE_CANCODER_OFFSETS[] = { -251.6307 + 90.0, -44.1210 + 90.0, -192.0409 + 90.0, -175.1659 + 90.0 };
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
+    
     private static final double LOW_SENSITIVITY_RATIO = 0.1;
-    private static final double DIRECTION_CURVE_EXPONENT = 5.0;
-    private static final double TURN_CURVE_EXPONENT = 5.0;
+    private static final double CURVE_EXPONENT_DIRECTIONAL = 5.0;
+    private static final double CURVE_EXPONENT_TURN = 5.0;
+
+    private static final double CHASSIS_SIDE_LENGTH = 0.6;
+    private static final double RADIAN_DEGREE_RATIO = Math.PI / 180.0;
 
     private static final BiFunction<Double, Double, Double> DIRECTION_CURVE = (Double directionThis, Double directionOther) -> {
         double distance = Math.sqrt(directionThis*directionThis + directionOther*directionOther);
@@ -37,7 +42,7 @@ public class SwerveDrive {
             return 0.0;
         }
 
-        double curvedDistance = Math.pow(distance, DIRECTION_CURVE_EXPONENT);
+        double curvedDistance = Math.pow(distance, CURVE_EXPONENT_DIRECTIONAL);
         double distanceRatio = curvedDistance * distance;
 
         return directionThis * distanceRatio;
@@ -48,7 +53,7 @@ public class SwerveDrive {
             return 0.0;
         }
 
-        return Math.pow(turn, TURN_CURVE_EXPONENT);
+        return Math.pow(turn, CURVE_EXPONENT_TURN);
     };
 
     private static final SwerveDrive instance = new SwerveDrive();
@@ -59,14 +64,20 @@ public class SwerveDrive {
 
     private SwerveDrive() {
         for (int i = 0; i < MODULE_MOVEMENT_CAN_IDS.length; i++) {
-            modules[i] = new SwerveModule(MODULE_MOVEMENT_CAN_IDS[i], MODULE_ROTATION_CAN_IDS[i], MODULE_CANCODER_CAN_IDS[i], MODULE_CANCODER_OFFSETS[i], MODULE_COEFFIENTS[i]);
+            modules[i] = new SwerveModule(
+                MODULE_MOVEMENT_CAN_IDS[i], 
+                MODULE_ROTATION_CAN_IDS[i], 
+                MODULE_CANCODER_CAN_IDS[i], 
+                MODULE_CANCODER_OFFSETS[i], 
+                MODULE_COEFFIENTS[i]
+            );
         }
 
         kinematics = new SwerveDriveKinematics(
-            new Translation2d(0.3, 0.3),
-            new Translation2d(-0.3, 0.3),
-            new Translation2d(-0.3, -0.3),
-            new Translation2d(0.3, -0.3)
+            new Translation2d(   CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
+            new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
+            new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2),
+            new Translation2d(   CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2)
         );
     }
 
@@ -102,14 +113,15 @@ public class SwerveDrive {
      * @param directionalX The X axis of the directional control, between 1 and -1
      * @param directionalY The Y axis of the directional control, between 1 and -1.
      * @param turn A value between 1 and -1 that determines the turning angle.
+     * @param lowSense The angle to move in low sensitivity in degrees, -1 for no movement.
      */
     public static void run(double directionalX, double directionalY, double turn, int lowSense) {
         if (lowSense != -1) {
-            lowSense = 360 - lowSense;
-            
+            double angle = (2 * Math.PI) - ((double)lowSense * RADIAN_DEGREE_RATIO);
+
             // inverted since the drive is rotated to compensate for joystick stuff
-            directionalX = -(Math.sin(lowSense * Math.PI / 180.0) * LOW_SENSITIVITY_RATIO);
-            directionalY = -(Math.cos(lowSense * Math.PI / 180.0) * LOW_SENSITIVITY_RATIO);
+            directionalX = -(Math.sin(angle) * LOW_SENSITIVITY_RATIO);
+            directionalY = -(Math.cos(angle) * LOW_SENSITIVITY_RATIO);
             
             runUncurved(directionalX, directionalY, turn);
             return;
@@ -122,7 +134,7 @@ public class SwerveDrive {
         ChassisSpeeds chassisSpeeds;
 
         if (instance.mode == SwerveMode.Headless) {
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getFeildRelativeRotation() * Math.PI / 180.0));
+            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getFeildRelativeRotation() * RADIAN_DEGREE_RATIO));
         } else {
             chassisSpeeds = new ChassisSpeeds(directionalX, -directionalY, turn);
         }
@@ -145,7 +157,7 @@ public class SwerveDrive {
         ChassisSpeeds chassisSpeeds;
 
         if (instance.mode == SwerveMode.Headless) {
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getFeildRelativeRotation() * Math.PI / 180.0));
+            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getFeildRelativeRotation() * RADIAN_DEGREE_RATIO));
         } else {
             chassisSpeeds = new ChassisSpeeds(directionalX, -directionalY, turn);
         }
