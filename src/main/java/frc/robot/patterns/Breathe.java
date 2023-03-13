@@ -13,6 +13,12 @@ public class Breathe implements LightPattern {
 	double time = 0.0;
 	boolean requestingReset = false;
 
+	public Breathe() {
+		speed = 0.4;
+		color = new Color(0.0, 1.0, 0.0);
+		pattern = new Color[] { color };
+	}
+
 	/**
 	 * Creates a new {@link Breathe} instance from the given color at the given speed.
 	 *

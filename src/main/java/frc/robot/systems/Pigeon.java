@@ -30,6 +30,7 @@ public class Pigeon {
 
     private Pigeon(int canID) {
         pigeon = new Pigeon2(canID);
+        //pigeon.setYaw(0.0);
 
         /* 
          * Starts the thread so that it calls 'run()' every 40 ms (25hz). This
@@ -46,26 +47,20 @@ public class Pigeon {
      * the relative rotation always return a rotation relative to the rotation
      * the robot is in at the point this method is called.
      */
-    public static void setRelativeForward() {
-        instance.relativeForward = getAbsoluteRotationDegrees() + instance.startingAngle;
+    public static void setFeildZero() {
+        instance.pigeon.setYaw(0.0);
+        
     }
 
-    public static void setStartingAngle(double angle) {
+    /* public static void setStartingAngle(double angle) {
         instance.startingAngle = angle;
-    }
+    } */
 
     /**
      * Gets the robot's rotation in respect to relative forward, if relative
      * forward has not been set then it simply returns the absolute rotaton.
      */
-    public static double getRelativeRotationDegrees() {
-        return (getAbsoluteRotationDegrees() - (instance.relativeForward + instance.startingAngle) + (2 * 360.0)) % 360.0;
-    }
-
-    /**
-     * Gets the absolute rotation of the Pigeon.
-     */
-    public static double getAbsoluteRotationDegrees() {
+    public static double getFeildRelativeRotation() {
         return instance.pigeon.getYaw() % 360.0;
     }
 
@@ -74,6 +69,10 @@ public class Pigeon {
      */
     public static OrientationalChange getChangePerSecond() {
         return instance.changePerSecond;
+    }
+
+    public static double getPitch() {
+        return instance.pigeon.getRoll();
     }
 
     /**

@@ -4,21 +4,26 @@
 
 package frc.robot;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import java.util.concurrent.*;
-
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
-import frc.robot.subsystems.SwerveMode;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
+import frc.robot.systems.ElevFourbar.Setpoint;
+import frc.robot.systems.Intake.SolenoidState;
 import frc.robot.systems.LEDLights;
-import edu.wpi.first.wpilibj.Joystick;
+
+import frc.robot.subsystems.SwerveMode;
+
 import frc.robot.patterns.*;
+
 
 /**
 * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -29,16 +34,42 @@ import frc.robot.patterns.*;
 public class Robot extends TimedRobot {
     public static XboxController controllerOne = new XboxController(0);
     public static XboxController controllerTwo = new XboxController(1);
+    public static AnalogInput pressureSensor = new AnalogInput(0);
     public static Joystick controlPanel = new Joystick(2);
+    Timer timer = new Timer();
+    
+    boolean autoStageOne;
+    int autoMode;
+    double fbSpeedInput = 0;
+
+    private void autoBalance(double startTime) {
+        if (timer.get() > startTime) {
+            if (startTimeBalance == -1.0) {
+                startTimeBalance = timer.get();
+            }
+
+            if (timer.get() - startTimeBalance >= 1.5) {
+                SwerveDrive.run(0.0, 0.0, 0.0, -1);
+                return;
+            }
+
+            if (!SwerveDrive.autoBalance()) {
+                startTimeBalance = -1.0;
+                if (timer.get() > 0 && timer.get() < 15) {
+                    SwerveDrive.run(0.0, -0.85, 0.0, -1);
+                } else {
+                    SwerveDrive.run(0.0, 0.0, 0.0, -1);
+                }
+            }
+        }
+    }
     
     /**
     * This function is run when the robot is first started up and should be used for any
     * initialization code.
     */
     @Override
-    public void robotInit() {
-        Pigeon.setStartingAngle(180);
-    }
+    public void robotInit() {}
     
     /**
     * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -49,7 +80,12 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void robotPeriodic() {
+        SwerveDrive.print();
+        double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
         LEDLights.run();
+        
+        SmartDashboard.putNumber("Comp Pressure", Math.floor(pressureValue));
+        SmartDashboard.putBoolean("Fully Pressurized", pressureValue > 60);
     }
     
     /**
@@ -64,26 +100,208 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void autonomousInit() {
+        Pigeon.setFeildZero();
+        LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.8, 0.3, 0.0), 0.5));
+        ElevFourbar.autonomousInit();
+        timer.reset();
+        timer.stop();
+        autoStageOne = false;
+        
+        //Sets the auto mode that will be run
+        autoMode = 0;
+        
+        if(controlPanel.getRawButton(12)) 
+        autoMode += 1;
+        if(controlPanel.getRawButton(11))
+        autoMode += 2;
+        if(controlPanel.getRawButton(10))
+        autoMode += 4;
+        
     }
+
+    double startTimeBalance = -1.0;
     
     /** This function is called periodically during autonomous. */
     @Override
-    public void autonomousPeriodic() {}
+    public void autonomousPeriodic() {
+        timer.start();
+        if(timer.get() < 2)
+        return;
+        
+        /* 
+        * SCORE MID AND MOVE BACK
+        */
+        if(autoMode == 1) {
+            if(!autoStageOne){
+                Intake.autoPivot(SolenoidState.UP);
+                if(ElevFourbar.autoRun(Setpoint.MID_SCORING)) {
+                    Intake.autoClaw(SolenoidState.OPEN);
+                    timer.start();
+                    autoStageOne = true;
+                } 
+            } else {
+                if(timer.get() > 5) {
+                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                        Intake.autoClaw(SolenoidState.CLOSED);
+                    }
+                }
+            }
+            
+            if (timer.get() > 10 && timer.get() < 15) {
+                SwerveDrive.run(0.0, -0.75, 0.0, -1);
+            } else {
+                SwerveDrive.run(0.0, 0.0, 0.0, -1);
+            }
+            
+        }
+        
+        /* 
+        * SCORE HIGH
+        */
+        else if(autoMode == 2) {
+            if(!autoStageOne){
+                Intake.autoPivot(SolenoidState.UP);
+                if(ElevFourbar.autoRun(Setpoint.MID_SCORING)) {
+                    Intake.autoClaw(SolenoidState.OPEN);
+                    timer.start();
+                    autoStageOne = true;
+                } 
+            } else {
+                if(timer.get() > 5) {
+                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                        Intake.autoClaw(SolenoidState.CLOSED);
+                    }
+                }
+            }
+        }
+        
+        /* 
+        * SCORE MID, MOVE BACK, AND AUTO BALANCE
+        */
+        if(autoMode == 3) {
+            /* if(!autoStageOne){
+                Intake.autoPivot(SolenoidState.UP);
+                if(ElevFourbar.autoRun(Setpoint.MID_SCORING)) {
+                    Intake.autoClaw(SolenoidState.OPEN);
+                    timer.start();
+                    autoStageOne = true;
+                } 
+            } else {
+                if(timer.get() > 5) {
+                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                        Intake.autoClaw(SolenoidState.CLOSED);
+                    }
+                }
+            } */
+            
+            autoBalance(3.0);
+        }
+        
+        /*
+        * SCORE HIGH AND MOVE BACK
+        */
+        if(autoMode == 4) {
+            if(!autoStageOne){
+                Intake.autoPivot(SolenoidState.UP);
+                if(ElevFourbar.autoRun(Setpoint.HIGH_SCORING)) {
+                    Intake.autoClaw(SolenoidState.OPEN);
+                    timer.start();
+                    autoStageOne = true;
+                } 
+            } else {
+                if(timer.get() > 5) {
+                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                        Intake.autoClaw(SolenoidState.CLOSED);
+                    }
+                }
+            }
+            
+            if (timer.get() > 10 && timer.get() < 15) {
+                SwerveDrive.run(0.0, -0.75, 0.0, -1);
+            } else {
+                SwerveDrive.run(0.0, 0.0, 0.0, -1);
+            }
+            
+        }
+        
+        /* 
+        * SCORE HIGH
+        */
+        else if(autoMode == 5) {
+            if(!autoStageOne){
+                Intake.autoPivot(SolenoidState.UP);
+                if(ElevFourbar.autoRun(Setpoint.HIGH_SCORING)) {
+                    Intake.autoClaw(SolenoidState.OPEN);
+                    timer.start();
+                    autoStageOne = true;
+                } 
+            } else {
+                if(timer.get() > 5) {
+                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                        Intake.autoClaw(SolenoidState.CLOSED);
+                    }
+                }
+            }
+        }
+        
+        /* 
+        * SCORE HIGH, MOVE BACK, AND AUTO BALANCE
+        */
+        if(autoMode == 6) {
+            if(!autoStageOne){
+                Intake.autoPivot(SolenoidState.UP);
+                if(ElevFourbar.autoRun(Setpoint.HIGH_SCORING)) {
+                    Intake.autoClaw(SolenoidState.OPEN);
+                    timer.start();
+                    autoStageOne = true;
+                } 
+            } else {
+                if(timer.get() > 5) {
+                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                        Intake.autoClaw(SolenoidState.CLOSED);
+                    }
+                }
+            }
+            
+            autoBalance(9.0);
+        }
+        
+        
+        /*
+        * ONLY MOVE BACK
+        */
+        if(autoMode == 7) {
+            if (timer.get() > 5 && timer.get() < 7) {
+                SwerveDrive.run(0.0, -0.75, 0.0, -1);
+            } else {
+                SwerveDrive.run(0.0, 0.0, 0.0, -1);
+            }
+        }
+    }
     
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        Pigeon.setRelativeForward();
-        //SwerveDrive.zeroEncoders();
-        //LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 1.0));
+        Pigeon.setFeildZero();
+        SwerveDrive.setMode(SwerveMode.Headless);
+        LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.0, 1.0, 0.0), 0.5));
         ElevFourbar.init();
         Intake.init();
+        
+        fbSpeedInput = 0;
     }
     
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        SwerveDrive.run(controllerOne.getLeftX(), controllerOne.getLeftY(), controllerOne.getRightX());
+        if(Math.abs(controlPanel.getRawAxis(0)/2) > controllerTwo.getLeftY()) {
+            fbSpeedInput = -controlPanel.getRawAxis(0)/2;
+        } else {
+            fbSpeedInput = controllerTwo.getLeftY();
+        }
+        
+        //SwerveDrive.autoBalance()
+        SwerveDrive.run(controllerOne.getLeftX(), controllerOne.getLeftY(), controllerOne.getRightX(), controllerOne.getPOV());
         
         // Left stick changes between headless and relative control modes.
         if (controllerOne.getLeftStickButtonReleased()) {
@@ -103,7 +321,7 @@ public class Robot extends TimedRobot {
         
         ElevFourbar.run(
             controllerTwo.getRightY(),
-            controllerTwo.getLeftY(),
+            fbSpeedInput,
             controllerTwo.getStartButton(),
             false,
             false,
@@ -120,14 +338,15 @@ public class Robot extends TimedRobot {
     /** This function is called once when the robot is disabled. */
     @Override
     public void disabledInit() {
-        //LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.0, 1.0, 0.0), 1.0));
+        LEDLights.setPatternIfNotEqual(new Rainbow(LEDLights.LED_LENGTH, 50));
     }
     
     /** This function is called periodically when disabled. */
     @Override
-    public void disabledPeriodic() {}
+    public void disabledPeriodic() {
+    }
     
-    /** This function is called once when test mode is enabled. */
+    /** This  function is called once when test mode is enabled. */
     @Override
     public void testInit() {}
     

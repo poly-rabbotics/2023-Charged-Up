@@ -5,12 +5,14 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.sensors.CANCoder;
+import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -41,6 +43,7 @@ public class SwerveModule {
 
     private final PIDController rotationController;
     private final PIDController movementController;
+
     private final double canCoderOffset;
     private final double coefficient;
 
@@ -53,12 +56,15 @@ public class SwerveModule {
 
         rotationMotor = new CANSparkMax(rotationalMotorID, MotorType.kBrushless);
         rotationMotor.setInverted(false);
+        rotationMotor.setSmartCurrentLimit(40);
         
         movementMotor = new CANSparkMax(movementMotorID, MotorType.kBrushless);
         movementMotor.setInverted(false);
         movementMotor.setIdleMode(IdleMode.kBrake);
+        movementMotor.setSmartCurrentLimit(40);
 
         angularEncoder = new CANCoder(canCoderID);
+        angularEncoder.configSensorInitializationStrategy(SensorInitializationStrategy.BootToAbsolutePosition, 1000);
 
         rotationEncoder = rotationMotor.getEncoder();
         rotationEncoder.setPosition(angularEncoder.getPosition());
@@ -111,14 +117,20 @@ public class SwerveModule {
         state = SwerveModuleState.optimize(state, new Rotation2d(currentPosition * Math.PI / 180.0));
         double calculation = rotationController.calculate(currentPosition, (state.angle.getDegrees() + 360.0) % 360.0);
         
-        movementMotor.set(state.speedMetersPerSecond / 5);
+        movementMotor.set(state.speedMetersPerSecond);
         rotationMotor.set(calculation * coefficient);
 
-        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Calculation", calculation);
-        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Rotation", (state.angle.getDegrees() + 360) % 360.0);
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position", angularEncoder.getPosition());
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position mod 360", angularEncoder.getPosition() % 360);
+        
         //setMovementVector(0.0, (state.angle.getDegrees() + 360) % 360);
+    }
+
+    public void print() {
+        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position", angularEncoder.getPosition());
+        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position mod 360", angularEncoder.getPosition() % 360);
+        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position + off", angularEncoder.getPosition() + canCoderOffset);
+        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position + off mod 360", (angularEncoder.getPosition() + canCoderOffset) % 360);
     }
 
     public void zeroCANCoder() {

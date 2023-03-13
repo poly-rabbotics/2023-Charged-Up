@@ -81,7 +81,7 @@ public class Intake {
     public static void autoPivot(SolenoidState state) {
         if(state == SolenoidState.DOWN) {
             pivot.down();
-        } else {
+        } else if(state == SolenoidState.UP) {
             pivot.up();
         }
     }
@@ -138,6 +138,10 @@ public class Intake {
         } else if(instance.pivotState == SolenoidState.UP) {
             pivot.up();
         }
+    }
+
+    public static SolenoidState getPivotState() {
+        return instance.pivotState;
     }
 
     /**

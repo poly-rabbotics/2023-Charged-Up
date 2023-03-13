@@ -1,18 +1,13 @@
 package frc.robot.systems;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import javax.swing.Renderer;
-
 import frc.robot.patterns.Rainbow;
 import frc.robot.subsystems.LightPattern;
 import frc.robot.subsystems.LightRenderer;
 
 public class LEDLights {
+    // Public since it may be usefule for pattern instantiation.
+    public static final int LED_LENGTH = 108;
     private static final int LED_PORT = 1;
-    private static final int LED_LENGTH = 69;
 
     private static final LEDLights instance = new LEDLights();
 
