@@ -12,7 +12,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.Timer;
 
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.subsystems.SwerveModule;
@@ -98,16 +97,6 @@ public class SwerveDrive {
     }
 
     /**
-     * Moves all swerve modules so that the face forward relative to the 
-     * robot's front.
-     */
-    public static void resetOrientation() {
-        for (SwerveModule module : instance.modules) {
-            module.setMovementVector(0.0, 0.0);
-        }
-    }
-
-    /**
      * Runs swerve, behavior changes based on the drive's mode. Derives speed
      * from directional inputs.
      * @param directionalX The X axis of the directional control, between 1 and -1
@@ -166,72 +155,6 @@ public class SwerveDrive {
 
         for (int i = 0; i < instance.modules.length; i++) {
             instance.modules[i].setDesiredState(moduleStates[i]);
-        }
-    }
-
-    /**
-     * Sets the auto setpoints.
-     * @param distance Distance from "here" in meters.
-     * @param angle Absolute angle of movement.
-     */
-    public static void autoSetSetpoints(double distance, double angle) {
-        for (SwerveModule module : instance.modules) {
-            module.setAutoSetpoints(distance, angle);
-        }
-    }
-
-    /**
-     * Runs the swerve modules with previously given setpoints.
-     * @return Whether or not the action has completed.
-     */
-    public static boolean autoRun() {
-        boolean completed = true;
-
-        for (SwerveModule module : instance.modules) {
-            completed &= module.autoRun();
-        }
-
-        return completed;
-    }
-
-    private double startTimeBalance = -1.0;
-    private Timer balanceTimer = new Timer();
-
-    public static boolean autoBalance() {
-        final double TOLERANCE = 12.0;
-        final double SPEED = 0.6;
-
-        /* if (Pigeon.getPitch() > TOLERANCE) {
-            run(0.0, SPEED, 0.0);
-        } else if (Pigeon.getPitch() < -TOLERANCE) {
-            run(0.0, -SPEED, 0.0);
-        } */
-
-        if (Math.abs(Pigeon.getPitch()) > TOLERANCE) {
-            if (instance.startTimeBalance == -1.0) {
-                instance.balanceTimer.reset();
-                instance.balanceTimer.start();
-                instance.startTimeBalance = instance.balanceTimer.get();
-                return false;
-            }
-
-            if (instance.startTimeBalance < 0.15) {
-                return false;
-            }
-
-            run(0.0, Math.signum(Pigeon.getPitch()) * SPEED, 0.0, -1);
-            return true;
-        }
-
-        instance.balanceTimer.stop();
-        instance.balanceTimer.reset();
-        instance.startTimeBalance = -1.0;
-        return false;
-    }
-
-    public static void zeroEncoders() {
-        for (SwerveModule module : instance.modules) {
-            module.zeroCANCoder();
         }
     }
 
