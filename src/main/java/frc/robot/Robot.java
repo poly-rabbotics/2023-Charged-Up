@@ -34,8 +34,8 @@ import frc.robot.patterns.*;
 public class Robot extends TimedRobot {
     public static XboxController controllerOne = new XboxController(0);
     public static XboxController controllerTwo = new XboxController(1);
-    public static AnalogInput pressureSensor = new AnalogInput(0);
     public static Joystick controlPanel = new Joystick(2);
+    public static AnalogInput pressureSensor = new AnalogInput(0);
     Timer timer = new Timer();
     
     boolean autoStageOne;
@@ -53,14 +53,14 @@ public class Robot extends TimedRobot {
                 return;
             }
 
-            if (!SwerveDrive.autoBalance()) {
+            /* if (false) {
                 startTimeBalance = -1.0;
                 if (timer.get() > 0 && timer.get() < 15) {
                     SwerveDrive.run(0.0, -0.85, 0.0, -1);
                 } else {
                     SwerveDrive.run(0.0, 0.0, 0.0, -1);
                 }
-            }
+            } */
         }
     }
     
