@@ -38,6 +38,9 @@ public class Controls {
         private boolean[] rawButtonsReleased;
         private boolean[] rawButtonsPressed;
 
+        /**
+         * Updates the controller state with the given controller.
+         */
         private void update(GenericHID controller) {
             pov                 = controller.getPOV();
             rawAxes             = new double[controller.getAxisCount()];
@@ -56,6 +59,9 @@ public class Controls {
             }
         }
 
+        /**
+         * Set this state to the given controller simulation.
+         */
         private void set(GenericHIDSim controller) {
             controller.setAxisCount(rawAxes.length);
             controller.setButtonCount(rawButtons.length);
@@ -72,6 +78,10 @@ public class Controls {
             controller.notifyNewData();
         }
 
+        /**
+         * Get a string that represents this frame of controller input can be
+         * used to restore this state.
+         */
         private String getString() {
             String str = Integer.toString(pov) + " ";
 
@@ -87,6 +97,12 @@ public class Controls {
             return str;
         }
 
+        /**
+         * Sets the current state to one frame of the given string, seperated by
+         * newlines.
+         * @param str The string containing newline seperated input frames.
+         * @param frame The frame to set this state to.
+         */
         private void setFromString(String str, int frame) {
             String[] frames = str.split("\n");
 
