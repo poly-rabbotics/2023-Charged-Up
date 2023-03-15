@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.GenericHIDSim;
 
 /**
@@ -24,9 +26,9 @@ public class Controls {
     // 50 hz times 60 seconds times 15 seconds in auto
     private static final int RECORDING_FRAMES = 50 * 60 * 15;
 
-    private static final int CONTROLLER_PORT_DRIVE = 0;
-    private static final int CONTROLLER_PORT_MECHS = 1;
-    private static final int CONTROLLER_PORT_PANEL = 2;
+    public static final int CONTROLLER_PORT_DRIVE = 0;
+    public static final int CONTROLLER_PORT_MECHS = 1;
+    public static final int CONTROLLER_PORT_PANEL = 2;
 
     private static final Controls instance = new Controls();
 
@@ -133,9 +135,9 @@ public class Controls {
 
     private Controls() {
         controllers = new GenericHID[] {
-            new GenericHID(CONTROLLER_PORT_DRIVE),
-            new GenericHID(CONTROLLER_PORT_MECHS),
-            new GenericHID(CONTROLLER_PORT_PANEL)
+            new XboxController(CONTROLLER_PORT_DRIVE),
+            new XboxController(CONTROLLER_PORT_MECHS),
+            new Joystick(CONTROLLER_PORT_PANEL)
         };
 
         controllerSims = new GenericHIDSim[controllers.length];
@@ -145,6 +147,19 @@ public class Controls {
             controllerSims[i] = new GenericHIDSim(controllers[i]);
             controllerStates[i] = new ControllerState();
         }
+    }
+
+    /**
+     * gets a controller by port. returns null if no controller is found.
+     */
+    public static GenericHID getControllerByPort(int port) {
+        for (GenericHID controller : instance.controllers) {
+            if (controller.getPort() == port) {
+                return controller;
+            }
+        }
+
+        return null;
     }
 
     /**
