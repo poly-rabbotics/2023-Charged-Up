@@ -13,6 +13,9 @@ import java.nio.file.Paths;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.simulation.GenericHIDSim;
 
+/**
+ * Manages the recording, playback, and wrapping of controller input.
+ */
 public class Controls {
     // Should be the first USB device plugged into the RoboRio. This device 
     // should be formatted as a FAT filesystem with a single partition.
@@ -166,12 +169,12 @@ public class Controls {
      * recording records that frame.
      */
     public static void update() {
-        if (instance.frame != -1) {
-            if (instance.frame >= RECORDING_FRAMES) {
-                instance.frame = -1;
-                instance.writeStates();
-            }
+        if (instance.frame >= RECORDING_FRAMES) {
+            instance.frame = -1;
+            instance.writeStates();
+        }
 
+        if (instance.frame != -1) {
             for (int i = 0; i < instance.controllers.length; i++) {
                 instance.controllerStates[i].update(instance.controllers[i]);
                 instance.controllerRecordings[i] += instance.controllerStates[i].getString();
