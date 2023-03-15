@@ -14,6 +14,7 @@ import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -30,9 +31,7 @@ public class SwerveModule {
     private static double PID_I = 0;
     private static double PID_D = 0;
 
-    private static double MOVEMENT_PID_P = 0.0005301;
-    private static double MOVEMENT_PID_I = 0;
-    private static double MOVEMENT_PID_D = 0;
+    private final SwerveModulePosition position;
 
     private final CANSparkMax rotationMotor;  // The motor responsible for rotating the module.
     private final CANSparkMax movementMotor;  // The motor responsible for creating movement in the module.
@@ -42,7 +41,6 @@ public class SwerveModule {
     private final RelativeEncoder movementEncoder; // Relative encoder for tracking translational movement.
 
     private final PIDController rotationController;
-    private final PIDController movementController;
 
     private final double canCoderOffset;
     private final double coefficient;
@@ -77,8 +75,7 @@ public class SwerveModule {
         rotationController.enableContinuousInput(0.0, 360.0);
         rotationController.setTolerance(0.5);
 
-        movementController = new PIDController(MOVEMENT_PID_P, MOVEMENT_PID_I, MOVEMENT_PID_D);
-        movementController.setTolerance(0.5);
+        position = new SwerveModulePosition(movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT, new Rotation2d(angularEncoder.getPosition() / 180.0 * Math.PI));
     }
 
     public void setDesiredState(SwerveModuleState state) {
@@ -94,6 +91,9 @@ public class SwerveModule {
         
         movementMotor.set(state.speedMetersPerSecond);
         rotationMotor.set(calculation * coefficient);
+
+        position.angle = new Rotation2d(angularEncoder.getPosition());
+        position.distanceMeters = movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT;
     }
 
     public void print() {
@@ -101,5 +101,9 @@ public class SwerveModule {
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position mod 360", angularEncoder.getPosition() % 360);
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position + off", angularEncoder.getPosition() + canCoderOffset);
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position + off mod 360", (angularEncoder.getPosition() + canCoderOffset) % 360);
+    }
+
+    public SwerveModulePosition getPosition() {
+        return position;
     }
 }

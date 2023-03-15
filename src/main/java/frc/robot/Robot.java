@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
+import frc.robot.systems.Controls;
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
@@ -32,9 +32,9 @@ import frc.robot.patterns.*;
 * project.
 */
 public class Robot extends TimedRobot {
-    public static XboxController controllerOne = new XboxController(0);
-    public static XboxController controllerTwo = new XboxController(1);
-    public static Joystick controlPanel = new Joystick(2);
+    public static XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
+    public static XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
+    public static Joystick controlPanel = (Joystick)Controls.getControllerByPort(2);
     public static AnalogInput pressureSensor = new AnalogInput(0);
     Timer timer = new Timer();
     

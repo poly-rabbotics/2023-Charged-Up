@@ -11,6 +11,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
 import frc.robot.subsystems.SwerveMode;
@@ -58,7 +60,9 @@ public class SwerveDrive {
     private static final SwerveDrive instance = new SwerveDrive();
 
     private final SwerveModule modules[] = new SwerveModule[4];
+    private final SwerveModulePosition positions[] = new SwerveModulePosition[4];
     private final SwerveDriveKinematics kinematics;
+    private final SwerveDriveOdometry odometry;
     private SwerveMode mode = SwerveMode.Headless;
 
     private SwerveDrive() {
@@ -72,12 +76,18 @@ public class SwerveDrive {
             );
         }
 
+        for (int i = 0; i < modules.length; i++) {
+            positions[i] = modules[i].getPosition();
+        }
+
         kinematics = new SwerveDriveKinematics(
             new Translation2d(   CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
             new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
             new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2),
             new Translation2d(   CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2)
         );
+
+        odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(Pigeon.getFeildRelativeRotation() * RADIAN_DEGREE_RATIO), positions);
     }
 
     /**
@@ -105,6 +115,8 @@ public class SwerveDrive {
      * @param lowSense The angle to move in low sensitivity in degrees, -1 for no movement.
      */
     public static void run(double directionalX, double directionalY, double turn, int lowSense) {
+        instance.odometry.update(new Rotation2d(Pigeon.getFeildRelativeRotation() * RADIAN_DEGREE_RATIO), instance.positions);
+        
         if (lowSense != -1) {
             double angle = (2 * Math.PI) - ((double)lowSense * RADIAN_DEGREE_RATIO);
 
