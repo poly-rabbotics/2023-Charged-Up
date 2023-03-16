@@ -113,7 +113,7 @@ public class Fourbar {
     }
 
     public static void autonomousRun(Setpoint setpoint) {
-        instance.encoderPosition = instance.relativeEncoder.getPosition() * 360;
+        instance.encoderPosition = (instance.absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
 
         updateTargetSetpoint(setpoint);
 
@@ -124,7 +124,7 @@ public class Fourbar {
      * Allows for cycling between setpoints using PID
      */
     public static void pidControl(Setpoint setpoint){
-        instance.encoderPosition = instance.relativeEncoder.getPosition() * 360;
+        instance.encoderPosition = (instance.absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
         
         updateTargetSetpoint(setpoint);
 
@@ -135,7 +135,7 @@ public class Fourbar {
      * Allows for manual control of motor output using the right joystick
      */
     public static void manualControl(double speed){
-        instance.encoderPosition = instance.relativeEncoder.getPosition() * 360;
+        instance.encoderPosition = (instance.absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
         /* 
         //Restrict movement of fourarm to between upper and lower limit
         if(instance.encoderPosition < FOURBAR_LOWER_LIMIT && speed < 0) {
