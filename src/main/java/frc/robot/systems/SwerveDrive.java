@@ -4,9 +4,13 @@
 
 package frc.robot.systems;
 
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -14,6 +18,13 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.subsystems.SwerveModule;
@@ -168,6 +179,50 @@ public class SwerveDrive {
         for (int i = 0; i < instance.modules.length; i++) {
             instance.modules[i].setDesiredState(moduleStates[i]);
         }
+    }
+
+    public static SequentialCommandGroup getAutoCommand() {
+        TrajectoryConfig trajectoryConfig = new TrajectoryConfig(0.5, 0.5);
+
+        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+            new Pose2d(0.0, 0.0, new Rotation2d(0.0)),
+            List.of(
+                new Translation2d(0.0, 1.0),
+                new Translation2d(1.0, 1.0)
+            ),
+            new Pose2d(1.0, 1.0, new Rotation2d(0.0)),
+            trajectoryConfig
+        );
+
+        PIDController xController = new PIDController(0.05, 0.0, 0.0);
+        PIDController yController = new PIDController(0.05, 0.0, 0.0);
+        ProfiledPIDController profiledController = new ProfiledPIDController(0.1, 0.0, 0.0, new Constraints(1.0, 1.0));
+
+        SwerveControllerCommand command = new SwerveControllerCommand(
+            trajectory, 
+            instance.odometry::getPoseMeters, 
+            instance.kinematics,
+            xController,
+            yController,
+            profiledController,
+            SwerveDrive::setModuleStates
+        );
+
+        return new SequentialCommandGroup(
+            new InstantCommand(() -> SwerveDrive.resetOdometry(trajectory.getInitialPose())),
+            command,
+            new InstantCommand(() -> SwerveDrive.runUncurved(0.0, 0.0, 0.0))
+        );
+    }
+
+    public static void setModuleStates(SwerveModuleState[] states) {
+        for (int i = 0; i < states.length; i++) {
+            instance.modules[i].setDesiredState(states[i]);
+        }
+    }
+
+    public static void resetOdometry(Pose2d position) {
+        instance.odometry.resetPosition(new Rotation2d(Pigeon.getFeildRelativeRotation() * RADIAN_DEGREE_RATIO), instance.positions, position);
     }
 
     public static void print() {
