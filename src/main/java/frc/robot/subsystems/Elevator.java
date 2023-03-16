@@ -7,9 +7,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import frc.robot.systems.ElevFourbar.Setpoint;
-import frc.robot.systems.ElevFourbar.ControlType;
-
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.systems.ElevFourbar;
 
 /**
  * Controls the elevator
@@ -28,9 +26,6 @@ public class Elevator {
     private static final double HIGH_SCORING_SETPOINT = 30;
     private static final double STOWED_SETPOINT = 0;
     
-    //self-initializes the class
-    private static final Elevator instance = new Elevator();
-    
     //PID constants
     private static final double P = 1.0;
     private static final double I = 0.00001;
@@ -42,14 +37,12 @@ public class Elevator {
 
     //variables
     private double encoderPosition;
-    private double overShoot;
     private double targetSetpoint;
-    private boolean isCalibrating;
     
     /**
      * Sets up elevator motor and Xbox controller, configures PID
      */
-    private Elevator() {
+    public Elevator() {
         elevatorMotor = new TalonFX(ELEVATOR_MOTOR_ID);
         bottomLimitSwitch = new DigitalInput(0);
 
@@ -70,48 +63,20 @@ public class Elevator {
     /**
      * The method to be run in teleopInit to reset variables
      */
-    public static void init() {
-        instance.isCalibrating = false;
+    public void init() {
     }
 
-    public static void autonomousInit() {
-        instance.isCalibrating = false;
-        instance.targetSetpoint = STOWED_SETPOINT;
-    }
-    
-    /**
-     * The method that will be run from the elevfourbar system
-     * @param speed - the speed of the elevator in manual mode
-     * @param switchControlMode - toggles between manual and position control
-     * @param resetEncoderPosition - sets the encoder position to zero
-     * @param setPositionBottom - Sets the setpoint to the zero position 
-     * @param setPositionMid - Sets the setpoint to the mid position
-     * @param runAutoCalibrate - If pressed, robot will automatically determine zero point
-     * @param setPositionTop - Sets the setpoint to the top position
-     * @param dPadDirection - The direction of the dpad for low sensitivity control
-     */
-    public static void run(double speed, int dPadDirection, Setpoint setpoint, ControlType controlType) {
-        instance.encoderPosition = instance.elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
-
-        //switches between setpoints
-        updateTargetSetpoint(setpoint);
-        
-        //runs current controlMode
-        if(controlType == ControlType.MANUAL) {
-            manualControl(speed, dPadDirection);
-        } else if(controlType == ControlType.POSITION) {
-            pidControl(setpoint);
-        }
-
-        //prints variables to Smart Dashboard
-        updateSmartDashboard(speed, dPadDirection);
+    public void autonomousInit() {
+        targetSetpoint = STOWED_SETPOINT;
     }
 
     /**
      * Manual control of the elevator using the left joystick
+     * @param speed The speed of the elevator from 0 to 1
+     * @param dPadDirection The value of the dpad
      */
-    public static void manualControl(double speed, int dPadDirection) {
-        instance.encoderPosition = instance.elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
+    public void manualControl(double speed, int dPadDirection) {
+        encoderPosition = elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
 
         if (Math.abs(speed) < MANUAL_DEADZONE) {
             speed = 0;
@@ -124,16 +89,11 @@ public class Elevator {
             speed = -0.2;
         }
 
-        instance.elevatorMotor.set(ControlMode.PercentOutput, speed * 0.6);
-
-        //overwrite calibration if the elevator is moving
-        if (speed != 0) {
-            instance.isCalibrating = false;
-        }
+        elevatorMotor.set(ControlMode.PercentOutput, speed * 0.6);
     }
 
-    public static void autonomousRun(Setpoint setpoint) {
-        instance.encoderPosition = instance.elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
+    public void autonomousRun(Setpoint setpoint) {
+        encoderPosition = elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
 
         pidControl(setpoint);
     }
@@ -141,64 +101,51 @@ public class Elevator {
     /**
      * PID Control of the elevator, cycles through
      * setpoints bottom, mid, top
+     * @param setpoint The setpoint to move the elevator to
      */
-    public static void pidControl(Setpoint setpoint) {
-        instance.encoderPosition = instance.elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
+    public void pidControl(Setpoint setpoint) {
+        encoderPosition = elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
 
         updateTargetSetpoint(setpoint);
 
         //set elevator PID position to target setpoint
-        instance.elevatorMotor.set(ControlMode.Position, instance.targetSetpoint * TICKS_PER_INCH);
-
-        //overwrite calibration if the elevator is moving
-        instance.isCalibrating = false;
+        elevatorMotor.set(ControlMode.Position, targetSetpoint * TICKS_PER_INCH);
     }
 
     /**
      * 
      * @return Encoder position in inches
      */
-    public static double getPosition() {
-        return instance.encoderPosition / TICKS_PER_INCH;
+    public double getPosition() {
+        return encoderPosition / TICKS_PER_INCH;
     }
 
     /**
      * 
      * @return Target encoder position in inches
      */
-    public static double getTargetPosition() {
-        return instance.targetSetpoint;
+    public double getTargetPosition() {
+        return targetSetpoint;
     }
 
-    private static void updateTargetSetpoint(Setpoint setpoint) {
+    private void updateTargetSetpoint(Setpoint setpoint) {
         switch (setpoint) {
             case SUBSTATION_INTAKE:
-                instance.targetSetpoint = SUBSTATION_INTAKE_SETPOINT;
+                targetSetpoint = SUBSTATION_INTAKE_SETPOINT;
                 break;
             case GROUND_INTAKE:
-                if(Fourbar.getPosition() > 5)
-                    instance.targetSetpoint = GROUND_INTAKE_SETPOINT;
+                if(ElevFourbar.fourbar.getPosition() > 5)
+                    targetSetpoint = GROUND_INTAKE_SETPOINT;
                 break;
             case MID_SCORING:
-                instance.targetSetpoint = MID_SCORING_SETPOINT;
+                targetSetpoint = MID_SCORING_SETPOINT;
                 break;
             case HIGH_SCORING:
-                instance.targetSetpoint = HIGH_SCORING_SETPOINT;
+                targetSetpoint = HIGH_SCORING_SETPOINT;
                 break;
             case STOWED:
-                instance.targetSetpoint = STOWED_SETPOINT;
+                targetSetpoint = STOWED_SETPOINT;
                 break;
         }
-    }
-
-    private static void updateSmartDashboard(double speed, int dPadDirection) {
-        SmartDashboard.putNumber("Elev Speed", speed);
-        SmartDashboard.putNumber("Elev Position", instance.encoderPosition/TICKS_PER_INCH);
-        SmartDashboard.putNumber("Elev Target Position", instance.targetSetpoint);
-        SmartDashboard.putNumber("Elev Overshoot", instance.overShoot);
-        SmartDashboard.putNumber("Elev Motor Power", instance.elevatorMotor.getMotorOutputPercent());
-        SmartDashboard.putBoolean("Limit Switch", !instance.bottomLimitSwitch.get());
-        SmartDashboard.putBoolean("Auto Calibrate", instance.isCalibrating);
-        SmartDashboard.putNumber("POV", dPadDirection);
     }
 }

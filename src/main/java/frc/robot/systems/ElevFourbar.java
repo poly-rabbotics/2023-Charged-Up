@@ -7,13 +7,16 @@ import frc.robot.subsystems.Fourbar;
 public class ElevFourbar {
     private Setpoint setpoint = Setpoint.STOWED;
     private ControlType controlType = ControlType.POSITION;
-    private boolean manualControl = false;
     static final double DEADZONE = 0.3;
 
     private static ElevFourbar instance = new ElevFourbar();
 
-    public ElevFourbar() {
+    public static Fourbar fourbar;
+    public static Elevator elevator;
 
+    public ElevFourbar() {
+        fourbar = new Fourbar();
+        elevator = new Elevator();
     }
 
     public static enum Setpoint {
@@ -26,7 +29,7 @@ public class ElevFourbar {
 
     public static void init() {
         instance.controlType = ControlType.POSITION;
-        Elevator.init();
+        elevator.init();
     }
 
     /**
@@ -40,12 +43,12 @@ public class ElevFourbar {
     public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean substationIntake, boolean groundIntake, boolean mid, boolean high, boolean stowed) {
         
         //kyle learning trig stuff
-        double fourbarPosRadians = Math.toRadians(90 - Fourbar.getPosition());
+        double fourbarPosRadians = Math.toRadians(90 - fourbar.getPosition());
 
         double x;
         double y;
         x = Math.cos(fourbarPosRadians) * 39.5;
-        y = (Math.sin(fourbarPosRadians) * 39.5) + Elevator.getPosition();
+        y = (Math.sin(fourbarPosRadians) * 39.5) + elevator.getPosition();
         SmartDashboard.putNumber("X", x);
         SmartDashboard.putNumber("Y", y);
 
@@ -78,7 +81,7 @@ public class ElevFourbar {
             instance.controlType
         );
 
-        Fourbar.run(
+        fourbar.run(
             fourbarSpeed,
             fourbarResetEncoder,
             instance.setpoint,
@@ -86,36 +89,50 @@ public class ElevFourbar {
         );  */
 
         if(instance.controlType == ControlType.POSITION) {
-            Elevator.pidControl(instance.setpoint);
-            Fourbar.pidControl(instance.setpoint);
+            elevator.pidControl(instance.setpoint);
+            fourbar.pidControl(instance.setpoint);
         } else {
-            Elevator.manualControl(elevatorSpeed, dPadDirection);
-            Fourbar.manualControl(-fourbarSpeed);
+            elevator.manualControl(elevatorSpeed, dPadDirection);
+            fourbar.manualControl(-fourbarSpeed);
         }
         
-        SmartDashboard.putString("Setpoint", instance.setpoint.toString());
-        SmartDashboard.putString("Control Type", instance.controlType.toString());
-        SmartDashboard.putNumber("FB Speed", -fourbarSpeed);
-        SmartDashboard.putNumber("FB Position", Fourbar.getPosition());
+        updateSmartDashboard(elevatorSpeed, fourbarSpeed);
     }
 
     public static boolean autoRun(Setpoint setpoint) {
 
         //Run the fourbar and elevator to inputted setpoint
-        Elevator.pidControl(setpoint);
-        Fourbar.pidControl(setpoint);
+        elevator.pidControl(setpoint);
+        fourbar.pidControl(setpoint);
 
         //return true if the fourbar reached it's destination
-        return (Math.abs(Fourbar.getPosition() - Fourbar.getTargetPosition()) < 1) && (Math.abs(Elevator.getPosition() - Elevator.getTargetPosition()) > 0.2);
+        return (Math.abs(fourbar.getPosition() - fourbar.getTargetPosition()) < 1) && (Math.abs(elevator.getPosition() - elevator.getTargetPosition()) > 0.2);
     }
 
     public static void autonomousRun(Setpoint setpoint) {
-        Elevator.autonomousRun(setpoint);
-        Fourbar.autonomousRun(setpoint);
+        elevator.autonomousRun(setpoint);
+        fourbar.autonomousRun(setpoint);
     }
 
     public static void autonomousInit() {
-        Elevator.autonomousInit();
+        elevator.autonomousInit();
+    }
+
+
+
+    private static void updateSmartDashboard(double elevSpeed, double fourbarSpeed) {
+        SmartDashboard.putString("Setpoint", instance.setpoint.toString());
+        SmartDashboard.putString("Control Type", instance.controlType.toString());
+
+        //Elevator values
+        SmartDashboard.putNumber("Elevator Position", elevator.getPosition());
+        SmartDashboard.putNumber("Elevator Target", elevator.getTargetPosition()); //ADD THIS
+        SmartDashboard.putNumber("Elevator Speed", elevSpeed);
+
+        //Fourbar values
+        SmartDashboard.putNumber("Fourbar Position", fourbar.getPosition());
+        SmartDashboard.putNumber("Fourbar Target", fourbar.getTargetPosition()); //ADD THIS
+        SmartDashboard.putNumber("Fourbar Speed", fourbarSpeed);
     }
 
 }

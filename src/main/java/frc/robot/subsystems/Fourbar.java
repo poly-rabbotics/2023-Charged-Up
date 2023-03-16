@@ -1,9 +1,6 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.EncoderType;
-import com.revrobotics.MotorFeedbackSensor;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
 import com.revrobotics.SparkMaxPIDController;
@@ -11,10 +8,8 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.systems.Intake;
-import frc.robot.systems.ElevFourbar.ControlType;
 import frc.robot.systems.ElevFourbar.Setpoint;
 import frc.robot.systems.Intake.SolenoidState;
 
@@ -48,9 +43,6 @@ public class Fourbar {
     private static final double I = 0.0;
     private static final double D = 1;
     private static final double F = 0.0;
-
-    //self-initializes the class
-    private static final Fourbar instance = new Fourbar();
     
     //Motor and controller
     private final CANSparkMax fourbarMotor;   
@@ -88,32 +80,9 @@ public class Fourbar {
 
         relativeEncoder.setPositionConversionFactor(1);
     }
-    
-    /**
-     * The method that will be run from teleopPeriodic
-     * @param speed - The speed the motor will run at
-     * @param switchControlMode - toggles between manual and position control
-     * @param setPositionZero - sets the current encoder position to zero
-     * @param changeSetpoint - cycles through the top, mid, and bottom setpoints
-     */
-    public static void run(double speed, Setpoint setpoint, ControlType controlType) {
-        instance.encoderPosition = (instance.absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
 
-        updateTargetSetpoint(setpoint);
-        
-        //runs selected control mode
-        if(controlType == ControlType.MANUAL) {
-            manualControl(speed);
-        } else if(controlType == ControlType.POSITION) {
-            pidControl(setpoint);
-        }
-        
-        //prints variables to Smart Dashboard
-        updateSmartDashboard(speed);
-    }
-
-    public static void autonomousRun(Setpoint setpoint) {
-        instance.encoderPosition = (instance.absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
+    public void autonomousRun(Setpoint setpoint) {
+        encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
 
         updateTargetSetpoint(setpoint);
 
@@ -123,24 +92,24 @@ public class Fourbar {
     /**
      * Allows for cycling between setpoints using PID
      */
-    public static void pidControl(Setpoint setpoint){
-        instance.encoderPosition = (instance.absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
+    public void pidControl(Setpoint setpoint){
+        encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
         
         updateTargetSetpoint(setpoint);
 
-        instance.pidController.setReference((instance.targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition);
+        pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition);
     }
     
     /**
      * Allows for manual control of motor output using the right joystick
      */
-    public static void manualControl(double speed){
-        instance.encoderPosition = (instance.absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
+    public void manualControl(double speed){
+        encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
         /* 
         //Restrict movement of fourarm to between upper and lower limit
-        if(instance.encoderPosition < FOURBAR_LOWER_LIMIT && speed < 0) {
+        if(encoderPosition < FOURBAR_LOWER_LIMIT && speed < 0) {
             speed = 0;
-        } else if(instance.encoderPosition > FOURBAR_UPPER_LIMIT && speed > 0) {
+        } else if(encoderPosition > FOURBAR_UPPER_LIMIT && speed > 0) {
             speed = 0;
         } */
 
@@ -150,32 +119,32 @@ public class Fourbar {
         }
 
         //calculate gravity counteractment
-        double gravitybias = 0.07*Math.sin(instance.encoderPosition*3.14159/180.0);
+        double gravitybias = 0.07*Math.sin(encoderPosition*3.14159/180.0);
         double outputspeed = speed * 0.4-gravitybias;
 
-        instance.fourbarMotor.set(outputspeed);
+        fourbarMotor.set(outputspeed);
     }
 
-    private static void updateTargetSetpoint(Setpoint setpoint) {
+    private void updateTargetSetpoint(Setpoint setpoint) {
         switch (setpoint) {
             case SUBSTATION_INTAKE:
-                instance.targetSetpoint = SUBSTATION_INTAKE_SETPOINT;
+                targetSetpoint = SUBSTATION_INTAKE_SETPOINT;
                 break;
             case GROUND_INTAKE:
                 if(Intake.getPivotState() == SolenoidState.UP) {
-                    instance.targetSetpoint = GROUND_INTAKE_UP_SETPOINT;
+                    targetSetpoint = GROUND_INTAKE_UP_SETPOINT;
                 } else{
-                    instance.targetSetpoint = GROUND_INTAKE_DOWN_SETPOINT;
+                    targetSetpoint = GROUND_INTAKE_DOWN_SETPOINT;
                 }
                 break;
             case MID_SCORING:
-                instance.targetSetpoint = MID_SCORING_SETPOINT;
+                targetSetpoint = MID_SCORING_SETPOINT;
                 break;
             case HIGH_SCORING:
-                instance.targetSetpoint = HIGH_SCORING_SETPOINT;
+                targetSetpoint = HIGH_SCORING_SETPOINT;
                 break;
             case STOWED:
-                instance.targetSetpoint = STOWED_SETPOINT;
+                targetSetpoint = STOWED_SETPOINT;
                 break;
         }
     }
@@ -184,26 +153,15 @@ public class Fourbar {
      * 
      * @return Encoder position in degrees
      */
-    public static double getPosition() {
-        return instance.encoderPosition;
+    public double getPosition() {
+        return encoderPosition;
     }
 
     /**
      * 
      * @return Target encoder position in degrees
      */
-    public static double getTargetPosition() {
-        return instance.targetSetpoint;
-    }
-
-    /**
-     * Prints variables to Smart Dashboard
-     */
-    private static void updateSmartDashboard(double speed) {
-        SmartDashboard.putNumber("FB Speed", speed);
-        SmartDashboard.putNumber("FB Position", instance.encoderPosition);
-        SmartDashboard.putNumber("FB Target Setpoint", instance.targetSetpoint);
-        SmartDashboard.putNumber("FB Motor Power", instance.fourbarMotor.getAppliedOutput()); //doesn't update correctly, fix later
-        SmartDashboard.putNumber("OutputRange", instance.pidController.getOutputMax());
+    public double getTargetPosition() {
+        return targetSetpoint;
     }
 }
