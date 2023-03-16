@@ -287,13 +287,14 @@ public class Robot extends TimedRobot {
         LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.0, 1.0, 0.0), 0.5));
         ElevFourbar.init();
         Intake.init();
-        
-        fbSpeedInput = 0;
     }
     
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
+        Math.signum(0.0);
+
+        //Determine
         if(Math.abs(controlPanel.getRawAxis(0)/2) > controllerTwo.getLeftY()) {
             fbSpeedInput = -controlPanel.getRawAxis(0)/2;
         } else {
@@ -321,17 +322,13 @@ public class Robot extends TimedRobot {
         
         ElevFourbar.run(
             controllerTwo.getRightY(),
-            fbSpeedInput,
-            controllerTwo.getStartButton(),
-            false,
-            false,
+            Math.abs(controlPanel.getRawAxis(0) / 2) > Math.abs(controllerTwo.getLeftY()) ? controlPanel.getRawAxis(0) / 2 : controllerTwo.getLeftY(),
             controllerTwo.getPOV(),
-            controlPanel.getRawButton(3),
-            controlPanel.getRawButton(2),
-            controlPanel.getRawButton(4),
-            controlPanel.getRawButton(5),
-            controlPanel.getRawButton(1),
-            false
+            controlPanel.getRawButton(3), //substation
+            controlPanel.getRawButton(2), //ground
+            controlPanel.getRawButton(4), //mid
+            controlPanel.getRawButton(5), //high
+            controlPanel.getRawButton(1)  //stowed
         );
     }
     

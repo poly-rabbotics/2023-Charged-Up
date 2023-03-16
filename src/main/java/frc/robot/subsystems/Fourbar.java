@@ -24,7 +24,7 @@ import frc.robot.systems.Intake.SolenoidState;
 public class Fourbar {
     //Not currently utilized, may be implemented in the future
     private static final int FOURBAR_UPPER_LIMIT = 0;
-    private static final int FOURBAR_LOWER_LIMIT = 90; 
+    private static final int FOURBAR_LOWER_LIMIT = 140; 
     
     private static final double FOURBAR_SPEED_UP = -0.4;
     private static final double FOURBAR_SPEED_DOWN = 0.2;
@@ -51,7 +51,7 @@ public class Fourbar {
 
     //self-initializes the class
     private static final Fourbar instance = new Fourbar();
-                                                      
+    
     //Motor and controller
     private final CANSparkMax fourbarMotor;   
     private final SparkMaxPIDController pidController; 
@@ -96,21 +96,16 @@ public class Fourbar {
      * @param setPositionZero - sets the current encoder position to zero
      * @param changeSetpoint - cycles through the top, mid, and bottom setpoints
      */
-    public static void run(double speed, boolean setPositionZero, Setpoint setpoint, ControlType controlType) {
+    public static void run(double speed, Setpoint setpoint, ControlType controlType) {
         instance.encoderPosition = (instance.absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
 
         updateTargetSetpoint(setpoint);
-
-        //sets current encoder position to 0 if menu button is pressed
-        if(setPositionZero) {
-            instance.relativeEncoder.setPosition(0);
-        }
         
         //runs selected control mode
         if(controlType == ControlType.MANUAL) {
             manualControl(speed);
         } else if(controlType == ControlType.POSITION) {
-            pidControl();
+            pidControl(setpoint);
         }
         
         //prints variables to Smart Dashboard
@@ -122,20 +117,16 @@ public class Fourbar {
 
         updateTargetSetpoint(setpoint);
 
-        pidControl();
+        pidControl(setpoint);
     }
     
     /**
      * Allows for cycling between setpoints using PID
      */
-    private static void pidControl(){
-        /* //set elevator PID position to target setpoint
-        if(instance.encoderPosition > 200) {
-            instance.pidController.setOutputRange(-0.0, FOURBAR_SPEED_DOWN);
-            instance.fourbarMotor.set(0.1);
-        } else {
-            instance.pidController.setOutputRange(FOURBAR_SPEED_UP, FOURBAR_SPEED_DOWN);
-        } */
+    public static void pidControl(Setpoint setpoint){
+        instance.encoderPosition = instance.relativeEncoder.getPosition() * 360;
+        
+        updateTargetSetpoint(setpoint);
 
         instance.pidController.setReference((instance.targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition);
     }
@@ -143,18 +134,25 @@ public class Fourbar {
     /**
      * Allows for manual control of motor output using the right joystick
      */
-    private static void manualControl(double speed){
-        /* if (Math.abs(speed) < MANUAL_DEADZONE) { //if joystick is inside of deadzone
+    public static void manualControl(double speed){
+        instance.encoderPosition = instance.relativeEncoder.getPosition() * 360;
+        /* 
+        //Restrict movement of fourarm to between upper and lower limit
+        if(instance.encoderPosition < FOURBAR_LOWER_LIMIT && speed < 0) {
+            speed = 0;
+        } else if(instance.encoderPosition > FOURBAR_UPPER_LIMIT && speed > 0) {
             speed = 0;
         } */
 
-        if(instance.encoderPosition >= 200) {
-            speed = 0.1;
-        } /* else if (instance.encoderPosition <= FOURBAR_UPPER_LIMIT/360.0 && speed >= 0) {
+        //Deadzone
+        if(Math.abs(speed) < MANUAL_DEADZONE) {
             speed = 0;
-        } */
+        }
+
+        //calculate gravity counteractment
         double gravitybias = 0.07*Math.sin(instance.encoderPosition*3.14159/180.0);
         double outputspeed = speed * 0.4-gravitybias;
+
         instance.fourbarMotor.set(outputspeed);
     }
 
@@ -182,16 +180,20 @@ public class Fourbar {
         }
     }
 
+    /**
+     * 
+     * @return Encoder position in degrees
+     */
     public static double getPosition() {
         return instance.encoderPosition;
     }
 
-    public static double getTargetSetpoint() {
+    /**
+     * 
+     * @return Target encoder position in degrees
+     */
+    public static double getTargetPosition() {
         return instance.targetSetpoint;
-    }
-
-    public static boolean getIsFinished() {
-        return Math.abs(instance.encoderPosition - instance.targetSetpoint) < 1;
     }
 
     /**

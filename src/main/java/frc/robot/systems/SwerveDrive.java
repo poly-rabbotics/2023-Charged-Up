@@ -28,9 +28,9 @@ public class SwerveDrive {
     private static final double MODULE_CANCODER_OFFSETS[] = { -251.6307 + 90.0, -44.1210 + 90.0, -192.0409 + 90.0, -175.1659 + 90.0 };
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
     
-    private static final double LOW_SENSITIVITY_RATIO = 0.1;
-    private static final double CURVE_EXPONENT_DIRECTIONAL = 5.0;
-    private static final double CURVE_EXPONENT_TURN = 5.0;
+    private static final double LOW_SENSITIVITY_RATIO = 0.02;
+    private static final double CURVE_EXPONENT_DIRECTIONAL = 3.0;
+    private static final double CURVE_EXPONENT_TURN = 3.0;
 
     private static final double CHASSIS_SIDE_LENGTH = 0.6;
     private static final double RADIAN_DEGREE_RATIO = Math.PI / 180.0;
@@ -49,7 +49,7 @@ public class SwerveDrive {
     };
 
     private static final Function<Double, Double> TURN_CURVE = (Double turn) -> {
-        if (turn < 0.1) {
+        if (Math.abs(turn) < 0.1) {
             return 0.0;
         }
 
@@ -123,7 +123,7 @@ public class SwerveDrive {
             directionalX = -(Math.sin(angle) * LOW_SENSITIVITY_RATIO);
             directionalY = -(Math.cos(angle) * LOW_SENSITIVITY_RATIO);
             
-            runUncurved(directionalX, directionalY, turn);
+            runUncurved(directionalX, directionalY, TURN_CURVE.apply(turn));
             return;
         }
 

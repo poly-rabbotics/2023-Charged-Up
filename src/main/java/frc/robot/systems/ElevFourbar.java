@@ -37,8 +37,18 @@ public class ElevFourbar {
      * @param high
      * @param stowed
      */
-    public static void run(double elevatorSpeed, double fourbarSpeed, boolean elevatorResetEncoder, boolean fourbarResetEncoder, boolean runAutoCalibrate, int dPadDirection, boolean substationIntake, boolean groundIntake, boolean mid, boolean high, boolean stowed, boolean switchControlType) {
+    public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean substationIntake, boolean groundIntake, boolean mid, boolean high, boolean stowed) {
         
+        //kyle learning trig stuff
+        double fourbarPosRadians = Math.toRadians(90 - Fourbar.getPosition());
+
+        double x;
+        double y;
+        x = Math.cos(fourbarPosRadians) * 39.5;
+        y = (Math.sin(fourbarPosRadians) * 39.5) + Elevator.getPosition();
+        SmartDashboard.putNumber("X", x);
+        SmartDashboard.putNumber("Y", y);
+
         //set the setpoint depending on which button is pressed
         if(substationIntake) {
             instance.setpoint = Setpoint.SUBSTATION_INTAKE;
@@ -52,28 +62,17 @@ public class ElevFourbar {
             instance.setpoint = Setpoint.STOWED;
         }
 
+        //switches between control modes when button is pressed or manual control detects input
         if(substationIntake || groundIntake || mid || high || stowed) {
             instance.controlType = ControlType.POSITION;
-        }
-
-        /* //switches between control modes
-        if(switchControlType) {
-            if(instance.controlType == ControlType.MANUAL) {
-                instance.controlType = ControlType.POSITION;
-            } else {
-                instance.controlType = ControlType.MANUAL;
-            }
-        } */
-
-        if(Math.abs(elevatorSpeed) > DEADZONE || Math.abs(fourbarSpeed) > DEADZONE) {
+        } else if(Math.abs(elevatorSpeed) > DEADZONE || Math.abs(fourbarSpeed) > DEADZONE) {
             instance.controlType = ControlType.MANUAL;
         } 
 
         //runs selected control mode
-        Elevator.run(
+        /* Elevator.run(
             elevatorSpeed,
             elevatorResetEncoder,
-            runAutoCalibrate,
             dPadDirection,
             instance.setpoint,
             instance.controlType
@@ -84,25 +83,30 @@ public class ElevFourbar {
             fourbarResetEncoder,
             instance.setpoint,
             instance.controlType
-        ); 
+        );  */
+
+        if(instance.controlType == ControlType.POSITION) {
+            Elevator.pidControl(instance.setpoint);
+            Fourbar.pidControl(instance.setpoint);
+        } else {
+            Elevator.manualControl(elevatorSpeed, dPadDirection);
+            Fourbar.manualControl(-fourbarSpeed);
+        }
         
         SmartDashboard.putString("Setpoint", instance.setpoint.toString());
         SmartDashboard.putString("Control Type", instance.controlType.toString());
+        SmartDashboard.putNumber("FB Speed", -fourbarSpeed);
+        SmartDashboard.putNumber("FB Position", Fourbar.getPosition());
     }
 
     public static boolean autoRun(Setpoint setpoint) {
-        Elevator.run(
-            0, 
-            false, 
-            false, 
-            0, 
-            setpoint, 
-            ControlType.POSITION
-        );
 
-        Fourbar.run(0, false, setpoint, ControlType.POSITION);
+        //Run the fourbar and elevator to inputted setpoint
+        Elevator.pidControl(setpoint);
+        Fourbar.pidControl(setpoint);
 
-        return Math.abs(Fourbar.getPosition() - Fourbar.getTargetSetpoint()) < 1;
+        //return true if the fourbar reached it's destination
+        return (Math.abs(Fourbar.getPosition() - Fourbar.getTargetPosition()) < 1) && (Math.abs(Elevator.getPosition() - Elevator.getTargetPosition()) > 0.2);
     }
 
     public static void autonomousRun(Setpoint setpoint) {
@@ -112,10 +116,6 @@ public class ElevFourbar {
 
     public static void autonomousInit() {
         Elevator.autonomousInit();
-    }
-
-    public static boolean getIsFinished() {
-        return Elevator.getIsFinished() && Fourbar.getIsFinished();
     }
 
 }

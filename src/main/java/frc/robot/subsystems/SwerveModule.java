@@ -56,7 +56,7 @@ public class SwerveModule {
 
         rotationMotor = new CANSparkMax(rotationalMotorID, MotorType.kBrushless);
         rotationMotor.setInverted(false);
-        rotationMotor.setSmartCurrentLimit(40);
+        //rotationMotor.setSmartCurrentLimit(40);
         
         movementMotor = new CANSparkMax(movementMotorID, MotorType.kBrushless);
         movementMotor.setInverted(false);
