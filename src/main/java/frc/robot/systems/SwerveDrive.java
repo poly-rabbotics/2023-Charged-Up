@@ -42,34 +42,14 @@ public class SwerveDrive {
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
     
     private static final double LOW_SENSITIVITY_RATIO = 0.02;
-    private static final double CURVE_EXPONENT_DIRECTIONAL = 3.0;
-    private static final double CURVE_EXPONENT_TURN = 3.0;
 
     private static final double CHASSIS_SIDE_LENGTH = 0.6;
     private static final double RADIAN_DEGREE_RATIO = Math.PI / 180.0;
 
-    private BiFunction<Double, Double, Double> directionCurve = (Double directionThis, Double directionOther) -> {
-        double distance = Math.sqrt(directionThis*directionThis + directionOther*directionOther);
-
-        if (distance < 0.1) {
-            return 0.0;
-        }
-
-        double curvedDistance = Math.pow(distance, CURVE_EXPONENT_DIRECTIONAL);
-        double distanceRatio = curvedDistance * distance;
-
-        return directionThis * distanceRatio;
-    };
-
-    private Function<Double, Double> turnCurve = (Double turn) -> {
-        if (Math.abs(turn) < 0.1) {
-            return 0.0;
-        }
-
-        return Math.pow(turn, CURVE_EXPONENT_TURN);
-    };
-
     private static final SwerveDrive instance = new SwerveDrive();
+
+    private BiFunction<Double, Double, Double> directionCurve = Controls::defaultCurveTwoDimensional;
+    private Function<Double, Double> turnCurve = Controls::defaultCurve;
 
     private final SwerveModule modules[] = new SwerveModule[4];
     private final SwerveModulePosition positions[] = new SwerveModulePosition[4];
