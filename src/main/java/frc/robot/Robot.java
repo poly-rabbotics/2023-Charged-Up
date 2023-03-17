@@ -81,9 +81,13 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         SwerveDrive.print();
-        double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
+
+
         LEDLights.run();
-        
+
+        Limelight.run(controllerOne.getAButton(), controllerOne.getBButton(), controllerOne.getXButton(), controllerOne.getYButton());
+
+        double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
         SmartDashboard.putNumber("Comp Pressure", Math.floor(pressureValue));
         SmartDashboard.putBoolean("Fully Pressurized", pressureValue > 60);
     }

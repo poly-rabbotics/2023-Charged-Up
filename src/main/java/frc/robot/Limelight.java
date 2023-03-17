@@ -12,10 +12,12 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 
 
 //The "eyes" of the robot
-public class Limelight implements Runnable {
+public class Limelight{
 	private static double CENTERING_TOLERANCE = 1.5; 
-	private boolean isTracking = false;
-	public boolean isCentered = false;
+	private static boolean isTracking = false;
+	public static boolean isCentered = false;
+
+	public static boolean moveRight, moveLeft;
 
 	private static final NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
 	private static final NetworkTableEntry pipeline = table.getEntry("pipeline");
@@ -24,12 +26,13 @@ public class Limelight implements Runnable {
 	private static final NetworkTableEntry ta = table.getEntry("ta");
 	private static final NetworkTableEntry tv = table.getEntry("tv");
 
-	private double x, y, area, v;
-	private int limelightProfileNum;
-	private LimelightProfile limelightProfile;
-
-    private int dial = 1; //UPDATE THESE FROM MECHANISMS JOYSTICK
-    private int aprilTagDial = 8;
+	private static double x;
+	private static double y;
+	private static double area;
+	private static double v;
+	private static int limelightProfileNum;
+	private static LimelightProfile limelightProfile;
+	private static String limelightProfileName;
 
 	//HOW TO CONNECT TO LIMELIGHT INTERFACE:
 	//IN BROWSER, while connected to robot,
@@ -51,7 +54,7 @@ public class Limelight implements Runnable {
 	 * undocumented behavior or failure.
 	 */
 	private Limelight() {
-		executorService = Executors.newSingleThreadScheduledExecutor();
+		//executorService = Executors.newSingleThreadScheduledExecutor();
 		//executorService.scheduleAtFixedRate(instance, 0, 20, TimeUnit.MILLISECONDS);
 	}
 
@@ -103,36 +106,44 @@ public class Limelight implements Runnable {
      * Switches pipline on the NetworkTable
      * @param pipelineNumber
      */
-	private void switchNetworkTablePipeline(int pipelineNumber) {
+	private static void switchNetworkTablePipeline(int pipelineNumber) {
 		pipeline.setNumber(pipelineNumber);
 	}
 
 	/**
      * Updates limelightProfile based on MechanismsJoystick.
      **/
-	private void updateTrackingMode() {
-
-        if(dial <= 2) {
-			limelightProfileNum = dial;
-		} else {
-			limelightProfileNum = aprilTagDial;
+	private static void updateTrackingMode(boolean button1Pressed, boolean button2Pressed, boolean button3Pressed, boolean button4Pressed) {
+        if (button1Pressed) {
+			limelightProfileNum = 0;
+		} else if (button2Pressed) {
+			limelightProfileNum = 1;
+		} else if (button3Pressed) {
+			limelightProfileNum = 2;
+		} else if (button4Pressed) {
+			limelightProfileNum = 3;
 		}
 
 		switch (limelightProfileNum) {
 			case 0:
 				limelightProfile = LimelightProfile.CUBE;
+				limelightProfileName = "CUBE";
 				break;
 			case 1:
 				limelightProfile = LimelightProfile.CONE;
+				limelightProfileName = "CONE";
 				break;
 			case 2:
 				limelightProfile = LimelightProfile.PEG;
+				limelightProfileName = "PEG";
 				break;
 			case 3:
 				limelightProfile = LimelightProfile.ATAG1;
+				limelightProfileName = "APRIL TAG 1";
 				break;
 			case 4:
 				limelightProfile = LimelightProfile.ATAG2;
+				limelightProfileName = "APRIL TAG 2";
 				break;
 			case 5:
 				limelightProfile = LimelightProfile.ATAG3;
@@ -155,11 +166,10 @@ public class Limelight implements Runnable {
 		}
 
 		switchNetworkTablePipeline(limelightProfileNum);
-		SmartDashboard.putNumber("Limelight Profile", limelightProfileNum);
 	}
 
 	// Updates feild based on network table data.
-	private void retreiveNetworkTableData() {
+	private static void retreiveNetworkTableData() {
 		x = tx.getDouble(0.0);
 		y = ty.getDouble(0.0);
 		area = ta.getDouble(0.0);
@@ -169,15 +179,32 @@ public class Limelight implements Runnable {
 	/**
 	 * Updates all feilds and properties of this {@link Limelight}.
 	 */
-	@Override
-	public void run() {
-		updateTrackingMode();
+	
+	public static void run(boolean button1Pressed, boolean button2Pressed, boolean button3Pressed, boolean button4Pressed) {
+		updateTrackingMode(button1Pressed, button2Pressed, button3Pressed, button4Pressed);
 		retreiveNetworkTableData();
+		shuffleBoardOutput();
+	}
 
-		SmartDashboard.putNumber("LimelightX", x);
+	public static void shuffleBoardOutput() {
+		SmartDashboard.putNumber("Limelight X Offset", x);
 		SmartDashboard.putNumber("LimelightY", y);
 		SmartDashboard.putNumber("LimelightArea", area);
 		SmartDashboard.putBoolean("Target centered?", isCentered);
+		SmartDashboard.putNumber("Limelight Profile", limelightProfileNum);
+		SmartDashboard.putBoolean("Target found?", getTargetFound());
+
+		SmartDashboard.putString("Limelight Profile Name", limelightProfileName);
+		if (x > CENTERING_TOLERANCE) {
+			moveRight = true;
+			isCentered = false;
+			moveLeft = false;
+		}
+		if (x < CENTERING_TOLERANCE) {
+			moveLeft = true;
+			isCentered = false;
+			moveRight = false;
+		}
 
 		if (getTargetFound() && isTracking) {
 			if (x < -CENTERING_TOLERANCE || x > CENTERING_TOLERANCE) {
@@ -189,6 +216,13 @@ public class Limelight implements Runnable {
 			isTracking = false;
 			isCentered = false;
 		}
+
+		//ORGANIZE THESE AS VISUAL DRIVER AIDS: LEFT , CENTER, RIGHT
+		//AND WHICHEVER IS GREEN WE WILL DRIVE THAT WAY UNTIL CENTERED
+		SmartDashboard.putBoolean("Move Right?", moveRight);
+		SmartDashboard.putBoolean("Target centered?", isCentered);
+		SmartDashboard.putBoolean("Move Left?", moveLeft);
+
 	}
 
 	/* private void trackingMode() {
