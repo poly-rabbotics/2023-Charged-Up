@@ -109,8 +109,8 @@ public class Pigeon {
             recordedInstant = clock.instant();
             
             previousYaw = pigeon.pigeon.getYaw();
-            previousRoll = pigeon.pigeon.getRoll();
-            previousPitch = pigeon.pigeon.getPitch();
+            previousRoll = pigeon.pigeon.getPitch(); // Roll and Pitch are swapped cause of the way its mounted.
+            previousPitch = pigeon.pigeon.getRoll();
         }
 
         @Override
@@ -118,8 +118,8 @@ public class Pigeon {
             Instant previousInstant = recordedInstant;
 
             double yaw = pigeon.pigeon.getYaw();
-            double roll = pigeon.pigeon.getRoll();
-            double pitch = pigeon.pigeon.getPitch();
+            double roll = pigeon.pigeon.getPitch(); // Roll and Pitch are swapped cause of the way its mounted.
+            double pitch = pigeon.pigeon.getRoll();
             
             recordedInstant = clock.instant();
             
@@ -134,6 +134,10 @@ public class Pigeon {
             SmartDashboard.putNumber("Pigon Yaw", yaw);
             SmartDashboard.putNumber("Pigon Pitch", pitch);
             SmartDashboard.putNumber("Pigon Roll", roll);
+
+            SmartDashboard.putNumber("Pigon Yaw/Sec", changeYaw);
+            SmartDashboard.putNumber("Pigon Pitch/Sec", changePitch);
+            SmartDashboard.putNumber("Pigon Roll/Sec", changeRoll);
         }
     }
 }
