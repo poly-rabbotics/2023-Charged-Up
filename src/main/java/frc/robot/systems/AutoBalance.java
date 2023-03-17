@@ -6,10 +6,12 @@ package frc.robot.systems;
  */
 public class AutoBalance {
     private static final double RAMMING_SPEED = 0.75;
+    private static final double CLIMBING_SPEED = 0.75;
     private static final double ENCROACHING_SPEED = 0.05;
     private static final double HALTING_SPEED = -0.05;
 
     private static final double ANGLE_SPIKE_QUALIFIER = 5.0;
+    private static final double ANGLE_STABLILITY_QUALIFIER = 0.5;
     private static final int HALTING_FRAMES = 5;
     
     private static final AutoBalance instance = new AutoBalance();
@@ -19,7 +21,8 @@ public class AutoBalance {
 
     public enum Stage {
         IDLING, 
-        RAMMING, 
+        RAMMING,
+        CLIMBING,
         ENCROACHING, 
         HALTING, 
         DONE
@@ -47,6 +50,10 @@ public class AutoBalance {
             case RAMMING:
                 instance.ram();
                 break;
+            
+            case CLIMBING:
+                instance.climb();
+                break;
 
             case ENCROACHING:
                 instance.encroach();
@@ -71,11 +78,21 @@ public class AutoBalance {
     private void ram() {
         // Detects upward angle spike and advances the stage.
         if (Pigeon.getChangePerSecond().pitchPerSecond > ANGLE_SPIKE_QUALIFIER) {
-            stage = Stage.ENCROACHING;
+            stage = Stage.CLIMBING;
             return;
         }
 
         SwerveDrive.runUncurved(0.0, RAMMING_SPEED, 0.0);
+    }
+
+    private void climb() {
+        // Waits for the rate of change to stabilize.
+        if (Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) < ANGLE_STABLILITY_QUALIFIER) {
+            stage = Stage.ENCROACHING;
+            return;
+        }
+
+        SwerveDrive.runUncurved(0.0, CLIMBING_SPEED, 0.0);
     }
 
     private void encroach() {

@@ -264,13 +264,20 @@ public class SwerveDrive {
         );
     }
 
-    public static void setModuleStates(SwerveModuleState[] states) {
+    /**
+     * Sets all module states.
+     */
+    private static void setModuleStates(SwerveModuleState[] states) {
         for (int i = 0; i < states.length; i++) {
             instance.modules[i].setDesiredState(states[i]);
         }
     }
 
-    public static void resetOdometry(Pose2d position) {
+    /**
+     * resets the odometry position.
+     * @param position
+     */
+    private static void resetOdometry(Pose2d position) {
         instance.odometry.resetPosition(new Rotation2d(Pigeon.getFeildRelativeRotation() * RADIAN_DEGREE_RATIO), instance.positions, position);
     }
 
