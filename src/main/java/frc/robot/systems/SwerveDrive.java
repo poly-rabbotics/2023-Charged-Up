@@ -4,6 +4,7 @@
 
 package frc.robot.systems;
 
+import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -47,7 +48,7 @@ public class SwerveDrive {
     private static final double CHASSIS_SIDE_LENGTH = 0.6;
     private static final double RADIAN_DEGREE_RATIO = Math.PI / 180.0;
 
-    private static final BiFunction<Double, Double, Double> DIRECTION_CURVE = (Double directionThis, Double directionOther) -> {
+    private BiFunction<Double, Double, Double> directionCurve = (Double directionThis, Double directionOther) -> {
         double distance = Math.sqrt(directionThis*directionThis + directionOther*directionOther);
 
         if (distance < 0.1) {
@@ -60,7 +61,7 @@ public class SwerveDrive {
         return directionThis * distanceRatio;
     };
 
-    private static final Function<Double, Double> TURN_CURVE = (Double turn) -> {
+    private Function<Double, Double> turnCurve = (Double turn) -> {
         if (Math.abs(turn) < 0.1) {
             return 0.0;
         }
@@ -135,13 +136,13 @@ public class SwerveDrive {
             directionalX = -(Math.sin(angle) * LOW_SENSITIVITY_RATIO);
             directionalY = -(Math.cos(angle) * LOW_SENSITIVITY_RATIO);
             
-            runUncurved(directionalX, directionalY, TURN_CURVE.apply(turn));
+            runUncurved(directionalX, directionalY, instance.turnCurve.apply(turn));
             return;
         }
 
-        directionalX = DIRECTION_CURVE.apply(directionalX, directionalY);
-        directionalY = DIRECTION_CURVE.apply(directionalY, directionalX);
-        turn = TURN_CURVE.apply(turn);
+        directionalX = instance.directionCurve.apply(directionalX, directionalY);
+        directionalY = instance.directionCurve.apply(directionalY, directionalX);
+        turn = instance.turnCurve.apply(turn);
 
         ChassisSpeeds chassisSpeeds;
 
@@ -179,6 +180,74 @@ public class SwerveDrive {
         for (int i = 0; i < instance.modules.length; i++) {
             instance.modules[i].setDesiredState(moduleStates[i]);
         }
+    }
+
+    /**
+     * Sets the curve function for directional inputs (translations).
+     * @param curve The BiFunction to use for proccessing the curve, the first 
+     * argument is what should be curved, the second is used for context. Return
+     * the curved direction.
+     */
+    public static void setDirectionalCurve(BiFunction<Double, Double, Double> curve) {
+        // Run some tests that should be valid of any curve function.
+        if (curve.apply(0.0, 0.0) != 0.0) {
+            throw new InvalidParameterException("All curves should return 0 on a 0 input.");
+        }
+
+        double previousOutput = 0.0;
+
+        // Here we just make sure all outputs either go up or stay the same as
+        // the inputs become greator.
+        for (double i = 0.0; i < 1.0; i += 0.1) {
+            double outI = curve.apply(i, i);
+
+            if (outI < previousOutput) {
+                throw new InvalidParameterException("No curve shall return a lesser value given a greator input.");
+            }
+
+            for (double j = 0.0; j < 1.0; j += 0.1) {
+                double outJ = curve.apply(i, j);
+
+                if (j < i && outJ > outI) {
+                    throw new InvalidParameterException("No curve shall return a greator value given a lesser input.");
+                } else if (j > i && outJ < outI) {
+                    throw new InvalidParameterException("No curve shall return a lesser value given a greator input.");
+                } else if (j == i && outJ != outI) {
+                    throw new InvalidParameterException("No curve shall return a different result given the same input (i mean, c'mon man, thats the deffinition of a function...).");
+                }
+            }
+
+            previousOutput = outI;
+        }
+
+        instance.directionCurve = curve;
+    }
+
+    /**
+     * Sets the curve function for turn inputs.
+     * @param curve The Function to use for proccessing the curve.
+     */
+    public static void setTurnCurve(Function<Double, Double> curve) {
+        // Run some tests that should be valid of any curve function.
+        if (curve.apply(0.0) != 0.0) {
+            throw new InvalidParameterException("All curves should return 0 on a 0 input.");
+        }
+
+        double previousOutput = 0.0;
+
+        // Here we just make sure all outputs either go up or stay the same as
+        // the inputs become greator.
+        for (double i = 0.0; i < 1.0; i += 0.1) {
+            double outI = curve.apply(i);
+
+            if (outI < previousOutput) {
+                throw new InvalidParameterException("No curve shall return a lesser value given a greator input.");
+            }
+
+            previousOutput = outI;
+        }
+
+        instance.turnCurve = curve;
     }
 
     public static SequentialCommandGroup getAutoCommand() {
