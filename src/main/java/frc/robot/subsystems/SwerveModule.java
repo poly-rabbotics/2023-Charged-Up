@@ -6,14 +6,15 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.SensorInitializationStrategy;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -30,9 +31,7 @@ public class SwerveModule {
     private static double PID_I = 0;
     private static double PID_D = 0;
 
-    private static double MOVEMENT_PID_P = 0.0005301;
-    private static double MOVEMENT_PID_I = 0;
-    private static double MOVEMENT_PID_D = 0;
+    private final SwerveModulePosition position;
 
     private final CANSparkMax rotationMotor;  // The motor responsible for rotating the module.
     private final CANSparkMax movementMotor;  // The motor responsible for creating movement in the module.
@@ -42,13 +41,9 @@ public class SwerveModule {
     private final RelativeEncoder movementEncoder; // Relative encoder for tracking translational movement.
 
     private final PIDController rotationController;
-    private final PIDController movementController;
 
     private final double canCoderOffset;
     private final double coefficient;
-
-    private double autoMovementSetpoint = 0.0;
-    private double autoRotationSetpoint = 0.0;
 
     public SwerveModule(int movementMotorID, int rotationalMotorID, int canCoderID, double canCoderOffset, double coefficient) {
         this.canCoderOffset = canCoderOffset;
@@ -80,30 +75,7 @@ public class SwerveModule {
         rotationController.enableContinuousInput(0.0, 360.0);
         rotationController.setTolerance(0.5);
 
-        movementController = new PIDController(MOVEMENT_PID_P, MOVEMENT_PID_I, MOVEMENT_PID_D);
-        movementController.setTolerance(0.5);
-    }
-
-    /**
-     * Applies the given movement vector to the swerve module.
-     * @param speed Speed in native motor speed units, -1.0 to 1.0.
-     * @param rotation Rotation in degrees.
-     */
-    public void setMovementVector(double rotation, double speed) {
-        double currentPosition = (angularEncoder.getPosition() + canCoderOffset) % 360.0;
-        double calculation = rotationController.calculate(currentPosition, rotation % 360.0);
-        
-        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Calculation", calculation);
-        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Rotation", rotation);
-        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position", angularEncoder.getPosition());
-        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position mod 360", angularEncoder.getPosition() % 360);
-
-        rotationMotor.set(calculation * coefficient);
-        movementMotor.set(speed);
-    }
-
-    public SwerveModuleState getCurrentState() {
-        return new SwerveModuleState(movementEncoder.getVelocity(), new Rotation2d(angularEncoder.getPosition()));
+        position = new SwerveModulePosition(movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT, new Rotation2d(angularEncoder.getPosition() / 180.0 * Math.PI));
     }
 
     public void setDesiredState(SwerveModuleState state) {
@@ -120,10 +92,8 @@ public class SwerveModule {
         movementMotor.set(state.speedMetersPerSecond);
         rotationMotor.set(calculation * coefficient);
 
-        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position", angularEncoder.getPosition());
-        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position mod 360", angularEncoder.getPosition() % 360);
-        
-        //setMovementVector(0.0, (state.angle.getDegrees() + 360) % 360);
+        position.angle = new Rotation2d(angularEncoder.getPosition());
+        position.distanceMeters = movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT;
     }
 
     public void print() {
@@ -133,43 +103,7 @@ public class SwerveModule {
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position + off mod 360", (angularEncoder.getPosition() + canCoderOffset) % 360);
     }
 
-    public void zeroCANCoder() {
-        angularEncoder.setPosition(0.0);
-    }
-
-    /**
-     * Sets the setpoints used in run() for auto.
-     * @param distance Distance from the current point to move, in meters.
-     * @param rotation Absolute rotation, direction in which to move.
-     */
-    public void setAutoSetpoints(double distance, double rotation) {
-        double distanceInRotations = distance / CONVERSION_FACTOR_MOVEMENT;
-        double currentRotations = movementEncoder.getPosition();
-
-        autoMovementSetpoint = currentRotations + distanceInRotations;
-        autoRotationSetpoint = rotation;
-    }
-
-    /**
-     * Runs the module's auto using previously given setpoints. Returns true if
-     * the setpoints have been reached.
-     */
-    public boolean autoRun() {
-        double movementCalculation = movementController.calculate(movementEncoder.getPosition(), autoMovementSetpoint);
-        double rotationCalculation = rotationController.calculate((angularEncoder.getPosition() + canCoderOffset) % 360.0, autoRotationSetpoint);
-
-        rotationMotor.set(rotationCalculation);
-
-        if (rotationCalculation != 0.0) {
-            return false;
-        }
-
-        movementMotor.set(movementCalculation);
-
-        if (movementCalculation == 0.0) {
-            return true;
-        }
-
-        return false;
+    public SwerveModulePosition getPosition() {
+        return position;
     }
 }

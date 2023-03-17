@@ -23,9 +23,7 @@ public class Pigeon {
 
     private final Pigeon2 pigeon;
     private final ScheduledExecutorService changeRateThread;
-
-    private double relativeForward = 0.0;
-    private double startingAngle = 0.0;
+    
     private OrientationalChange changePerSecond;
 
     private Pigeon(int canID) {
