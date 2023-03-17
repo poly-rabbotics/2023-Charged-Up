@@ -1,11 +1,7 @@
 package frc.robot; 
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import java.util.concurrent.*;
-
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -38,9 +34,7 @@ public class Limelight{
 	//IN BROWSER, while connected to robot,
 	//TRY limelight.local:5801
 
-	private ScheduledExecutorService executorService;
-
-	private enum LimelightProfile {
+	private enum LimelightProfile { //TODO: calibrate these different pipelines
 		CUBE,
 		CONE,
 		PEG,
@@ -62,21 +56,21 @@ public class Limelight{
 	 * Gets the X position of this {@link Limelight}'s target.
 	 */
 	public static double getDegreesOffsetX() {
-		return instance.x;
+		return x;
 	}
 
 	/**
 	 * Gets the Y position of this {@link Limelight}'s target.
 	 */
 	public static double getDegreesOffsetY() {
-		return instance.y;
+		return y;
 	}
 
 	/**
 	 * Gets the area of this {@link Limelight}'s target.
 	 */
 	public static double getArea() {
-		return instance.area;
+		return area;
 	}
 
 	/**
@@ -84,15 +78,15 @@ public class Limelight{
 	 */
 	public static boolean getTargetFound() {
 		SmartDashboard.putBoolean("Tv?",table.containsKey("tv"));
-		instance.v = tv.getDouble(0);
-		return (instance.v == 0.0) ? false : true;
+		v = tv.getDouble(0);
+		return (v == 0.0) ? false : true;
 	}
 
 	/**
 	 * @return Current LimelightProfile 
 	 */
 	public static LimelightProfile getLimelightProfile() {
-		return instance.limelightProfile;
+		return limelightProfile;
 	}
 
 	/**
@@ -225,35 +219,4 @@ public class Limelight{
 
 	}
 
-	/* private void trackingMode() {
-		camMode.setDouble(0);
-		ledMode.setDouble(0);
-		isTracking = true;
-	} */
-
-	/* private void calibrateLimelight(){
-		//trackingMode();
-		//read values periodically
-		isTracking = true;
-		x = tx.getDouble(0.0);
-		y = ty.getDouble(0.0);
-		area = ta.getDouble(0.0);
-		ledMode = table.getEntry("ledMode");
-		camMode = table.getEntry("camMode");    
-		//post to smart dashboard periodically
-		SmartDashboard.putNumber("LimelightX", x);
-		SmartDashboard.putNumber("LimelightY", y);
-		SmartDashboard.putNumber("LimelightArea", area);
-		if (getTargetFound() && isTracking) {
-			if (x < -CENTERING_TOLLERANCE || x > CENTERING_TOLLERANCE) {
-				SmartDashboard.putBoolean("is centered", false);
-			} else {
-				SmartDashboard.putBoolean("is centered", true);
-			}
-		} else {
-			trackingMode();
-			isTracking = false;
-			SmartDashboard.putBoolean("is centered", false);
-		}    
-	} */
 }
