@@ -184,18 +184,16 @@ public class Limelight{
 		SmartDashboard.putNumber("Limelight X Offset", x);
 		SmartDashboard.putNumber("LimelightY", y);
 		SmartDashboard.putNumber("LimelightArea", area);
-		SmartDashboard.putBoolean("Target centered?", isCentered);
 		SmartDashboard.putNumber("Limelight Profile", limelightProfileNum);
 		SmartDashboard.putBoolean("Target found?", getTargetFound());
-
 		SmartDashboard.putString("Limelight Profile Name", limelightProfileName);
 		if (x > CENTERING_TOLERANCE) {
 			moveRight = true;
 			isCentered = false;
 			moveLeft = false;
 		}
-		if (x < CENTERING_TOLERANCE) {
-			moveLeft = true;
+		if (x < -CENTERING_TOLERANCE) {
+			moveLeft = false;
 			isCentered = false;
 			moveRight = false;
 		}
