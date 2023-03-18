@@ -11,11 +11,13 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.systems.AutoBalance;
 import frc.robot.systems.Controls;
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
+import frc.robot.systems.AutoBalance.Stage;
 import frc.robot.systems.ElevFourbar.Setpoint;
 import frc.robot.systems.Intake.SolenoidState;
 import frc.robot.systems.LEDLights;
@@ -106,6 +108,8 @@ public class Robot extends TimedRobot {
         timer.reset();
         timer.stop();
         autoStageOne = false;
+
+        AutoBalance.setStage(Stage.IDLING);
         
         //Sets the auto mode that will be run
         autoMode = 0;
@@ -132,27 +136,7 @@ public class Robot extends TimedRobot {
         * SCORE MID AND MOVE BACK
         */
         if(autoMode == 1) {
-            if(!autoStageOne){
-                Intake.autoPivot(SolenoidState.UP);
-                if(ElevFourbar.autoRun(Setpoint.MID_SCORING)) {
-                    Intake.autoClaw(SolenoidState.OPEN);
-                    timer.start();
-                    autoStageOne = true;
-                } 
-            } else {
-                if(timer.get() > 5) {
-                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
-                        Intake.autoClaw(SolenoidState.CLOSED);
-                    }
-                }
-            }
-            
-            if (timer.get() > 10 && timer.get() < 15) {
-                SwerveDrive.run(0.0, -0.75, 0.0, -1);
-            } else {
-                SwerveDrive.run(0.0, 0.0, 0.0, -1);
-            }
-            
+            AutoBalance.run();
         }
         
         /* 

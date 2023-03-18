@@ -123,7 +123,9 @@ public class Pigeon {
             
             recordedInstant = clock.instant();
             
-            double differenceSeconds = (double)(recordedInstant.toEpochMilli() - previousInstant.toEpochMilli()) * 1000.0;
+            double differenceSeconds = (double)(recordedInstant.toEpochMilli() - previousInstant.toEpochMilli()) / 1000.0;
+
+            SmartDashboard.putNumber("Difference Seconds", differenceSeconds);
 
             double changeYaw = (yaw - previousYaw) / differenceSeconds;
             double changeRoll = (roll - previousRoll) / differenceSeconds;
@@ -138,6 +140,10 @@ public class Pigeon {
             SmartDashboard.putNumber("Pigon Yaw/Sec", changeYaw);
             SmartDashboard.putNumber("Pigon Pitch/Sec", changePitch);
             SmartDashboard.putNumber("Pigon Roll/Sec", changeRoll);
+
+            previousYaw = yaw;
+            previousRoll = roll;
+            previousPitch = pitch;
         }
     }
 }

@@ -5,12 +5,12 @@ package frc.robot.systems;
  * SwerveDrive was becoming a bit large to handle.
  */
 public class AutoBalance {
-    private static final double RAMMING_SPEED = 0.75;
-    private static final double CLIMBING_SPEED = 0.75;
-    private static final double ENCROACHING_SPEED = 0.05;
-    private static final double HALTING_SPEED = -0.05;
+    private static final double RAMMING_SPEED = -0.75;
+    private static final double CLIMBING_SPEED = -0.75;
+    private static final double ENCROACHING_SPEED = -0.1;
+    private static final double HALTING_SPEED = 0.1;
 
-    private static final double ANGLE_SPIKE_QUALIFIER = 5.0;
+    private static final double ANGLE_SPIKE_QUALIFIER = -5.0;
     private static final double ANGLE_STABLILITY_QUALIFIER = 0.5;
     private static final int HALTING_FRAMES = 5;
     
@@ -75,9 +75,13 @@ public class AutoBalance {
         return instance.stage;
     }
 
+    public static void setStage(Stage stage) {
+        instance.stage = stage;
+    }
+
     private void ram() {
         // Detects upward angle spike and advances the stage.
-        if (Pigeon.getChangePerSecond().pitchPerSecond > ANGLE_SPIKE_QUALIFIER) {
+        if (Pigeon.getChangePerSecond().pitchPerSecond < ANGLE_SPIKE_QUALIFIER) {
             stage = Stage.CLIMBING;
             return;
         }
