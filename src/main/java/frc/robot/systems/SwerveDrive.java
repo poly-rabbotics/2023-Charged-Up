@@ -28,7 +28,7 @@ public class SwerveDrive {
     private static final double MODULE_CANCODER_OFFSETS[] = { -251.6307 + 90.0, -44.1210 + 90.0, -192.0409 + 90.0, -175.1659 + 90.0 };
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
     
-    private static final double LOW_SENSITIVITY_RATIO = 0.02;
+    private static final double LOW_SENSITIVITY_RATIO = 0.05;
     private static final double CURVE_EXPONENT_DIRECTIONAL = 3.0;
     private static final double CURVE_EXPONENT_TURN = 3.0;
 

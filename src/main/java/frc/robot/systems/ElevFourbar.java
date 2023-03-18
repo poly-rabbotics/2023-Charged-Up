@@ -7,7 +7,13 @@ import frc.robot.subsystems.Fourbar;
 public class ElevFourbar {
     private Setpoint setpoint = Setpoint.STOWED;
     private ControlType controlType = ControlType.POSITION;
+
     static final double DEADZONE = 0.3;
+
+    //The legnth of the fourbar in inches
+    private static final double FOURBAR_HYPOTENUSE = 37.5;
+
+    private double[] coords = { 0, 0 };
 
     private static ElevFourbar instance = new ElevFourbar();
 
@@ -43,14 +49,8 @@ public class ElevFourbar {
     public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean substationIntake, boolean groundIntake, boolean mid, boolean high, boolean stowed) {
         
         //kyle learning trig stuff
-        double fourbarPosRadians = Math.toRadians(90 - fourbar.getPosition());
+        instance.coords = posToCoords(elevator.getPosition(), fourbar.getPosition());
 
-        double x;
-        double y;
-        x = Math.cos(fourbarPosRadians) * 39.5;
-        y = (Math.sin(fourbarPosRadians) * 39.5) + elevator.getPosition();
-        SmartDashboard.putNumber("X", x);
-        SmartDashboard.putNumber("Y", y);
 
         //set the setpoint depending on which button is pressed
         if(substationIntake) {
@@ -119,10 +119,60 @@ public class ElevFourbar {
     }
 
 
+    /**
+     * Converts position of the elevator and fourbar to x and y coordinates on a 2d plane
+     * @param elevPos The encoder position of the elevator in inches
+     * @param fourbarDeg The encoder position of the fourbar in degrees
+     * @return [x, y]
+     */
+    private static double[] posToCoords(double elevPos, double fourbarDeg) {
+
+        double angle = Math.toRadians(90 - fourbarDeg);
+        double x;
+        double y;
+
+        //funni math stuff my brain hurts
+        x = Math.cos(angle) * FOURBAR_HYPOTENUSE;
+        y = (Math.sin(angle) * FOURBAR_HYPOTENUSE) + elevPos;
+
+        //return coordinates
+        double[] output = { x, y };
+        return output;
+    }
+    
+    /**
+     * Converts x and y coordinates into encoder positions for the elevator and fourbar
+     * @param x
+     * @param y
+     * @return [elevator position (in), fourbar position (deg)]
+     */
+    private static double[] coordsToPos(double x, double y) {
+
+        double elevPos;
+        double fourbarDeg;
+
+        //calculate elevator position
+        elevPos = y > Math.sqrt((Math.pow(FOURBAR_HYPOTENUSE, 2) - Math.pow(x, 2)))
+            ? y - Math.sqrt((Math.pow(FOURBAR_HYPOTENUSE, 2) - Math.pow(x, 2)))
+            : y + Math.sqrt((Math.pow(FOURBAR_HYPOTENUSE, 2) - Math.pow(x, 2)));
+
+        //calculate fourbar position
+        fourbarDeg = y > elevPos
+            ? -Math.toDegrees(Math.atan(x / (elevPos - y)))
+            : 180 - Math.toDegrees(Math.atan(x / (elevPos - y)));
+
+        //return positions
+        double[] output = { elevPos, fourbarDeg };
+        return output;
+    }
 
     private static void updateSmartDashboard(double elevSpeed, double fourbarSpeed) {
         SmartDashboard.putString("Setpoint", instance.setpoint.toString());
         SmartDashboard.putString("Control Type", instance.controlType.toString());
+
+        //fourbar and elevator coordinates
+        SmartDashboard.putNumber("X", instance.coords[0]);
+        SmartDashboard.putNumber("Y", instance.coords[1]);
 
         //Elevator values
         SmartDashboard.putNumber("Elevator Position", elevator.getPosition());

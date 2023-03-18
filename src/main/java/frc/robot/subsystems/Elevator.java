@@ -13,7 +13,8 @@ import frc.robot.systems.ElevFourbar;
  * Controls the elevator
  */
 public class Elevator {
-    private static final double TICKS_PER_INCH = -10752.0/3; //FINAL VAlUE DO NOT CHANGE
+
+    private static final double TICKS_PER_INCH = -6144.0; //FINAL VAlUE DO NOT CHANGE Formerly -10752
     
     //constant variables
     private static final double MANUAL_DEADZONE = 0.3;
