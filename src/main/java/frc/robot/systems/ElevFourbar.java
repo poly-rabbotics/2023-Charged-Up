@@ -3,12 +3,16 @@ package frc.robot.systems;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Fourbar;
+import java.text.DecimalFormat;
 
 public class ElevFourbar {
     private Setpoint setpoint = Setpoint.STOWED;
     private ControlType controlType = ControlType.POSITION;
 
     static final double DEADZONE = 0.3;
+    
+    //make a decimal format object to improve readability of coordinates
+    private static DecimalFormat df = new DecimalFormat("#.###");
 
     //The legnth of the fourbar in inches
     private static final double FOURBAR_HYPOTENUSE = 37.5;
@@ -152,7 +156,7 @@ public class ElevFourbar {
         double fourbarDeg;
 
         //calculate elevator position
-        elevPos = y > Math.sqrt((Math.pow(FOURBAR_HYPOTENUSE, 2) - Math.pow(x, 2)))
+        elevPos = y >= Math.sqrt((Math.pow(FOURBAR_HYPOTENUSE, 2) - Math.pow(x, 2)))
             ? y - Math.sqrt((Math.pow(FOURBAR_HYPOTENUSE, 2) - Math.pow(x, 2)))
             : y + Math.sqrt((Math.pow(FOURBAR_HYPOTENUSE, 2) - Math.pow(x, 2)));
 
@@ -171,8 +175,8 @@ public class ElevFourbar {
         SmartDashboard.putString("Control Type", instance.controlType.toString());
 
         //fourbar and elevator coordinates
-        SmartDashboard.putNumber("X", instance.coords[0]);
-        SmartDashboard.putNumber("Y", instance.coords[1]);
+        SmartDashboard.putString("X", df.format(instance.coords[0]));
+        SmartDashboard.putString("Y", df.format(instance.coords[1]));
 
         //Elevator values
         SmartDashboard.putNumber("Elevator Position", elevator.getPosition());
