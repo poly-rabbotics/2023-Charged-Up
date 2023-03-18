@@ -32,9 +32,12 @@ import frc.robot.patterns.*;
 * project.
 */
 public class Robot extends TimedRobot {
-    public static XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
+    /* public static XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
     public static XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
-    public static Joystick controlPanel = (Joystick)Controls.getControllerByPort(2);
+    public static Joystick controlPanel = (Joystick)Controls.getControllerByPort(2); */
+    public static XboxController controllerOne = new XboxController(0);
+    public static XboxController controllerTwo = new XboxController(1);
+    public static XboxController controlPanel = new XboxController(2);
     public static AnalogInput pressureSensor = new AnalogInput(0);
     Timer timer = new Timer();
     
@@ -84,6 +87,7 @@ public class Robot extends TimedRobot {
         double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
         LEDLights.run();
         
+        SmartDashboard.putNumber("FB Position", ElevFourbar.fourbar.getPosition());
         SmartDashboard.putNumber("Comp Pressure", Math.floor(pressureValue));
         SmartDashboard.putBoolean("Fully Pressurized", pressureValue > 60);
     }

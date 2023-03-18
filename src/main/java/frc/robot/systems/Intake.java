@@ -57,9 +57,9 @@ public class Intake {
      */
     public static void run(boolean pivotToggle, boolean intake, boolean outtake, boolean clawToggle) {
         if(intake) {
-            runRoller(1);
-        } else if(outtake) {
             runRoller(-1);
+        } else if(outtake) {
+            runRoller(1);
         } else {
             runRoller(0);
         }
@@ -91,10 +91,9 @@ public class Intake {
      * @param rollerSpeed the speed of the rollers from -1 to 1
      */
     private static void runRoller(double rollerSpeed) {
-        if(Math.abs(rollerSpeed) > ROLLER_DEADZONE) { // scales down the speed of the motor
-            rollerSpeed *= 0.5;
-        } else {
-            rollerSpeed = 0;
+        if(instance.clawState == SolenoidState.CLOSED) {
+            if(rollerSpeed == 0)
+                rollerSpeed = -0.3;
         }
 
         roller.setSpeed(rollerSpeed);
