@@ -91,10 +91,10 @@ public class Intake {
      * @param rollerSpeed the speed of the rollers from -1 to 1
      */
     private static void runRoller(double rollerSpeed) {
-        if(instance.clawState == SolenoidState.CLOSED) {
+        /* if(instance.clawState == SolenoidState.CLOSED) {
             if(rollerSpeed == 0)
                 rollerSpeed = -0.3;
-        }
+        } */
 
         roller.setSpeed(rollerSpeed);
     }
