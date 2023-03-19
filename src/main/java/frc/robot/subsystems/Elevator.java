@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
-import edu.wpi.first.wpilibj.DigitalInput;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -13,6 +12,7 @@ import frc.robot.systems.ElevFourbar;
  * Controls the elevator
  */
 public class Elevator {
+    //Ticks per inch constant, gear reduction is 12:1
     private static final double TICKS_PER_INCH = -6144.0; //FINAL VALUE DO NOT CHANGE
     
     //constant variables
@@ -33,7 +33,6 @@ public class Elevator {
     
     //Motor and controller
     private final TalonFX elevatorMotor;
-    private final DigitalInput bottomLimitSwitch;
 
     //variables
     private double encoderPosition;
@@ -44,7 +43,6 @@ public class Elevator {
      */
     public Elevator() {
         elevatorMotor = new TalonFX(ELEVATOR_MOTOR_ID);
-        bottomLimitSwitch = new DigitalInput(0);
 
         elevatorMotor.configFactoryDefault();
         elevatorMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 30);
@@ -99,14 +97,23 @@ public class Elevator {
     }
 
     /**
-     * PID Control of the elevator, cycles through
-     * setpoints bottom, mid, top
+     * PID Control of the elevator
      * @param setpoint The setpoint to move the elevator to
      */
     public void pidControl(Setpoint setpoint) {
         encoderPosition = elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
 
         updateTargetSetpoint(setpoint);
+
+        //set elevator PID position to target setpoint
+        elevatorMotor.set(ControlMode.Position, targetSetpoint * TICKS_PER_INCH);
+    }
+
+    public void pidControl(double[] coords) {
+        encoderPosition = elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
+
+        double[] pos = ElevFourbar.coordsToPos(coords[0], coords[1]);
+        targetSetpoint = pos[2];
 
         //set elevator PID position to target setpoint
         elevatorMotor.set(ControlMode.Position, targetSetpoint * TICKS_PER_INCH);

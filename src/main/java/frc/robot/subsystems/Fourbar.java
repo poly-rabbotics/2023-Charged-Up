@@ -8,6 +8,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 
+import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.ElevFourbar.Setpoint;
 import frc.robot.systems.Intake.SolenoidState;
@@ -20,9 +21,11 @@ public class Fourbar {
     private static final int FOURBAR_UPPER_LIMIT = 0;
     private static final int FOURBAR_LOWER_LIMIT = 140; 
     
-    private static final double FOURBAR_SPEED_UP = -0.4;
-    private static final double FOURBAR_SPEED_DOWN = 0.2;
+    //PID max speed values
+    private static final double FOURBAR_SPEED_UP = -0.5;
+    private static final double FOURBAR_SPEED_DOWN = 0.5;
 
+    //encoder offset
     private static final double ENCODER_OFFSET = 0.506 * 360;
     
     //constant variables
@@ -47,7 +50,6 @@ public class Fourbar {
     private final CANSparkMax fourbarMotor;   
     private final SparkMaxPIDController pidController; 
     private SparkMaxAbsoluteEncoder absoluteEncoder;
-    private RelativeEncoder relativeEncoder;
 
     //variables
     private double targetSetpoint;
@@ -59,7 +61,6 @@ public class Fourbar {
     public Fourbar(){
         fourbarMotor = new CANSparkMax(MOTOR_ID, MotorType.kBrushless);
 
-        relativeEncoder = fourbarMotor.getEncoder();
         absoluteEncoder = fourbarMotor.getAbsoluteEncoder(Type.kDutyCycle);
         pidController = fourbarMotor.getPIDController();
         
@@ -76,8 +77,6 @@ public class Fourbar {
 
         fourbarMotor.setInverted(true);
         fourbarMotor.setIdleMode(IdleMode.kBrake);
-
-        relativeEncoder.setPositionConversionFactor(1);
     }
 
     public void autonomousRun(Setpoint setpoint) {
@@ -90,11 +89,25 @@ public class Fourbar {
     
     /**
      * Allows for cycling between setpoints using PID
+     * @param setpoint The setpoint to move to, as defined in the Setpoint enum
      */
     public void pidControl(Setpoint setpoint){
         encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
         
         updateTargetSetpoint(setpoint);
+
+        pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition);
+    }
+
+    /**
+     * Allows for translating to setpoints using PID
+     * @param coords The coordinates to move to, on an x and y plane
+     */
+    public void pidControl(double[] coords) {
+        encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
+
+        double[] pos = ElevFourbar.coordsToPos(coords[0], coords[1]);
+        targetSetpoint = pos[1];
 
         pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition);
     }
@@ -104,6 +117,7 @@ public class Fourbar {
      */
     public void manualControl(double speed){
         encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
+        double outputSpeed;
         /* 
         //Restrict movement of fourarm to between upper and lower limit
         if(encoderPosition < FOURBAR_LOWER_LIMIT && speed < 0) {
@@ -118,10 +132,14 @@ public class Fourbar {
         }
 
         //calculate gravity counteractment
-        double gravitybias = 0.07*Math.sin(encoderPosition*3.14159/180.0);
-        double outputspeed = speed * 0.4-gravitybias;
+        if(speed == 0) {
+            double gravityBias = 0.07*Math.sin(encoderPosition*3.14159/180.0);
+            outputSpeed = speed * 0.4-gravityBias;
+        } else {
+            outputSpeed = speed * 0.5;
+        }
 
-        fourbarMotor.set(outputspeed);
+        fourbarMotor.set(outputSpeed);
     }
 
     private void updateTargetSetpoint(Setpoint setpoint) {

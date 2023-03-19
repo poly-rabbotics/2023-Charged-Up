@@ -1,23 +1,39 @@
 package frc.robot.systems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Fourbar;
+import frc.robot.systems.Intake.SolenoidState;
+
 import java.text.DecimalFormat;
 
 public class ElevFourbar {
+
+    //The legnth of the fourbar in inches, used for trig functions
+    private static final double FOURBAR_HYPOTENUSE = 37.5;
+
+    //COORDINATE CONSTANTS FOR PID CONTROL
+    private static double[] STOWED_COORDS = { 0, FOURBAR_HYPOTENUSE };
+    private static double[] GROUND_INTAKE_DOWN_COORDS = { 0, FOURBAR_HYPOTENUSE };
+    private static double[] GROUND_INTAKE_UP_COORDS = { 0, FOURBAR_HYPOTENUSE };
+    private static double[] MID_SCORING_COORDS = { 0, FOURBAR_HYPOTENUSE };
+    private static double[] SUBSTATION_INTAKE_COORDS = { 0, FOURBAR_HYPOTENUSE };
+    private static double[] HIGH_SCORING_COORDS = { 0, FOURBAR_HYPOTENUSE };
+
+    //enums
     private Setpoint setpoint = Setpoint.STOWED;
     private ControlType controlType = ControlType.POSITION;
 
+    //deadzone to determine when manual control is enabled
     static final double DEADZONE = 0.3;
     
     //make a decimal format object to improve readability of coordinates
     private static DecimalFormat df = new DecimalFormat("#.###");
 
-    //The legnth of the fourbar in inches
-    private static final double FOURBAR_HYPOTENUSE = 37.5;
-
-    private double[] coords = { 0, 0 };
+    //instantiate coordinates
+    private double[] coords;
+    private double[] targetCoords;
 
     private static ElevFourbar instance = new ElevFourbar();
 
@@ -57,17 +73,27 @@ public class ElevFourbar {
 
 
         //set the setpoint depending on which button is pressed
-        if(substationIntake) {
-            instance.setpoint = Setpoint.SUBSTATION_INTAKE;
+        if(stowed) {
+            instance.setpoint = Setpoint.STOWED;
+            instance.targetCoords = STOWED_COORDS;
         } else if(groundIntake) {
             instance.setpoint = Setpoint.GROUND_INTAKE;
+
+            if(Intake.getPivotState() == SolenoidState.UP) {
+                instance.targetCoords = GROUND_INTAKE_UP_COORDS;
+            } else {
+                instance.targetCoords = GROUND_INTAKE_DOWN_COORDS;
+            }
+        } else if(substationIntake) {
+            instance.setpoint = Setpoint.SUBSTATION_INTAKE;
+            instance.targetCoords = SUBSTATION_INTAKE_COORDS;
         } else if(mid) {
             instance.setpoint = Setpoint.MID_SCORING;
+            instance.targetCoords = MID_SCORING_COORDS;
         } else if(high) {
             instance.setpoint = Setpoint.HIGH_SCORING;
-        } else if(stowed) {
-            instance.setpoint = Setpoint.STOWED;
-        }
+            instance.targetCoords = HIGH_SCORING_COORDS;
+        } 
 
         //switches between control modes when button is pressed or manual control detects input
         if(substationIntake || groundIntake || mid || high || stowed) {
@@ -95,6 +121,9 @@ public class ElevFourbar {
         if(instance.controlType == ControlType.POSITION) {
             elevator.pidControl(instance.setpoint);
             fourbar.pidControl(instance.setpoint);
+
+            /* elevator.pidControl(instance.targetCoords);
+            fourbar.pidControl(instance.targetCoords); */
         } else {
             elevator.manualControl(elevatorSpeed, dPadDirection);
             fourbar.manualControl(-fourbarSpeed);
@@ -129,7 +158,7 @@ public class ElevFourbar {
      * @param fourbarDeg The encoder position of the fourbar in degrees
      * @return [x, y]
      */
-    private static double[] posToCoords(double elevPos, double fourbarDeg) {
+    public static double[] posToCoords(double elevPos, double fourbarDeg) {
 
         double angle = Math.toRadians(90 - fourbarDeg);
         double x;
@@ -150,7 +179,7 @@ public class ElevFourbar {
      * @param y
      * @return [elevator position (in), fourbar position (deg)]
      */
-    private static double[] coordsToPos(double x, double y) {
+    public static double[] coordsToPos(double x, double y) {
 
         double elevPos;
         double fourbarDeg;
