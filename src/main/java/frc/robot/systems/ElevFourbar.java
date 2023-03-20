@@ -206,6 +206,7 @@ public class ElevFourbar {
         //fourbar and elevator coordinates
         SmartDashboard.putString("X", df.format(instance.coords[0]));
         SmartDashboard.putString("Y", df.format(instance.coords[1]));
+        SmartDashboard.putString("Target Coords", "(" + instance.targetCoords[0] + ", " + instance.targetCoords[1] + ")");
 
         //Elevator values
         SmartDashboard.putNumber("Elevator Position", elevator.getPosition());
