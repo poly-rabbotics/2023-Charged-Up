@@ -8,6 +8,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.ElevFourbar.Setpoint;
@@ -26,7 +27,7 @@ public class Fourbar {
     private static final double FOURBAR_SPEED_DOWN = 0.5;
 
     //encoder offset
-    private static final double ENCODER_OFFSET = 0.506 * 360;
+    private static final double ENCODER_OFFSET = 0.145 * 360;
     
     //constant variables
     private static final int MOTOR_ID = 62; //CORRECT ID
@@ -41,7 +42,7 @@ public class Fourbar {
     private static final int STOWED_SETPOINT = 0;
 
     //PID constants
-    private static final double P = 10;
+    private static final double P = 5;
     private static final double I = 0.0;
     private static final double D = 1;
     private static final double F = 0.0;
@@ -109,6 +110,10 @@ public class Fourbar {
         double[] pos = ElevFourbar.coordsToPos(coords[0], coords[1]);
         targetSetpoint = pos[1];
 
+        if(Math.abs(targetSetpoint - 68) < 0.5) {
+            targetSetpoint = 112; 
+        }
+
         pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition);
     }
     
@@ -136,10 +141,11 @@ public class Fourbar {
             double gravityBias = 0.07*Math.sin(encoderPosition*3.14159/180.0);
             outputSpeed = speed * 0.4-gravityBias;
         } else {
-            outputSpeed = speed * 0.5;
+            outputSpeed = speed;
         }
 
-        fourbarMotor.set(outputSpeed);
+        fourbarMotor.set(speed * 0.5);
+        SmartDashboard.putNumber("Fourbar Power Ouput", fourbarMotor.getOutputCurrent());
     }
 
     private void updateTargetSetpoint(Setpoint setpoint) {
