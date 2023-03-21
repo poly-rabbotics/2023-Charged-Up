@@ -110,9 +110,9 @@ public class Fourbar {
         double[] pos = ElevFourbar.coordsToPos(coords[0], coords[1]);
         targetSetpoint = pos[1];
 
-        if(Math.abs(targetSetpoint - 68) < 0.5) {
+        /* if(Math.abs(targetSetpoint - 68) < 0.5) {
             targetSetpoint = 112; 
-        }
+        } */
 
         pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition);
     }

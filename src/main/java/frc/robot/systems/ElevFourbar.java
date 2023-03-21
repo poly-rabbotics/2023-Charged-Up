@@ -15,7 +15,7 @@ public class ElevFourbar {
 
     //COORDINATE CONSTANTS FOR PID CONTROL
     private static double[] STOWED_COORDS = { 0, FOURBAR_HYPOTENUSE };
-    private static double[] GROUND_INTAKE_DOWN_COORDS = { 34.8, 16.0 };
+    private static double[] GROUND_INTAKE_DOWN_COORDS = { 24.3, 14.4 };
     private static double[] GROUND_INTAKE_UP_COORDS = { 24.1, 1.27 };
     private static double[] MID_SCORING_COORDS = { 20.4, 42.5 };
     private static double[] SUBSTATION_INTAKE_COORDS = { 20.4, 40.5 };

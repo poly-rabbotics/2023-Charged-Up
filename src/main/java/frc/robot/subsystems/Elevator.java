@@ -115,9 +115,9 @@ public class Elevator {
         double[] pos = ElevFourbar.coordsToPos(coords[0], coords[1]);
         targetSetpoint = pos[0];
 
-        if(Math.abs(targetSetpoint - 2.9) < 0.5) {
+        /* if(Math.abs(targetSetpoint - 2.9) < 0.5) {
             targetSetpoint = GROUND_INTAKE_SETPOINT;
-        }
+        } */
         
 
         //set elevator PID position to target setpoint
