@@ -15,8 +15,8 @@ public class ElevFourbar {
 
     //COORDINATE CONSTANTS FOR PID CONTROL
     private static double[] STOWED_COORDS = { 0, FOURBAR_HYPOTENUSE };
-    private static double[] GROUND_INTAKE_DOWN_COORDS = { 24.3, 14.4 };
-    private static double[] GROUND_INTAKE_UP_COORDS = { 24.1, 1.27 };
+    private static double[] GROUND_INTAKE_DOWN_COORDS = { 34.3, 15.0 };
+    private static double[] GROUND_INTAKE_UP_COORDS = { 24.1, 1.47 };
     private static double[] MID_SCORING_COORDS = { 20.4, 42.5 };
     private static double[] SUBSTATION_INTAKE_COORDS = { 20.4, 40.5 };
     private static double[] HIGH_SCORING_COORDS = { 35.9, 41.0 };
@@ -78,12 +78,6 @@ public class ElevFourbar {
             instance.targetCoords = STOWED_COORDS;
         } else if(groundIntake) {
             instance.setpoint = Setpoint.GROUND_INTAKE;
-
-            if(Intake.getPivotState() == SolenoidState.UP) {
-                instance.targetCoords = GROUND_INTAKE_UP_COORDS;
-            } else {
-                instance.targetCoords = GROUND_INTAKE_DOWN_COORDS;
-            }
         } else if(substationIntake) {
             instance.setpoint = Setpoint.SUBSTATION_INTAKE;
             instance.targetCoords = SUBSTATION_INTAKE_COORDS;
@@ -94,6 +88,14 @@ public class ElevFourbar {
             instance.setpoint = Setpoint.HIGH_SCORING;
             instance.targetCoords = HIGH_SCORING_COORDS;
         } 
+
+        if(instance.setpoint == Setpoint.GROUND_INTAKE) {
+            if(Intake.getPivotState() == SolenoidState.UP) {
+                instance.targetCoords = GROUND_INTAKE_UP_COORDS;
+            } else {
+                instance.targetCoords = GROUND_INTAKE_DOWN_COORDS;
+            }
+        }
 
         //switches between control modes when button is pressed or manual control detects input
         if(substationIntake || groundIntake || mid || high || stowed) {
