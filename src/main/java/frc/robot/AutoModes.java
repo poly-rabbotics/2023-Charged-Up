@@ -47,29 +47,29 @@ public class AutoModes {
         //Run the auto mode
         switch (autoMode) {
             case 0:
-            //Do nothing
-            break;
+                //Do nothing
+                break;
             case 1:
-            modeOne();
-            break;
+                modeOne();
+                break;
             case 2:
-            //Do something else
-            break;
+                modeTwo();
+                break;
             case 3:
-            //Do something else
-            break;
+                modeThree();
+                break;
             case 4:
-            //Do something else
-            break;
+                modeFour();
+                break;
             case 5:
-            //Do something else
-            break;
+                modeFive();
+                break;
             case 6:
-            //Do something else
-            break;
+                modeSix();
+                break;
             case 7:
-            //Do something else
-            break;
+                modeSeven();
+                break;
         }
     }
     
