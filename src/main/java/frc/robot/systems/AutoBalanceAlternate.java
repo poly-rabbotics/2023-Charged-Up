@@ -28,10 +28,11 @@ public class AutoBalanceAlternate {
 
         switch (Balance_Step) {
             case 0: //Initialize at desired start time
-                if(AutoModes.autoBalanceTimer.get()>start_time)
+                if(AutoModes.autoBalanceTimer.get()>start_time){
                     Balance_Step++;
                     stepTimer.reset();
                     stepTimer.start();
+                }
                 break;
             case 1: //Drive toward and up ramp a total distance, then stop when distance is reached
                 SwerveDrive.runUncurved(0.0, RAMMING_SPEED, 0.0);
