@@ -27,7 +27,7 @@ public class AutoBalanceAlternate {
         double pitch_rate = Pigeon.getChangePerSecond().pitchPerSecond;
 
         switch (Balance_Step) {
-            case 0: //Initiailize at desired start time
+            case 0: //Initialize at desired start time
                 if(AutoModes.autoBalanceTimer.get()>start_time)
                     Balance_Step++;
                     stepTimer.reset();
@@ -61,9 +61,13 @@ public class AutoBalanceAlternate {
                 break;
             case 3: // This is reached if attempts to balance timed out.  Last ditch effort: set arm to Mid position to change CG
                 if(pitch > PITCH_THRESHOLD)
-                    ElevFourbar.autoRun(Setpoint.MID_SCORING);
+                {
+                    SwerveDrive.runUncurved(0.0, 0.0, 0.0); //Make ure we're stopped
+                    ElevFourbar.autoRun(Setpoint.MID_SCORING);    
+                }                    
                 Balance_Step++;
             case 4:
+                SwerveDrive.runUncurved(0.0, 0.0, 0.0); //Make sure we're stopped!
                 return true;
 
             default:
