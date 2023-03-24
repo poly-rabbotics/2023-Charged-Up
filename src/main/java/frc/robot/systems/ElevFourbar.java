@@ -106,12 +106,7 @@ public class ElevFourbar {
         fourbar.pidControl(setpoint);
 
         //return true if the fourbar reached it's destination
-        return (Math.abs(fourbar.getPosition() - fourbar.getTargetPosition()) < 1) && (Math.abs(elevator.getPosition() - elevator.getTargetPosition()) > 0.2);
-    }
-
-    public static void autonomousRun(Setpoint setpoint) {
-        elevator.autonomousRun(setpoint);
-        fourbar.autonomousRun(setpoint);
+        return (Math.abs(fourbar.getPosition() - fourbar.getTargetPosition()) < 1) && (Math.abs(elevator.getPosition() - elevator.getTargetPosition()) < 1);
     }
 
     public static void autonomousInit() {

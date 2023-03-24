@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.systems.Intake.SolenoidState;
 import frc.robot.systems.ElevFourbar.Setpoint;
+import edu.wpi.first.wpilibj.smartdashboard.*;
 import frc.robot.systems.*;
 import frc.robot.patterns.*;
 
@@ -25,11 +26,11 @@ public class AutoModes {
         autoMode = 0;
         
         if(controlPanel.getRawButton(12)) 
-        autoMode += 1;
+            autoMode += 1;
         if(controlPanel.getRawButton(11))
-        autoMode += 2;
+            autoMode += 2;
         if(controlPanel.getRawButton(10))
-        autoMode += 4;
+            autoMode += 4;
         
         ElevFourbar.autonomousInit();
         Pigeon.setFeildZero();
@@ -44,6 +45,10 @@ public class AutoModes {
     }
     
     public static void run() {
+
+        SmartDashboard.putNumber("Auto Mode", autoMode);
+        SmartDashboard.putNumber("Auto Stage", autoStage);
+
         //Run the auto mode
         switch (autoMode) {
             case 0:
@@ -86,7 +91,7 @@ public class AutoModes {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
-                autoStage++;
+                autoStage = 1;
             } 
         } else {
             //1 second delay to prevent closing on the cube again >:(
