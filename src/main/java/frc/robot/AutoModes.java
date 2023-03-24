@@ -15,14 +15,16 @@ public class AutoModes {
     
     private static Timer timer = new Timer();
     private static Timer secondaryTimer = new Timer();
+    public static Timer autoBalanceTimer = new Timer();
     
     private static int autoMode;
     private static int autoStage;
     private static double startTimeBalance = -1.0;
-    
-    public static void init() {
+
+    public static int getAutoMode()
+    {
         //Calculate auto mode
-        autoMode = 0;
+        int autoMode = 0;
         
         if(controlPanel.getRawButton(12)) 
             autoMode += 1;
@@ -30,7 +32,13 @@ public class AutoModes {
             autoMode += 2;
         if(controlPanel.getRawButton(10))
             autoMode += 4;
+
+        return autoMode;
+    }
+    
+    public static void init() {
         
+        autoMode = getAutoMode();
         ElevFourbar.autonomousInit();
         Pigeon.setFeildZero();
         LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.8, 0.3, 0.0), 0.5));
@@ -41,11 +49,13 @@ public class AutoModes {
         secondaryTimer.reset();
         secondaryTimer.start();
         autoStage = 0;
+
+        autoBalanceTimer.reset();
+        autoBalanceTimer.start();
     }
     
     public static void run() {
 
-        SmartDashboard.putNumber("Auto Mode", autoMode);
         SmartDashboard.putNumber("Auto Stage", autoStage);
 
         //Run the auto mode

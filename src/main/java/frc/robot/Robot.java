@@ -11,12 +11,12 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.systems.AutoBalanceAlternate;
 import frc.robot.systems.Controls;
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
-import frc.robot.systems.ElevFourbar.Setpoint;
 import frc.robot.systems.Intake.SolenoidState;
 import frc.robot.systems.LEDLights;
 
@@ -84,12 +84,16 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         SwerveDrive.print();
+
         double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
         LEDLights.run();
         
         SmartDashboard.putNumber("FB Position", ElevFourbar.fourbar.getPosition());
         SmartDashboard.putNumber("Comp Pressure", Math.floor(pressureValue));
         SmartDashboard.putBoolean("Fully Pressurized", pressureValue > 60);
+        SmartDashboard.putNumber("Auto Mode", AutoModes.getAutoMode());
+        SmartDashboard.putNumber("Auto Balance Step", AutoBalanceAlternate.Balance_Step);
+         
     }
     
     /**

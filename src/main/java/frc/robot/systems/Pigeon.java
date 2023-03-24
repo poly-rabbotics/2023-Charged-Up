@@ -123,7 +123,7 @@ public class Pigeon {
             
             recordedInstant = clock.instant();
             
-            double differenceSeconds = (double)(recordedInstant.toEpochMilli() - previousInstant.toEpochMilli()) * 1000.0;
+            double differenceSeconds = (double)(recordedInstant.toEpochMilli() - previousInstant.toEpochMilli()) / 1000.0;
 
             double changeYaw = (yaw - previousYaw) / differenceSeconds;
             double changeRoll = (roll - previousRoll) / differenceSeconds;
