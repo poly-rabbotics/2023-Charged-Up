@@ -18,8 +18,7 @@ import frc.robot.systems.Intake.SolenoidState;
  */
 public class Fourbar {
     //Not currently utilized, may be implemented in the future
-    private static final int FOURBAR_UPPER_LIMIT = 0;
-    private static final int FOURBAR_LOWER_LIMIT = 140; 
+    private static final int FOURBAR_LIMIT = 140; 
     
     //PID max speed values
     private static final double FOURBAR_SPEED_UP = -0.5;
@@ -78,14 +77,6 @@ public class Fourbar {
         fourbarMotor.setInverted(true);
         fourbarMotor.setIdleMode(IdleMode.kBrake);
     }
-
-    public void autonomousRun(Setpoint setpoint) {
-        encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
-
-        updateTargetSetpoint(setpoint);
-
-        pidControl(setpoint);
-    }
     
     /**
      * Allows for cycling between setpoints using PID
@@ -115,33 +106,33 @@ public class Fourbar {
 
         pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition);
     }
-    
+
     /**
      * Allows for manual control of motor output using the right joystick
      */
     public void manualControl(double speed){
         encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
-        double outputSpeed;
-        /* 
-        //Restrict movement of fourarm to between upper and lower limit
-        if(encoderPosition < FOURBAR_LOWER_LIMIT && speed < 0) {
-            speed = 0;
-        } else if(encoderPosition > FOURBAR_UPPER_LIMIT && speed > 0) {
-            speed = 0;
-        } */
 
         //Deadzone
         if(Math.abs(speed) < MANUAL_DEADZONE) {
             speed = 0;
         }
 
-        //calculate gravity counteractment
+        //Restrict movement if fourbar passes limit
+        if(encoderPosition < 0 && speed > 0) {
+            speed = 0;
+        } else if(encoderPosition > FOURBAR_LIMIT && speed < 0) {
+            speed = 0;
+        }
+
+        //Unneeded because of fourbar redesign
+        /* //calculate gravity counteractment
         if(speed == 0) {
             double gravityBias = 0.07*Math.sin(encoderPosition*3.14159/180.0);
             outputSpeed = speed * 0.4-gravityBias;
         } else {
             outputSpeed = speed;
-        }
+        } */
 
         fourbarMotor.set(speed * 0.5);
         SmartDashboard.putNumber("Fourbar Power Ouput", fourbarMotor.getOutputCurrent());
@@ -172,7 +163,6 @@ public class Fourbar {
     }
 
     /**
-     * 
      * @return Encoder position in degrees
      */
     public double getPosition() {
@@ -180,7 +170,6 @@ public class Fourbar {
     }
 
     /**
-     * 
      * @return Target encoder position in degrees
      */
     public double getTargetPosition() {

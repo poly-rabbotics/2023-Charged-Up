@@ -90,12 +90,6 @@ public class Elevator {
         elevatorMotor.set(ControlMode.PercentOutput, speed * 0.6);
     }
 
-    public void autonomousRun(Setpoint setpoint) {
-        encoderPosition = elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
-
-        pidControl(setpoint);
-    }
-
     /**
      * PID Control of the elevator
      * @param setpoint The setpoint to move the elevator to
@@ -109,6 +103,10 @@ public class Elevator {
         elevatorMotor.set(ControlMode.Position, targetSetpoint * TICKS_PER_INCH);
     }
 
+    /**
+     * PID Control of the elevator using coordinates
+     * @param coords The coordinates to move to, on an x and y plane
+     */
     public void pidControl(double[] coords) {
         encoderPosition = elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
 
@@ -119,7 +117,6 @@ public class Elevator {
             targetSetpoint = GROUND_INTAKE_SETPOINT;
         } */
         
-
         //set elevator PID position to target setpoint
         elevatorMotor.set(ControlMode.Position, targetSetpoint * TICKS_PER_INCH);
     }

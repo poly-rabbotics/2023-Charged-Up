@@ -1,7 +1,6 @@
 package frc.robot.systems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Fourbar;
 import frc.robot.systems.Intake.SolenoidState;
@@ -68,7 +67,6 @@ public class ElevFourbar {
      */
     public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean substationIntake, boolean groundIntake, boolean mid, boolean high, boolean stowed) {
         
-        //kyle learning trig stuff
         instance.coords = posToCoords(elevator.getPosition(), fourbar.getPosition());
 
 
@@ -104,22 +102,6 @@ public class ElevFourbar {
             instance.controlType = ControlType.MANUAL;
         } 
 
-        //runs selected control mode
-        /* Elevator.run(
-            elevatorSpeed,
-            elevatorResetEncoder,
-            dPadDirection,
-            instance.setpoint,
-            instance.controlType
-        );
-
-        fourbar.run(
-            fourbarSpeed,
-            fourbarResetEncoder,
-            instance.setpoint,
-            instance.controlType
-        );  */
-
         if(instance.controlType == ControlType.POSITION) {
             /* elevator.pidControl(instance.setpoint);
             fourbar.pidControl(instance.setpoint);  */
@@ -143,12 +125,7 @@ public class ElevFourbar {
         //return true if the fourbar reached it's destination
         return (Math.abs(fourbar.getPosition() - fourbar.getTargetPosition()) < 1) && (Math.abs(elevator.getPosition() - elevator.getTargetPosition()) > 0.2);
     }
-
-    public static void autonomousRun(Setpoint setpoint) {
-        elevator.autonomousRun(setpoint);
-        fourbar.autonomousRun(setpoint);
-    }
-
+    
     public static void autonomousInit() {
         elevator.autonomousInit();
     }
