@@ -5,7 +5,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
@@ -17,7 +16,6 @@ import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
-import frc.robot.systems.Intake.SolenoidState;
 import frc.robot.systems.LEDLights;
 
 import frc.robot.subsystems.SwerveMode;
@@ -35,9 +33,9 @@ public class Robot extends TimedRobot {
     /* public static XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
     public static XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
     public static Joystick controlPanel = (Joystick)Controls.getControllerByPort(2); */
-    public static XboxController controllerOne = new XboxController(0);
-    public static XboxController controllerTwo = new XboxController(1);
-    public static XboxController controlPanel = new XboxController(2);
+    public static XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
+    public static XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
+    public static XboxController controlPanel = (XboxController)Controls.getControllerByPort(2);
     public static AnalogInput pressureSensor = new AnalogInput(0);
     Timer timer = new Timer();
     
@@ -45,28 +43,6 @@ public class Robot extends TimedRobot {
     int autoMode;
     double fbSpeedInput = 0;
 
-    private void autoBalance(double startTime) {
-        if (timer.get() > startTime) {
-            if (startTimeBalance == -1.0) {
-                startTimeBalance = timer.get();
-            }
-
-            if (timer.get() - startTimeBalance >= 1.5) {
-                SwerveDrive.run(0.0, 0.0, 0.0, -1);
-                return;
-            }
-
-            /* if (false) {
-                startTimeBalance = -1.0;
-                if (timer.get() > 0 && timer.get() < 15) {
-                    SwerveDrive.run(0.0, -0.85, 0.0, -1);
-                } else {
-                    SwerveDrive.run(0.0, 0.0, 0.0, -1);
-                }
-            } */
-        }
-    }
-    
     /**
     * This function is run when the robot is first started up and should be used for any
     * initialization code.

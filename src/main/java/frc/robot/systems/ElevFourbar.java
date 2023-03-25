@@ -13,12 +13,12 @@ public class ElevFourbar {
     private static final double FOURBAR_HYPOTENUSE = 37.5;
 
     //COORDINATE CONSTANTS FOR PID CONTROL
-    private static double[] STOWED_COORDS = { 0, FOURBAR_HYPOTENUSE };
-    private static double[] GROUND_INTAKE_DOWN_COORDS = { 34.3, 15.0 };
-    private static double[] GROUND_INTAKE_UP_COORDS = { 24.1, 1.47 };
-    private static double[] MID_SCORING_COORDS = { 20.4, 42.5 };
-    private static double[] SUBSTATION_INTAKE_COORDS = { 20.4, 40.5 };
-    private static double[] HIGH_SCORING_COORDS = { 35.9, 41.0 };
+    public static double[] STOWED_COORDS = { 0, FOURBAR_HYPOTENUSE };
+    public static double[] GROUND_INTAKE_DOWN_COORDS = { 34.3, 15.0 };
+    public static double[] GROUND_INTAKE_UP_COORDS = { 24.1, 1.47 };
+    public static double[] MID_SCORING_COORDS = { 20.4, 42.5 };
+    public static double[] SUBSTATION_INTAKE_COORDS = { 20.4, 40.5 };
+    public static double[] HIGH_SCORING_COORDS = { 35.9, 41.0 };
 
     //enums
     private Setpoint setpoint = Setpoint.STOWED;
@@ -116,6 +116,10 @@ public class ElevFourbar {
         updateSmartDashboard(elevatorSpeed, fourbarSpeed);
     }
 
+    /**
+     * Sets elevator and fourbar to desired setpoint
+     * @param setpoint The setpoint to run to from the Setpoint enum
+     */
     public static boolean autoRun(Setpoint setpoint) {
 
         //Run the fourbar and elevator to inputted setpoint
@@ -124,6 +128,20 @@ public class ElevFourbar {
 
         //return true if the fourbar reached it's destination
         return (Math.abs(fourbar.getPosition() - fourbar.getTargetPosition()) < 1) && (Math.abs(elevator.getPosition() - elevator.getTargetPosition()) > 0.2);
+    }
+    
+    /**
+     * Sets elevator and fourbar to desired setpoint
+     * @param setpoint The setpoint to run to from the Setpoint enum
+     */
+    public static boolean autoRun(double[] coords) {
+
+        //Run the fourbar and elevator to inputted setpoint
+        elevator.pidControl(coords);
+        fourbar.pidControl(coords);
+
+        //return true if the fourbar reached it's destination
+        return (Math.abs(fourbar.getPosition() - fourbar.getTargetPosition()) < 1) && (Math.abs(elevator.getPosition() - elevator.getTargetPosition()) < 0.2);
     }
     
     public static void autonomousInit() {

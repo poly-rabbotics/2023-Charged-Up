@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.systems.Intake.SolenoidState;
-import frc.robot.systems.ElevFourbar.Setpoint;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 import frc.robot.systems.*;
 import frc.robot.patterns.*;
@@ -96,7 +95,7 @@ public class AutoModes {
             Intake.autoPivot(SolenoidState.UP);
             
             //Move the elevator to the mid scoring position
-            if(ElevFourbar.autoRun(Setpoint.MID_SCORING)) {
+            if(ElevFourbar.autoRun(ElevFourbar.MID_SCORING_COORDS)) {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
@@ -106,7 +105,7 @@ public class AutoModes {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
                 //Move to stowed setpoint
-                if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                if(ElevFourbar.autoRun(ElevFourbar.STOWED_COORDS)) {
                     //Close the claw and put the pivot down
                     Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
@@ -130,7 +129,7 @@ public class AutoModes {
             Intake.autoPivot(SolenoidState.UP);
 
             //Move to mid scoring position
-            if(ElevFourbar.autoRun(Setpoint.MID_SCORING)) {
+            if(ElevFourbar.autoRun(ElevFourbar.MID_SCORING_COORDS)) {
                 //Open claw when the position has been reached
                 Intake.autoClaw(SolenoidState.OPEN);
                 secondaryTimer.reset();
@@ -141,7 +140,7 @@ public class AutoModes {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
                 //Move to stowed setpoint
-                if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                if(ElevFourbar.autoRun(ElevFourbar.STOWED_COORDS)) {
                     //Close the claw and put the pivot down
                     Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
@@ -159,7 +158,7 @@ public class AutoModes {
             Intake.autoPivot(SolenoidState.UP);
 
             //Move to mid scoring position
-            if(ElevFourbar.autoRun(Setpoint.MID_SCORING)) {
+            if(ElevFourbar.autoRun(ElevFourbar.MID_SCORING_COORDS)) {
                 //Open claw when the position has been reached
                 Intake.autoClaw(SolenoidState.OPEN);
                 secondaryTimer.reset();
@@ -170,7 +169,7 @@ public class AutoModes {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
                 //Move to stowed setpoint
-                if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                if(ElevFourbar.autoRun(ElevFourbar.STOWED_COORDS)) {
                     //Close the claw and put the pivot down
                     Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
@@ -190,7 +189,7 @@ public class AutoModes {
             Intake.autoPivot(SolenoidState.UP);
             
             //Move the elevator to the high scoring position
-            if(ElevFourbar.autoRun(Setpoint.HIGH_SCORING)) {
+            if(ElevFourbar.autoRun(ElevFourbar.HIGH_SCORING_COORDS)) {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
@@ -200,7 +199,7 @@ public class AutoModes {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
                 //Move to stowed setpoint
-                if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                if(ElevFourbar.autoRun(ElevFourbar.STOWED_COORDS)) {
                     //Close the claw and put the pivot down
                     Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
@@ -224,7 +223,7 @@ public class AutoModes {
             Intake.autoPivot(SolenoidState.UP);
             
             //Move the elevator to the high scoring position
-            if(ElevFourbar.autoRun(Setpoint.HIGH_SCORING)) {
+            if(ElevFourbar.autoRun(ElevFourbar.HIGH_SCORING_COORDS)) {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
@@ -234,7 +233,7 @@ public class AutoModes {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
                 //Move to stowed setpoint
-                if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                if(ElevFourbar.autoRun(ElevFourbar.STOWED_COORDS)) {
                     //Close the claw and put the pivot down
                     Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
@@ -252,7 +251,7 @@ public class AutoModes {
             Intake.autoPivot(SolenoidState.UP);
             
             //Move the elevator to the high scoring position
-            if(ElevFourbar.autoRun(Setpoint.HIGH_SCORING)) {
+            if(ElevFourbar.autoRun(ElevFourbar.HIGH_SCORING_COORDS)) {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
@@ -262,7 +261,7 @@ public class AutoModes {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
                 //Move to stowed setpoint
-                if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                if(ElevFourbar.autoRun(ElevFourbar.STOWED_COORDS)) {
                     //Close the claw and put the pivot down
                     Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
