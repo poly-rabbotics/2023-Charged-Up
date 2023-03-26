@@ -119,7 +119,7 @@ public class Pigeon {
 
             double yaw = pigeon.pigeon.getYaw();
             double roll = pigeon.pigeon.getPitch(); // Roll and Pitch are swapped cause of the way its mounted.
-            double pitch = pigeon.pigeon.getRoll();
+            double pitch = -pigeon.pigeon.getRoll(); // Negative since it should be positive going up.
             
             recordedInstant = clock.instant();
             
@@ -129,7 +129,7 @@ public class Pigeon {
 
             double changeYaw = (yaw - previousYaw) / differenceSeconds;
             double changeRoll = (roll - previousRoll) / differenceSeconds;
-            double changePitch = (pitch - previousPitch) / differenceSeconds;
+            double changePitch = -((pitch - previousPitch) / differenceSeconds);
 
             pigeon.changePerSecond = new OrientationalChange(changeYaw, changeRoll, changePitch);
 

@@ -82,6 +82,7 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void robotPeriodic() {
+        AutoBalance.print();
         SwerveDrive.print();
         double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
         LEDLights.run();
