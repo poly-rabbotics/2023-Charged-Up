@@ -18,6 +18,9 @@ import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
+import frc.robot.systems.AutoBalance.Stage;
+import frc.robot.systems.ElevFourbar.Setpoint;
+import frc.robot.systems.Intake.SolenoidState;
 import frc.robot.systems.LEDLights;
 
 import frc.robot.subsystems.SwerveMode;
@@ -61,6 +64,7 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void robotPeriodic() {
+        AutoBalance.print();
         SwerveDrive.print();
 
         double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
@@ -86,7 +90,25 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void autonomousInit() {
-        AutoModes.init();
+        Pigeon.setFeildZero();
+        SwerveDrive.zeroPositions();
+        LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.8, 0.3, 0.0), 0.5));
+        ElevFourbar.autonomousInit();
+        timer.reset();
+        timer.stop();
+        autoStageOne = false;
+
+        AutoBalance.setStage(Stage.IDLING);
+        
+        //Sets the auto mode that will be run
+        autoMode = 0;
+        
+        if(controlPanel.getRawButton(12)) 
+        autoMode += 1;
+        if(controlPanel.getRawButton(11))
+        autoMode += 2;
+        if(controlPanel.getRawButton(10))
+        autoMode += 4;
     }
 
     double startTimeBalance = -1.0;
@@ -94,7 +116,134 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during autonomous. */
     @Override
     public void autonomousPeriodic() {
-        AutoBalance.run();
+        timer.start();
+        
+        /* 
+        * SCORE MID AND MOVE BACK
+        */
+        if(autoMode == 1) {
+            AutoBalance.run();
+            ElevFourbar.autoRun(Setpoint.STOWED);
+        }
+        
+        /* 
+        * SCORE HIGH
+        */
+        else if(autoMode == 2) {
+            if(!autoStageOne){
+                Intake.autoPivot(SolenoidState.UP);
+                if(ElevFourbar.autoRun(Setpoint.MID_SCORING)) {
+                    Intake.autoClaw(SolenoidState.OPEN);
+                    timer.start();
+                    autoStageOne = true;
+                } 
+            } else {
+                if(timer.get() > 5) {
+                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                        Intake.autoClaw(SolenoidState.CLOSED);
+                    }
+                }
+            }
+        }
+        
+        /* 
+        * SCORE MID, MOVE BACK, AND AUTO BALANCE
+        */
+        if(autoMode == 3) {
+            /* if(!autoStageOne){
+                Intake.autoPivot(SolenoidState.UP);
+                if(ElevFourbar.autoRun(Setpoint.MID_SCORING)) {
+                    Intake.autoClaw(SolenoidState.OPEN);
+                    timer.start();
+                    autoStageOne = true;
+                } 
+            } else {
+                if(timer.get() > 5) {
+                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                        Intake.autoClaw(SolenoidState.CLOSED);
+                    }
+                }
+            } */
+        }
+        
+        /*
+        * SCORE HIGH AND MOVE BACK
+        */
+        if(autoMode == 4) {
+            if(!autoStageOne){
+                Intake.autoPivot(SolenoidState.UP);
+                if(ElevFourbar.autoRun(Setpoint.HIGH_SCORING)) {
+                    Intake.autoClaw(SolenoidState.OPEN);
+                    timer.start();
+                    autoStageOne = true;
+                } 
+            } else {
+                if(timer.get() > 5) {
+                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                        Intake.autoClaw(SolenoidState.CLOSED);
+                    }
+                }
+            }
+            
+            if (timer.get() > 10 && timer.get() < 15) {
+                SwerveDrive.run(0.0, -0.75, 0.0, -1);
+            } else {
+                SwerveDrive.run(0.0, 0.0, 0.0, -1);
+            }
+            
+        }
+        
+        /* 
+        * SCORE HIGH
+        */
+        else if(autoMode == 5) {
+            if(!autoStageOne){
+                Intake.autoPivot(SolenoidState.UP);
+                if(ElevFourbar.autoRun(Setpoint.HIGH_SCORING)) {
+                    Intake.autoClaw(SolenoidState.OPEN);
+                    timer.start();
+                    autoStageOne = true;
+                } 
+            } else {
+                if(timer.get() > 5) {
+                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                        Intake.autoClaw(SolenoidState.CLOSED);
+                    }
+                }
+            }
+        }
+        
+        /* 
+        * SCORE HIGH, MOVE BACK, AND AUTO BALANCE
+        */
+        if(autoMode == 6) {
+            if(!autoStageOne){
+                Intake.autoPivot(SolenoidState.UP);
+                if(ElevFourbar.autoRun(Setpoint.HIGH_SCORING)) {
+                    Intake.autoClaw(SolenoidState.OPEN);
+                    timer.start();
+                    autoStageOne = true;
+                } 
+            } else {
+                if(timer.get() > 5) {
+                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
+                        Intake.autoClaw(SolenoidState.CLOSED);
+                    }
+                }
+            }
+        }
+        
+        
+        /*
+        * ONLY MOVE BACK
+        */
+        if(autoMode == 7) {
+            if (timer.get() > 5 && timer.get() < 7) {
+                SwerveDrive.run(0.0, -0.75, 0.0, -1);
+            } else {
+                SwerveDrive.run(0.0, 0.0, 0.0, -1);
+            }
+        }
     }
     
     /** This function is called once when teleop is enabled. */

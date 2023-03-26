@@ -109,8 +109,8 @@ public class Pigeon {
             recordedInstant = clock.instant();
             
             previousYaw = pigeon.pigeon.getYaw();
-            previousRoll = pigeon.pigeon.getRoll();
-            previousPitch = pigeon.pigeon.getPitch();
+            previousRoll = pigeon.pigeon.getPitch(); // Roll and Pitch are swapped cause of the way its mounted.
+            previousPitch = pigeon.pigeon.getRoll();
         }
 
         @Override
@@ -118,22 +118,31 @@ public class Pigeon {
             Instant previousInstant = recordedInstant;
 
             double yaw = pigeon.pigeon.getYaw();
-            double roll = pigeon.pigeon.getRoll();
-            double pitch = pigeon.pigeon.getPitch();
+            double roll = pigeon.pigeon.getPitch(); // Roll and Pitch are swapped cause of the way its mounted.
+            double pitch = -pigeon.pigeon.getRoll(); // Negative since it should be positive going up.
             
             recordedInstant = clock.instant();
             
             double differenceSeconds = (double)(recordedInstant.toEpochMilli() - previousInstant.toEpochMilli()) / 1000.0;
+            SmartDashboard.putNumber("Difference Seconds", differenceSeconds);
 
             double changeYaw = (yaw - previousYaw) / differenceSeconds;
             double changeRoll = (roll - previousRoll) / differenceSeconds;
-            double changePitch = (pitch - previousPitch) / differenceSeconds;
+            double changePitch = -((pitch - previousPitch) / differenceSeconds);
 
             pigeon.changePerSecond = new OrientationalChange(changeYaw, changeRoll, changePitch);
 
             SmartDashboard.putNumber("Pigon Yaw", yaw);
             SmartDashboard.putNumber("Pigon Pitch", pitch);
             SmartDashboard.putNumber("Pigon Roll", roll);
+
+            SmartDashboard.putNumber("Pigon Yaw/Sec", changeYaw);
+            SmartDashboard.putNumber("Pigon Pitch/Sec", changePitch);
+            SmartDashboard.putNumber("Pigon Roll/Sec", changeRoll);
+
+            previousYaw = yaw;
+            previousRoll = roll;
+            previousPitch = pitch;
         }
     }
 }

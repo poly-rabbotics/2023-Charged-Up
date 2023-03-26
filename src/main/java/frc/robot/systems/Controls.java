@@ -26,6 +26,8 @@ public class Controls {
     // 50 hz times 60 seconds times 15 seconds in auto
     private static final int RECORDING_FRAMES = 50 * 60 * 15;
 
+    private static final double DEFAULT_CURVE_EXPONENT = 3;
+
     public static final int CONTROLLER_PORT_DRIVE = 0;
     public static final int CONTROLLER_PORT_MECHS = 1;
     public static final int CONTROLLER_PORT_PANEL = 2;
@@ -253,4 +255,35 @@ public class Controls {
 
         instance.frame++;
     }
+
+    /**
+     * Default one dimensional curve.
+     */
+    public static double defaultCurve(double x) {
+        if (Math.abs(x) < 0.1) {
+            return 0.0;
+        }
+
+        return Math.pow(x, DEFAULT_CURVE_EXPONENT);
+    }
+
+    /**
+     * Default two dimensional curve, returns the curved x value, y is only
+     * used for context. Swap parameters to get the other value curved.
+     * @param x The value to be curved.
+     * @param y The value used for two dimensional context.
+     * @return The curved x value.
+     */
+    public static double defaultCurveTwoDimensional(double x, double y) {
+        double distance = Math.sqrt(x*x + y*y);
+
+        if (distance < 0.1) {
+            return 0.0;
+        }
+
+        double curvedDistance = Math.pow(distance, DEFAULT_CURVE_EXPONENT);
+        double distanceRatio = curvedDistance * distance;
+
+        return x * distanceRatio;
+    };
 }
