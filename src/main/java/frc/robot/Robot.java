@@ -104,6 +104,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         Pigeon.setFeildZero();
+        SwerveDrive.zeroPositions();
         LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.8, 0.3, 0.0), 0.5));
         ElevFourbar.autonomousInit();
         timer.reset();

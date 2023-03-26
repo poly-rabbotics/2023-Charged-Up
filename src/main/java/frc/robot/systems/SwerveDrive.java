@@ -289,4 +289,14 @@ public class SwerveDrive {
             module.print();
         }
     }
+
+    public static double getModulePos(int id) {
+        return instance.modules[id].getMovementPos();
+    }
+
+    public static void zeroPositions() {
+        for (SwerveModule module : instance.modules) {
+            module.zeroPositions();
+        }
+    }
 }

@@ -22,6 +22,7 @@ public class AutoBalance {
 
     private Stage stage;
     private int haltedFrames;
+    private boolean halting = false;
 
     public enum Stage {
         IDLING, 
@@ -48,6 +49,16 @@ public class AutoBalance {
         }
 
         if (instance.stage == Stage.IDLING) {
+            instance.stage = Stage.RAMMING;
+        }
+
+        if (Math.abs(SwerveDrive.getModulePos(0)) > 335) {
+            instance.halting = true;
+        }
+
+        if (instance.halting) {
+            instance.stage = Stage.HALTING;
+        } else {
             instance.stage = Stage.RAMMING;
         }
 
@@ -81,6 +92,7 @@ public class AutoBalance {
     }
 
     public static void setStage(Stage stage) {
+        instance.halting = stage == Stage.HALTING;
         instance.stage = stage;
     }
 
@@ -107,11 +119,11 @@ public class AutoBalance {
     }
 
     private void encroach() {
-        // Negate for downward spike.
-        if (Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) > ANGLE_SPIKE_QUALIFIER && Math.abs(Pigeon.getPitch()) < 10.0) {
+/*         // Negate for downward spike.
+        if (Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) > ANGLE_SPIKE_QUALIFIER) {
             stage = Stage.HALTING;
             return;
-        }
+        } */
 
         LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.0, 0.0, 1.0), 5.0));
         SwerveDrive.runUncurved(0.0, ENCROACHING_SPEED, 0.0);

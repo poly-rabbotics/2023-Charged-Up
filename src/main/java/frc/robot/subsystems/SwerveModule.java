@@ -96,14 +96,23 @@ public class SwerveModule {
         position.distanceMeters = movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT;
     }
 
+    public double getMovementPos() {
+        return movementEncoder.getPosition();
+    }
+
     public void print() {
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position", angularEncoder.getPosition());
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position mod 360", angularEncoder.getPosition() % 360);
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position + off", angularEncoder.getPosition() + canCoderOffset);
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position + off mod 360", (angularEncoder.getPosition() + canCoderOffset) % 360);
+        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position (Distance) ", movementEncoder.getPosition());
     }
 
     public SwerveModulePosition getPosition() {
         return position;
+    }
+
+    public void zeroPositions() {
+        movementEncoder.setPosition(0.0);
     }
 }
