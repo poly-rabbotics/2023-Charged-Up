@@ -164,8 +164,6 @@ public class Robot extends TimedRobot {
                     }
                 }
             } */
-            
-            autoBalance(3.0);
         }
         
         /*
@@ -233,8 +231,6 @@ public class Robot extends TimedRobot {
                     }
                 }
             }
-            
-            autoBalance(9.0);
         }
         
         
