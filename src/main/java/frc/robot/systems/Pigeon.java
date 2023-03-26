@@ -124,7 +124,6 @@ public class Pigeon {
             recordedInstant = clock.instant();
             
             double differenceSeconds = (double)(recordedInstant.toEpochMilli() - previousInstant.toEpochMilli()) / 1000.0;
-
             SmartDashboard.putNumber("Difference Seconds", differenceSeconds);
 
             double changeYaw = (yaw - previousYaw) / differenceSeconds;

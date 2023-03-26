@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.systems.AutoBalance;
+import frc.robot.systems.AutoBalanceAlternate;
 import frc.robot.systems.Controls;
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
@@ -34,6 +35,9 @@ import frc.robot.patterns.*;
 * project.
 */
 public class Robot extends TimedRobot {
+    /* public static XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
+    public static XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
+    public static Joystick controlPanel = (Joystick)Controls.getControllerByPort(2); */
     public static XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
     public static XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
     public static Joystick controlPanel = (Joystick)Controls.getControllerByPort(2);
@@ -44,28 +48,6 @@ public class Robot extends TimedRobot {
     int autoMode;
     double fbSpeedInput = 0;
 
-    private void autoBalance(double startTime) {
-        if (timer.get() > startTime) {
-            if (startTimeBalance == -1.0) {
-                startTimeBalance = timer.get();
-            }
-
-            if (timer.get() - startTimeBalance >= 1.5) {
-                SwerveDrive.run(0.0, 0.0, 0.0, -1);
-                return;
-            }
-
-            /* if (false) {
-                startTimeBalance = -1.0;
-                if (timer.get() > 0 && timer.get() < 15) {
-                    SwerveDrive.run(0.0, -0.85, 0.0, -1);
-                } else {
-                    SwerveDrive.run(0.0, 0.0, 0.0, -1);
-                }
-            } */
-        }
-    }
-    
     /**
     * This function is run when the robot is first started up and should be used for any
     * initialization code.
@@ -84,11 +66,16 @@ public class Robot extends TimedRobot {
     public void robotPeriodic() {
         AutoBalance.print();
         SwerveDrive.print();
+
         double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
         LEDLights.run();
         
+        SmartDashboard.putNumber("FB Position", ElevFourbar.fourbar.getPosition());
         SmartDashboard.putNumber("Comp Pressure", Math.floor(pressureValue));
         SmartDashboard.putBoolean("Fully Pressurized", pressureValue > 60);
+        SmartDashboard.putNumber("Auto Mode", AutoModes.getAutoMode());
+        SmartDashboard.putNumber("Auto Balance Step", AutoBalanceAlternate.Balance_Step);
+         
     }
     
     /**
@@ -122,7 +109,6 @@ public class Robot extends TimedRobot {
         autoMode += 2;
         if(controlPanel.getRawButton(10))
         autoMode += 4;
-        
     }
 
     double startTimeBalance = -1.0;

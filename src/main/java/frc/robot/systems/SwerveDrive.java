@@ -98,6 +98,10 @@ public class SwerveDrive {
         return instance.mode;
     }
 
+    public static SwerveModule getModuleInfo(int module) {
+        return instance.modules[module];
+    }
+
     /**
      * Runs swerve, behavior changes based on the drive's mode. Derives speed
      * from directional inputs.

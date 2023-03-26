@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
-import edu.wpi.first.wpilibj.DigitalInput;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -13,7 +12,8 @@ import frc.robot.systems.ElevFourbar;
  * Controls the elevator
  */
 public class Elevator {
-    private static final double TICKS_PER_INCH = -10752.0/3; //FINAL VAlUE DO NOT CHANGE
+    //Ticks per inch constant, gear reduction is 12:1
+    private static final double TICKS_PER_INCH = -6144.0; //FINAL VALUE DO NOT CHANGE
     
     //constant variables
     private static final double MANUAL_DEADZONE = 0.3;
@@ -33,7 +33,6 @@ public class Elevator {
     
     //Motor and controller
     private final TalonFX elevatorMotor;
-    private final DigitalInput bottomLimitSwitch;
 
     //variables
     private double encoderPosition;
@@ -44,7 +43,6 @@ public class Elevator {
      */
     public Elevator() {
         elevatorMotor = new TalonFX(ELEVATOR_MOTOR_ID);
-        bottomLimitSwitch = new DigitalInput(0);
 
         elevatorMotor.configFactoryDefault();
         elevatorMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 30);
@@ -53,8 +51,8 @@ public class Elevator {
         elevatorMotor.config_kD(0, D);
         elevatorMotor.selectProfileSlot(0, 0);
 
-        elevatorMotor.configPeakOutputForward(0.7);
-        elevatorMotor.configPeakOutputReverse(-0.7);
+        elevatorMotor.configPeakOutputForward(0.85);
+        elevatorMotor.configPeakOutputReverse(-0.85);
         
         //Configures motor to brake when not being used
         elevatorMotor.setNeutralMode(NeutralMode.Brake);
@@ -92,15 +90,8 @@ public class Elevator {
         elevatorMotor.set(ControlMode.PercentOutput, speed * 0.6);
     }
 
-    public void autonomousRun(Setpoint setpoint) {
-        encoderPosition = elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
-
-        pidControl(setpoint);
-    }
-
     /**
-     * PID Control of the elevator, cycles through
-     * setpoints bottom, mid, top
+     * PID Control of the elevator
      * @param setpoint The setpoint to move the elevator to
      */
     public void pidControl(Setpoint setpoint) {
@@ -108,6 +99,28 @@ public class Elevator {
 
         updateTargetSetpoint(setpoint);
 
+        //set elevator PID position to target setpoint
+        elevatorMotor.set(ControlMode.Position, targetSetpoint * TICKS_PER_INCH);
+    }
+
+    /**
+     * PID Control of the elevator using coordinates
+     * @param coords The coordinates to move to, on an x and y plane
+     */
+    public void pidControl(double[] coords) {
+        encoderPosition = elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
+
+        double[] pos = ElevFourbar.coordsToPos(coords[0], coords[1]);
+        targetSetpoint = pos[0];
+
+        if(coords[0] == 35.2) {
+            targetSetpoint = 31;
+        }
+
+        /* if(Math.abs(targetSetpoint - 2.9) < 0.5) {
+            targetSetpoint = GROUND_INTAKE_SETPOINT;
+        } */
+        
         //set elevator PID position to target setpoint
         elevatorMotor.set(ControlMode.Position, targetSetpoint * TICKS_PER_INCH);
     }

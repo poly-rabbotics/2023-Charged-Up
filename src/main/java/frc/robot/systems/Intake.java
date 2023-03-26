@@ -2,6 +2,7 @@ package frc.robot.systems;
 
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.*;
 
@@ -15,13 +16,13 @@ public class Intake {
 
     //The deadzone for roller joystick control
     private static final double ROLLER_DEADZONE = 0.3;
-
-    private double rackMotorSpeed;
+    private double rollerStartTime;
 
     public static Compressor comp;
     private static Pivot pivot;
     private static Roller roller;
     private static Claw claw;
+    private static Timer timer = new Timer();
 
     private SolenoidState clawState;
     private SolenoidState pivotState;
@@ -31,6 +32,7 @@ public class Intake {
     public Intake() {
         comp = new Compressor(1, PneumaticsModuleType.REVPH);
         //comp.enableDigital();
+        timer.start();
 
         //initiali
         roller = new Roller(ROLLER_ID);
@@ -43,7 +45,6 @@ public class Intake {
     }
 
     public static void init() {
-        instance.rackMotorSpeed = 0;  
         instance.pivotState = SolenoidState.DOWN;
         instance.clawState = SolenoidState.CLOSED;
     }
@@ -57,11 +58,11 @@ public class Intake {
      */
     public static void run(boolean pivotToggle, boolean intake, boolean outtake, boolean clawToggle) {
         if(intake) {
-            runRoller(1);
-        } else if(outtake) {
             runRoller(-1);
+        } else if(outtake) {
+            runRoller(1);
         } else {
-            runRoller(0);
+            runRoller(-0.15);
         }
 
         runClaw(clawToggle);
@@ -86,14 +87,18 @@ public class Intake {
         }
     }
 
+    public static void autoRoller(double startTime, double endTime) {
+        if(timer.get() > startTime && timer.get() < endTime) {
+            roller.setSpeed(-1);
+        }
+    }
+
     /**
      * Runs the rollers, operated with a joystick axis
      * @param rollerSpeed the speed of the rollers from -1 to 1
      */
     private static void runRoller(double rollerSpeed) {
-        if(Math.abs(rollerSpeed) > ROLLER_DEADZONE) { // scales down the speed of the motor
-            rollerSpeed *= 0.5;
-        } else {
+        if(Math.abs(rollerSpeed) < ROLLER_DEADZONE) { // scales down the speed of the motor
             rollerSpeed = 0;
         }
 
@@ -108,6 +113,7 @@ public class Intake {
         if(switchClawState) {
             if(instance.clawState == SolenoidState.OPEN) {
                 instance.clawState = SolenoidState.CLOSED;
+                instance.rollerStartTime = timer.get();
         } else {
                 instance.clawState = SolenoidState.OPEN;
             }
@@ -115,8 +121,10 @@ public class Intake {
 
         if(instance.clawState == SolenoidState.OPEN) {
             claw.open();
+            
         } else if(instance.clawState == SolenoidState.CLOSED) {
             claw.close();
+            autoRoller(instance.rollerStartTime, instance.rollerStartTime + 0.3);
         }
     }  
     
@@ -151,7 +159,6 @@ public class Intake {
     private static void updateSmartDashboard() {
         SmartDashboard.putString("Claw State", instance.clawState.toString());
         SmartDashboard.putString("Pivot State", instance.pivotState.toString());
-        SmartDashboard.putNumber("Rack Speed", instance.rackMotorSpeed);
     }
     
 }
