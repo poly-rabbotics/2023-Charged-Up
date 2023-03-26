@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
@@ -35,7 +36,7 @@ public class Robot extends TimedRobot {
     public static Joystick controlPanel = (Joystick)Controls.getControllerByPort(2); */
     public static XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
     public static XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
-    public static XboxController controlPanel = (XboxController)Controls.getControllerByPort(2);
+    public static Joystick controlPanel = (Joystick)Controls.getControllerByPort(2);
     public static AnalogInput pressureSensor = new AnalogInput(0);
     Timer timer = new Timer();
     

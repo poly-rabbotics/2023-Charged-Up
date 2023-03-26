@@ -21,8 +21,8 @@ public class Fourbar {
     private static final int FOURBAR_LIMIT = 140; 
     
     //PID max speed values
-    private static final double FOURBAR_SPEED_UP = -0.5;
-    private static final double FOURBAR_SPEED_DOWN = 0.5;
+    private static final double FOURBAR_SPEED_UP = -0.4;
+    private static final double FOURBAR_SPEED_DOWN = 0.4;
 
     //encoder offset
     private static final double ENCODER_OFFSET = 0.145 * 360;
@@ -40,7 +40,7 @@ public class Fourbar {
     private static final int STOWED_SETPOINT = 0;
 
     //PID constants
-    private static final double P = 5;
+    private static final double P = 10;
     private static final double I = 0.0;
     private static final double D = 1;
     private static final double F = 0.0;
@@ -118,12 +118,12 @@ public class Fourbar {
             speed = 0;
         }
 
-        //Restrict movement if fourbar passes limit
+        /* //Restrict movement if fourbar passes limit
         if(encoderPosition < 0 && speed > 0) {
             speed = 0;
         } else if(encoderPosition > FOURBAR_LIMIT && speed < 0) {
             speed = 0;
-        }
+        } */
 
         //Unneeded because of fourbar redesign
         /* //calculate gravity counteractment
