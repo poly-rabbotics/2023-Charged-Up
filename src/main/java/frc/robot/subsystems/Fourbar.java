@@ -21,8 +21,7 @@ public class Fourbar {
     private static final int FOURBAR_LIMIT = 140; 
     
     //PID max speed values
-    private static final double FOURBAR_SPEED_UP = -0.4;
-    private static final double FOURBAR_SPEED_DOWN = 0.4;
+    private static final double FOURBAR_SPEED_UP = -0.45;
 
     //encoder offset
     private static final double ENCODER_OFFSET = 0.145 * 360;
@@ -67,7 +66,7 @@ public class Fourbar {
         pidController.setI(I);
         pidController.setD(D);
         pidController.setFF(F);
-        pidController.setOutputRange(FOURBAR_SPEED_UP, FOURBAR_SPEED_DOWN);
+        pidController.setOutputRange(FOURBAR_SPEED_UP, -FOURBAR_SPEED_UP);
 
         pidController.setFeedbackDevice(absoluteEncoder);
         pidController.setPositionPIDWrappingEnabled(true);
@@ -99,6 +98,10 @@ public class Fourbar {
 
         double[] pos = ElevFourbar.coordsToPos(coords[0], coords[1]);
         targetSetpoint = pos[1];
+
+        if(coords[0] == 35.2) {
+            targetSetpoint = 105;
+        }
 
         /* if(Math.abs(targetSetpoint - 68) < 0.5) {
             targetSetpoint = 112; 

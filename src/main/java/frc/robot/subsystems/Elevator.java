@@ -113,6 +113,10 @@ public class Elevator {
         double[] pos = ElevFourbar.coordsToPos(coords[0], coords[1]);
         targetSetpoint = pos[0];
 
+        if(coords[0] == 35.2) {
+            targetSetpoint = 31;
+        }
+
         /* if(Math.abs(targetSetpoint - 2.9) < 0.5) {
             targetSetpoint = GROUND_INTAKE_SETPOINT;
         } */

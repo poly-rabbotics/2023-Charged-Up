@@ -32,6 +32,7 @@ public class Intake {
     public Intake() {
         comp = new Compressor(1, PneumaticsModuleType.REVPH);
         //comp.enableDigital();
+        timer.start();
 
         //initiali
         roller = new Roller(ROLLER_ID);
@@ -57,11 +58,11 @@ public class Intake {
      */
     public static void run(boolean pivotToggle, boolean intake, boolean outtake, boolean clawToggle) {
         if(intake) {
-            runRoller(1);
-        } else if(outtake) {
             runRoller(-1);
+        } else if(outtake) {
+            runRoller(1);
         } else {
-            runRoller(0);
+            runRoller(-0.15);
         }
 
         runClaw(clawToggle);
@@ -88,7 +89,7 @@ public class Intake {
 
     public static void autoRoller(double startTime, double endTime) {
         if(timer.get() > startTime && timer.get() < endTime) {
-            roller.setSpeed(1);
+            roller.setSpeed(-1);
         }
     }
 
