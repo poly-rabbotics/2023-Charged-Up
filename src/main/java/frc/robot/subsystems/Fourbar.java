@@ -178,4 +178,9 @@ public class Fourbar {
     public double getTargetPosition() {
         return targetSetpoint;
     }
+
+    public void setPIDSpeed(double speed) {
+        pidController.setOutputRange(speed, -speed);
+        
+    }
 }

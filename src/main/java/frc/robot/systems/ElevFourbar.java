@@ -31,7 +31,7 @@ public class ElevFourbar {
     private static DecimalFormat df = new DecimalFormat("#.###");
 
     //instantiate coordinates
-    private double[] coords;
+    private double[] coords = {0, 0};
     private double[] targetCoords = { 0, FOURBAR_HYPOTENUSE };
 
     private static ElevFourbar instance = new ElevFourbar();
@@ -127,7 +127,7 @@ public class ElevFourbar {
         fourbar.pidControl(setpoint);
 
         //return true if the fourbar reached it's destination
-        return (Math.abs(fourbar.getPosition() - fourbar.getTargetPosition()) < 1) && (Math.abs(elevator.getPosition() - elevator.getTargetPosition()) > 0.2);
+        return (Math.abs(fourbar.getPosition() - fourbar.getTargetPosition()) < 1) && (Math.abs(elevator.getPosition() - elevator.getTargetPosition()) < 0.2);
     }
     
     /**
@@ -135,6 +135,7 @@ public class ElevFourbar {
      * @param setpoint The setpoint to run to from the Setpoint enum
      */
     public static boolean autoRun(double[] coords) {
+        updateSmartDashboard(0, 0);
 
         //Run the fourbar and elevator to inputted setpoint
         elevator.pidControl(coords);
@@ -146,6 +147,7 @@ public class ElevFourbar {
     
     public static void autonomousInit() {
         elevator.autonomousInit();
+        fourbar.setPIDSpeed(0.3);
     }
 
 

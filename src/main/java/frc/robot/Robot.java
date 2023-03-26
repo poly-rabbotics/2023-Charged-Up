@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.systems.AutoBalance;
 import frc.robot.systems.AutoBalanceAlternate;
 import frc.robot.systems.Controls;
 import frc.robot.systems.ElevFourbar;
@@ -93,7 +94,7 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during autonomous. */
     @Override
     public void autonomousPeriodic() {
-        AutoModes.run();
+        AutoBalance.run();
     }
     
     /** This function is called once when teleop is enabled. */
