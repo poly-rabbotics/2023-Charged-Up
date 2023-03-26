@@ -9,14 +9,14 @@ import frc.robot.patterns.Breathe;
  * SwerveDrive was becoming a bit large to handle.
  */
 public class AutoBalance {
-    private static final double RAMMING_SPEED = -0.75;
-    private static final double CLIMBING_SPEED = -0.5;
+    private static final double RAMMING_SPEED = -0.5;
+    private static final double CLIMBING_SPEED = -0.3;
     private static final double ENCROACHING_SPEED = -0.1;
     private static final double HALTING_SPEED = 0.1;
 
-    private static final double ANGLE_SPIKE_QUALIFIER = 10.0;
+    private static final double ANGLE_SPIKE_QUALIFIER = 20.0;
     private static final double ANGLE_STABLILITY_QUALIFIER = 5.0;
-    private static final int HALTING_FRAMES = 5;
+    private static final int HALTING_FRAMES = 10;
     
     private static final AutoBalance instance = new AutoBalance();
 
@@ -108,7 +108,7 @@ public class AutoBalance {
 
     private void encroach() {
         // Negate for downward spike.
-        if (Pigeon.getChangePerSecond().pitchPerSecond < -ANGLE_SPIKE_QUALIFIER) {
+        if (Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) > ANGLE_SPIKE_QUALIFIER && Math.abs(Pigeon.getPitch()) < 10.0) {
             stage = Stage.HALTING;
             return;
         }
@@ -118,13 +118,13 @@ public class AutoBalance {
     }
 
     private void halt() {
-        if (haltedFrames > HALTING_FRAMES) {
+        if (Math.abs(Pigeon.getPitch()) < 10.0 && Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) < 10.0) {
             stage = Stage.DONE;
             return;
         }
 
         LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.0, 1.0, 0.0), 5.0));
-        SwerveDrive.runUncurved(0.0, HALTING_SPEED, 0.0);
+        SwerveDrive.runUncurved(0.0, Math.signum(Pigeon.getPitch()) * HALTING_SPEED, 0.0);
         haltedFrames++;
     }
 

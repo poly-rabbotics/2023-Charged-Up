@@ -130,14 +130,13 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousPeriodic() {
         timer.start();
-        if(timer.get() < 2)
-        return;
         
         /* 
         * SCORE MID AND MOVE BACK
         */
         if(autoMode == 1) {
             AutoBalance.run();
+            ElevFourbar.autoRun(Setpoint.STOWED);
         }
         
         /* 
