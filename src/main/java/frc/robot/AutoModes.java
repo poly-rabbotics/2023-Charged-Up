@@ -20,6 +20,8 @@ public class AutoModes {
     private static int autoStage;
     private static double startTimeBalance = -1.0;
 
+    static AutoBalanceAlternate autoBalanceAlternate = new AutoBalanceAlternate(6);
+
     public static int getAutoMode()
     {
         //Calculate auto mode
@@ -93,20 +95,25 @@ public class AutoModes {
         if(autoStage == 0){
             //Move the pivot up
             Intake.autoPivot(SolenoidState.UP);
+            ElevFourbar.autoRun(ElevFourbar.MID_SCORING_COORDS);
             
-            //Move the elevator to the mid scoring position
-            if(ElevFourbar.autoRun(ElevFourbar.MID_SCORING_COORDS)) {
+            //Move the elevator to the high scoring position
+            if(timer.get() > 3) {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
-                autoStage = 1;
+                autoStage++;
             } 
-        } else {
+        } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
                 //Move to stowed setpoint
                 if(ElevFourbar.autoRun(ElevFourbar.STOWED_COORDS)) {
                     //Close the claw and put the pivot down
+                    autoStage++;
+                }
+
+                if(secondaryTimer.get() > 1.5) {
                     Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
                 }
@@ -127,21 +134,25 @@ public class AutoModes {
         if(autoStage == 0){
             //Move the pivot up
             Intake.autoPivot(SolenoidState.UP);
-
-            //Move to mid scoring position
-            if(ElevFourbar.autoRun(ElevFourbar.MID_SCORING_COORDS)) {
+            ElevFourbar.autoRun(ElevFourbar.MID_SCORING_COORDS);
+            
+            //Move the elevator to the high scoring position
+            if(timer.get() > 3) {
                 //Open claw when the position has been reached
-                Intake.autoClaw(SolenoidState.OPEN);
                 secondaryTimer.reset();
-                
+                Intake.autoClaw(SolenoidState.OPEN);
                 autoStage++;
             } 
-        } else {
+        } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
                 //Move to stowed setpoint
                 if(ElevFourbar.autoRun(ElevFourbar.STOWED_COORDS)) {
                     //Close the claw and put the pivot down
+                    autoStage++;
+                }
+
+                if(secondaryTimer.get() > 1.5) {
                     Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
                 }
@@ -156,13 +167,13 @@ public class AutoModes {
         if(autoStage == 0){
             //Move the pivot up
             Intake.autoPivot(SolenoidState.UP);
-
-            //Move to mid scoring position
-            if(ElevFourbar.autoRun(ElevFourbar.MID_SCORING_COORDS)) {
+            ElevFourbar.autoRun(ElevFourbar.MID_SCORING_COORDS);
+            
+            //Move the elevator to the high scoring position
+            if(timer.get() > 3) {
                 //Open claw when the position has been reached
-                Intake.autoClaw(SolenoidState.OPEN);
                 secondaryTimer.reset();
-                
+                Intake.autoClaw(SolenoidState.OPEN);
                 autoStage++;
             } 
         } else if(autoStage == 1) {
@@ -171,9 +182,12 @@ public class AutoModes {
                 //Move to stowed setpoint
                 if(ElevFourbar.autoRun(ElevFourbar.STOWED_COORDS)) {
                     //Close the claw and put the pivot down
+                    autoStage++;
+                }
+
+                if(secondaryTimer.get() > 1.5) {
                     Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
-                    autoStage++;
                 }
             }
         } else {
@@ -191,18 +205,22 @@ public class AutoModes {
             ElevFourbar.autoRun(ElevFourbar.HIGH_SCORING_COORDS);
             
             //Move the elevator to the high scoring position
-            if(timer.get() > 4) {
+            if(timer.get() > 3) {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
                 autoStage++;
             } 
-        } else {
+        } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
                 //Move to stowed setpoint
                 if(ElevFourbar.autoRun(ElevFourbar.STOWED_COORDS)) {
                     //Close the claw and put the pivot down
+                    autoStage++;
+                }
+
+                if(secondaryTimer.get() > 1.5) {
                     Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
                 }
@@ -232,12 +250,13 @@ public class AutoModes {
                 Intake.autoClaw(SolenoidState.OPEN);
                 autoStage++;
             } 
-        } else {
+        } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
                 //Move to stowed setpoint
                 if(ElevFourbar.autoRun(ElevFourbar.STOWED_COORDS)) {
                     //Close the claw and put the pivot down
+                    autoStage++;
                 }
 
                 if(secondaryTimer.get() > 1.5) {
@@ -287,11 +306,13 @@ public class AutoModes {
      * Only move out of the community
      */
     private static void modeSeven() {
-        if (timer.get() > 10 && timer.get() < 15) {
+        
+        autoBalanceAlternate.run();
+        /*if (timer.get() > 10 && timer.get() < 15) {
             SwerveDrive.run(0.0, -0.75, 0.0, -1);
         } else {
             SwerveDrive.run(0.0, 0.0, 0.0, -1);
-        }
+        }*/
     }
 
     private static void autoBalance(double startTime) {

@@ -7,7 +7,7 @@ import frc.robot.AutoModes;
 public class AutoBalanceAlternate {
     private static final double RAMMING_SPEED = -0.75;
     private static final double ENCROACHING_SPEED = 0.2;
-    private static final double DRIVE_TO_RAMP = 3;
+    private static final double DRIVE_TO_RAMP = 350;
     private static final double PITCH_RATE_THRESHOLD = 5;
     private static final double PITCH_THRESHOLD = 3;    
 
@@ -31,7 +31,7 @@ public class AutoBalanceAlternate {
                 if(AutoModes.autoBalanceTimer.get()>start_time){
                     Balance_Step++;
                     stepTimer.reset();
-                    stepTimer.start();
+                    stepTimer.start();                   
                 }
                 break;
             case 1: //Drive toward and up ramp a total distance, then stop when distance is reached

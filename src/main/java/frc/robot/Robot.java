@@ -66,6 +66,7 @@ public class Robot extends TimedRobot {
     public void robotPeriodic() {
         AutoBalance.print();
         SwerveDrive.print();
+        ElevFourbar.updateSmartDashboard(0, 0);
 
         double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
         LEDLights.run();
@@ -75,6 +76,8 @@ public class Robot extends TimedRobot {
         SmartDashboard.putBoolean("Fully Pressurized", pressureValue > 60);
         SmartDashboard.putNumber("Auto Mode", AutoModes.getAutoMode());
         SmartDashboard.putNumber("Auto Balance Step", AutoBalanceAlternate.Balance_Step);
+        SmartDashboard.putNumber("AHH Elev", ElevFourbar.coordsToPos(ElevFourbar.MID_SCORING_COORDS[0], ElevFourbar.MID_SCORING_COORDS[1])[0]);
+        SmartDashboard.putNumber("AHH FB", ElevFourbar.coordsToPos(ElevFourbar.MID_SCORING_COORDS[0], ElevFourbar.MID_SCORING_COORDS[1])[1]);
          
     }
     
@@ -316,7 +319,9 @@ public class Robot extends TimedRobot {
     
     /** This function is called periodically during test mode. */
     @Override
-    public void testPeriodic() {}
+    public void testPeriodic() {
+        if(controllerOne.getStartButtonReleased()) SwerveDrive.zeroPositions();
+    }
     
     /** This function is called once when the robot is first started up. */
     @Override

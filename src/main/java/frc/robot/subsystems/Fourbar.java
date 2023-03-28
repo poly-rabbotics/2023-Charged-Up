@@ -24,10 +24,10 @@ public class Fourbar {
     private static final double FOURBAR_SPEED_UP = -0.45;
 
     //encoder offset
-    private static final double ENCODER_OFFSET = 0.145 * 360;
+    public static final double ENCODER_OFFSET = 0.145 * 360;
     
     //constant variables
-    private static final int MOTOR_ID = 62; //CORRECT ID
+    private static final int MOTOR_ID = 61; //CORRECT ID
     private static final double MANUAL_DEADZONE = 0.3;
 
     //position constants, in degrees
@@ -179,8 +179,12 @@ public class Fourbar {
         return targetSetpoint;
     }
 
+    public double getAbsolutePosition() {
+        return absoluteEncoder.getPosition();
+    }
+
     public void setPIDSpeed(double speed) {
-        pidController.setOutputRange(speed, -speed);
+        pidController.setOutputRange(-speed, speed);
         
     }
 }

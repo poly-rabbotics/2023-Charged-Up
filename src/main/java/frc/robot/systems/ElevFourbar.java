@@ -15,10 +15,10 @@ public class ElevFourbar {
     //COORDINATE CONSTANTS FOR PID CONTROL
     public static double[] STOWED_COORDS = { 0, FOURBAR_HYPOTENUSE };
     public static double[] GROUND_INTAKE_DOWN_COORDS = { 35.2, 18.2 };
-    public static double[] GROUND_INTAKE_UP_COORDS = { 29.5, 7.9 };
+    public static double[] GROUND_INTAKE_UP_COORDS = { 29.5, 5.9 };
     public static double[] MID_SCORING_COORDS = { 20.4, 42.5 };
     public static double[] SUBSTATION_INTAKE_COORDS = { 20.4, 40.5 };
-    public static double[] HIGH_SCORING_COORDS = { 35.9, 42.0 };
+    public static double[] HIGH_SCORING_COORDS = { 26.6, 57.5 };
 
     //enums
     private Setpoint setpoint = Setpoint.STOWED;
@@ -55,6 +55,7 @@ public class ElevFourbar {
     public static void init() {
         instance.controlType = ControlType.POSITION;
         elevator.init();
+        fourbar.setPIDSpeed(0.45);
     }
 
     /**
@@ -104,16 +105,14 @@ public class ElevFourbar {
 
         if(instance.controlType == ControlType.POSITION) {
             /* elevator.pidControl(instance.setpoint);
-            fourbar.pidControl(instance.setpoint);  */
+            fourbar.pidControl(instance.setpoint); */
 
             elevator.pidControl(instance.targetCoords);
             fourbar.pidControl(instance.targetCoords);
         } else {
             elevator.manualControl(elevatorSpeed, dPadDirection);
-            fourbar.manualControl(-fourbarSpeed);
+            fourbar.manualControl(fourbarSpeed);
         }
-        
-        updateSmartDashboard(elevatorSpeed, fourbarSpeed);
     }
 
     /**
@@ -135,7 +134,6 @@ public class ElevFourbar {
      * @param setpoint The setpoint to run to from the Setpoint enum
      */
     public static boolean autoRun(double[] coords) {
-        updateSmartDashboard(0, 0);
 
         //Run the fourbar and elevator to inputted setpoint
         elevator.pidControl(coords);
@@ -198,7 +196,7 @@ public class ElevFourbar {
         return output;
     }
 
-    private static void updateSmartDashboard(double elevSpeed, double fourbarSpeed) {
+    public static void updateSmartDashboard(double elevSpeed, double fourbarSpeed) {
         SmartDashboard.putString("Setpoint", instance.setpoint.toString());
         SmartDashboard.putString("Control Type", instance.controlType.toString());
 
@@ -214,8 +212,9 @@ public class ElevFourbar {
 
         //Fourbar values
         SmartDashboard.putNumber("Fourbar Position", fourbar.getPosition());
-        SmartDashboard.putNumber("Fourbar Target", fourbar.getTargetPosition()); //ADD THIS
+        SmartDashboard.putNumber("Fourbar Target", (fourbar.getTargetPosition() + fourbar.ENCODER_OFFSET)/360.0); //ADD THIS
         SmartDashboard.putNumber("Fourbar Speed", fourbarSpeed);
+        SmartDashboard.putNumber("Abs Encoder Position", fourbar.getAbsolutePosition());
     }
 
 }
