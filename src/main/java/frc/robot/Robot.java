@@ -76,8 +76,8 @@ public class Robot extends TimedRobot {
         SmartDashboard.putBoolean("Fully Pressurized", pressureValue > 60);
         SmartDashboard.putNumber("Auto Mode", AutoModes.getAutoMode());
         SmartDashboard.putNumber("Auto Balance Step", AutoBalanceAlternate.Balance_Step);
-        SmartDashboard.putNumber("AHH Elev", ElevFourbar.coordsToPos(ElevFourbar.MID_SCORING_COORDS[0], ElevFourbar.MID_SCORING_COORDS[1])[0]);
-        SmartDashboard.putNumber("AHH FB", ElevFourbar.coordsToPos(ElevFourbar.MID_SCORING_COORDS[0], ElevFourbar.MID_SCORING_COORDS[1])[1]);
+        //SmartDashboard.putNumber("AHH Elev", ElevFourbar.coordsToPos(ElevFourbar.MID_SCORING_COORDS[0], ElevFourbar.MID_SCORING_COORDS[1])[0]);
+        //SmartDashboard.putNumber("AHH FB", ElevFourbar.coordsToPos(ElevFourbar.MID_SCORING_COORDS[0], ElevFourbar.MID_SCORING_COORDS[1])[1]);
          
     }
     
@@ -103,15 +103,9 @@ public class Robot extends TimedRobot {
 
         AutoBalance.setStage(Stage.IDLING);
         
-        //Sets the auto mode that will be run
-        autoMode = 0;
-        
-        if(controlPanel.getRawButton(12)) 
-        autoMode += 1;
-        if(controlPanel.getRawButton(11))
-        autoMode += 2;
-        if(controlPanel.getRawButton(10))
-        autoMode += 4;
+        AutoModes.init();
+
+        Intake.init();
     }
 
     double startTimeBalance = -1.0;
@@ -120,133 +114,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousPeriodic() {
         timer.start();
-        
-        /* 
-        * SCORE MID AND MOVE BACK
-        */
-        if(autoMode == 1) {
-            AutoBalance.run();
-            ElevFourbar.autoRun(Setpoint.STOWED);
-        }
-        
-        /* 
-        * SCORE HIGH
-        */
-        else if(autoMode == 2) {
-            if(!autoStageOne){
-                Intake.autoPivot(SolenoidState.UP);
-                if(ElevFourbar.autoRun(Setpoint.MID_SCORING)) {
-                    Intake.autoClaw(SolenoidState.OPEN);
-                    timer.start();
-                    autoStageOne = true;
-                } 
-            } else {
-                if(timer.get() > 5) {
-                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
-                        Intake.autoClaw(SolenoidState.CLOSED);
-                    }
-                }
-            }
-        }
-        
-        /* 
-        * SCORE MID, MOVE BACK, AND AUTO BALANCE
-        */
-        if(autoMode == 3) {
-            /* if(!autoStageOne){
-                Intake.autoPivot(SolenoidState.UP);
-                if(ElevFourbar.autoRun(Setpoint.MID_SCORING)) {
-                    Intake.autoClaw(SolenoidState.OPEN);
-                    timer.start();
-                    autoStageOne = true;
-                } 
-            } else {
-                if(timer.get() > 5) {
-                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
-                        Intake.autoClaw(SolenoidState.CLOSED);
-                    }
-                }
-            } */
-        }
-        
-        /*
-        * SCORE HIGH AND MOVE BACK
-        */
-        if(autoMode == 4) {
-            if(!autoStageOne){
-                Intake.autoPivot(SolenoidState.UP);
-                if(ElevFourbar.autoRun(Setpoint.HIGH_SCORING)) {
-                    Intake.autoClaw(SolenoidState.OPEN);
-                    timer.start();
-                    autoStageOne = true;
-                } 
-            } else {
-                if(timer.get() > 5) {
-                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
-                        Intake.autoClaw(SolenoidState.CLOSED);
-                    }
-                }
-            }
-            
-            if (timer.get() > 10 && timer.get() < 15) {
-                SwerveDrive.run(0.0, -0.75, 0.0, -1);
-            } else {
-                SwerveDrive.run(0.0, 0.0, 0.0, -1);
-            }
-            
-        }
-        
-        /* 
-        * SCORE HIGH
-        */
-        else if(autoMode == 5) {
-            if(!autoStageOne){
-                Intake.autoPivot(SolenoidState.UP);
-                if(ElevFourbar.autoRun(Setpoint.HIGH_SCORING)) {
-                    Intake.autoClaw(SolenoidState.OPEN);
-                    timer.start();
-                    autoStageOne = true;
-                } 
-            } else {
-                if(timer.get() > 5) {
-                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
-                        Intake.autoClaw(SolenoidState.CLOSED);
-                    }
-                }
-            }
-        }
-        
-        /* 
-        * SCORE HIGH, MOVE BACK, AND AUTO BALANCE
-        */
-        if(autoMode == 6) {
-            if(!autoStageOne){
-                Intake.autoPivot(SolenoidState.UP);
-                if(ElevFourbar.autoRun(Setpoint.HIGH_SCORING)) {
-                    Intake.autoClaw(SolenoidState.OPEN);
-                    timer.start();
-                    autoStageOne = true;
-                } 
-            } else {
-                if(timer.get() > 5) {
-                    if(ElevFourbar.autoRun(Setpoint.STOWED)) {
-                        Intake.autoClaw(SolenoidState.CLOSED);
-                    }
-                }
-            }
-        }
-        
-        
-        /*
-        * ONLY MOVE BACK
-        */
-        if(autoMode == 7) {
-            if (timer.get() > 5 && timer.get() < 7) {
-                SwerveDrive.run(0.0, -0.75, 0.0, -1);
-            } else {
-                SwerveDrive.run(0.0, 0.0, 0.0, -1);
-            }
-        }
+        AutoModes.run();
     }
     
     /** This function is called once when teleop is enabled. */
@@ -294,7 +162,7 @@ public class Robot extends TimedRobot {
             controllerTwo.getRightY(),
             Math.abs(controlPanel.getRawAxis(0) / 2) > Math.abs(controllerTwo.getLeftY()) ? controlPanel.getRawAxis(0) / 2 : controllerTwo.getLeftY(),
             controllerTwo.getPOV(),
-            controlPanel.getRawButton(3), //substation
+            controlPanel.getRawButton(3), //toggle game piece
             controlPanel.getRawButton(1), //stowed
             controlPanel.getRawButton(4), //mid
             controlPanel.getRawButton(5), //high
@@ -312,6 +180,7 @@ public class Robot extends TimedRobot {
     /** This function is called periodically when disabled. */
     @Override
     public void disabledPeriodic() {
+        ElevFourbar.toggleGamePiece(controllerTwo.getAButton()); //A button toggles selected game piece
     }
     
     /** This  function is called once when test mode is enabled. */
