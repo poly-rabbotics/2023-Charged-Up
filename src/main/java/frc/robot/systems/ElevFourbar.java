@@ -13,14 +13,14 @@ public class ElevFourbar {
     private static final double FOURBAR_HYPOTENUSE = 37.5;
 
     //COORDINATE CONSTANTS FOR PID CONTROL
-    public static double[] STOWED_COORDS = { 0, FOURBAR_HYPOTENUSE };
+    public static double[] STOWED_COORDS = { 0, FOURBAR_HYPOTENUSE};
     public static double[] GROUND_INTAKE_DOWN_COORDS = { 35.2, 18.2 };
     public static double[] GROUND_INTAKE_UP_COORDS = { 29.5, 5 };
-    public static double[] MID_SCORING_COORDS_CONE = { 20.4, 42.5 }; //TODO: verify
-    public static double[] MID_SCORING_COORDS_CUBE = { 20.4, 39 };   //TODO: verify
+    public static double[] MID_SCORING_COORDS_CONE = { 17, 42 }; //TODO: verify
+    public static double[] MID_SCORING_COORDS_CUBE = { 29, 37 };   //TODO: verify
     public static double[] SUBSTATION_INTAKE_COORDS = { 20.4, 40.5 };
     public static double[] HIGH_SCORING_COORDS_CONE = { 26.6, 57.5 }; //TODO: verify
-    public static double[] HIGH_SCORING_COORDS_CUBE = { 26.6, 53 };   //TODO: verify
+    public static double[] HIGH_SCORING_COORDS_CUBE = { 26.6, 50 };   //TODO: verify
 
     //enums
     private Setpoint setpoint = Setpoint.STOWED;
@@ -231,6 +231,9 @@ public class ElevFourbar {
         SmartDashboard.putNumber("Fourbar Target", (fourbar.getTargetPosition() + fourbar.ENCODER_OFFSET)/360.0); //ADD THIS
         SmartDashboard.putNumber("Fourbar Speed", fourbarSpeed);
         SmartDashboard.putNumber("Abs Encoder Position", fourbar.getAbsolutePosition());
+
+        SmartDashboard.putBoolean("Cube Mode Selected?", ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE);
+        SmartDashboard.putBoolean("Cone Mode Selected?", ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CONE);
     }
 
 }

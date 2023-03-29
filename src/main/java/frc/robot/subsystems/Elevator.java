@@ -163,6 +163,6 @@ public class Elevator {
     }
 
     public void zeroEncoder() {
-        elevatorMotor.getSensorCollection().setIntegratedSensorPosition(0, 30);
+        elevatorMotor.getSensorCollection().setIntegratedSensorPosition(elevatorMotor.getSensorCollection().getIntegratedSensorPosition() + 100, 30);
     }
 }

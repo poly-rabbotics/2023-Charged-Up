@@ -66,7 +66,7 @@ public class Intake {
         } else if(outtake) {
             runRoller(0.3);
         } else {
-            runRoller(-0.15);
+            runRoller(-0.06);
         }
 
         runClaw(clawToggle);

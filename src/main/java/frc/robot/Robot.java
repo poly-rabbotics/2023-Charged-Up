@@ -19,8 +19,6 @@ import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
 import frc.robot.systems.AutoBalance.Stage;
-import frc.robot.systems.ElevFourbar.Setpoint;
-import frc.robot.systems.Intake.SolenoidState;
 import frc.robot.systems.LEDLights;
 
 import frc.robot.subsystems.SwerveMode;
@@ -130,7 +128,6 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        Math.signum(0.0);
 
         //Determine
         if(Math.abs(controlPanel.getRawAxis(0)/2) > controllerTwo.getLeftY()) {
@@ -162,12 +159,12 @@ public class Robot extends TimedRobot {
             controllerTwo.getRightY(),
             Math.abs(controlPanel.getRawAxis(0) / 2) > Math.abs(controllerTwo.getLeftY()) ? controlPanel.getRawAxis(0) / 2 : controllerTwo.getLeftY(),
             controllerTwo.getPOV(),
-            controlPanel.getRawButton(3), //toggle game piece
-            controlPanel.getRawButton(1), //stowed
-            controlPanel.getRawButton(4), //mid
-            controlPanel.getRawButton(5), //high
-            controlPanel.getRawButton(2),  //ground
-            controllerTwo.getStartButton() //zero elevator encoder
+            controlPanel.getRawButtonPressed(5), //toggle game piece
+            controlPanel.getRawButton(1), //ground
+            controlPanel.getRawButton(3), //mid
+            controlPanel.getRawButton(4), //high
+            controlPanel.getRawButton(2),  //stowed
+            controllerTwo.getStartButtonPressed() //zero elevator encoder
         );
     }
     
@@ -180,7 +177,7 @@ public class Robot extends TimedRobot {
     /** This function is called periodically when disabled. */
     @Override
     public void disabledPeriodic() {
-        ElevFourbar.toggleGamePiece(controllerTwo.getAButton()); //A button toggles selected game piece
+        ElevFourbar.toggleGamePiece(controlPanel.getRawButtonReleased(5)); 
     }
     
     /** This  function is called once when test mode is enabled. */

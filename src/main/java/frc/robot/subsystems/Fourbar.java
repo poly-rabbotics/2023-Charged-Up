@@ -24,7 +24,7 @@ public class Fourbar {
     private static final double FOURBAR_SPEED_UP = -0.45;
 
     //encoder offset
-    public static final double ENCODER_OFFSET = 0.145 * 360;
+    public final double ENCODER_OFFSET = 0.145 * 360;
     
     //constant variables
     private static final int MOTOR_ID = 61; //CORRECT ID

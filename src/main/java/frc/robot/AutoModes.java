@@ -20,6 +20,10 @@ public class AutoModes {
     private static int autoStage;
     private static double startTimeBalance = -1.0;
 
+    private static double OUTTAKE_SPEED_CUBE = 0.3;
+    private static double OUTTAKE_SPEED_CONE = 0.4;
+
+
     static AutoBalanceAlternate autoBalanceAlternate = new AutoBalanceAlternate(6);
 
     public static int getAutoMode()
@@ -101,9 +105,10 @@ public class AutoModes {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
-                Intake.runRoller(0.3); //run intake out
+                Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 autoStage++;
             } 
+            if(timer.get() > 3.1) Intake.autoClaw(SolenoidState.OPEN);
         } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
@@ -141,9 +146,10 @@ public class AutoModes {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
-                Intake.runRoller(0.3); //run intake out
+                Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 autoStage++;
             } 
+            if(timer.get() > 3.1) Intake.autoClaw(SolenoidState.OPEN);
         } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
@@ -176,9 +182,10 @@ public class AutoModes {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
-                Intake.runRoller(0.3); //run intake out
+                Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 autoStage++;
             } 
+            if(timer.get() > 3.1) Intake.autoClaw(SolenoidState.OPEN);
         } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
@@ -212,9 +219,10 @@ public class AutoModes {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
-                Intake.runRoller(0.3); //run intake out
+                Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 autoStage++;
             } 
+            if(timer.get() > 3.1) Intake.autoClaw(SolenoidState.OPEN);
         } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
@@ -251,10 +259,10 @@ public class AutoModes {
             if(timer.get() > 3) {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
-                Intake.autoClaw(SolenoidState.OPEN);
-                Intake.runRoller(0.3); //run intake out
+                Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE); //run intake out
                 autoStage++;
-            } 
+            }
+            if(timer.get() > 3.1) Intake.autoClaw(SolenoidState.OPEN);
         } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
@@ -286,9 +294,10 @@ public class AutoModes {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
-                Intake.runRoller(0.3); //run intake out
+                Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 autoStage++;
             } 
+            if(timer.get() > 3.1) Intake.autoClaw(SolenoidState.OPEN);
         } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
@@ -309,10 +318,12 @@ public class AutoModes {
     }
 
     /**
-     * Only move out of the community
+     * Only drop game piece and move out of the community
      */
     private static void modeSeven() {
-        
+        Intake.autoPivot(SolenoidState.UP);
+        Intake.autoClaw(SolenoidState.OPEN);
+        Intake.runRoller(0.8);
         //autoBalanceAlternate.run();
         if (timer.get() > 10 && timer.get() < 15) {
             SwerveDrive.run(0.0, -0.75, 0.0, -1);
