@@ -16,13 +16,16 @@ public class ElevFourbar {
     public static double[] STOWED_COORDS = { 0, FOURBAR_HYPOTENUSE };
     public static double[] GROUND_INTAKE_DOWN_COORDS = { 35.2, 18.2 };
     public static double[] GROUND_INTAKE_UP_COORDS = { 29.5, 5 };
-    public static double[] MID_SCORING_COORDS = { 20.4, 42.5 };
+    public static double[] MID_SCORING_COORDS_CONE = { 20.4, 42.5 }; //TODO: verify
+    public static double[] MID_SCORING_COORDS_CUBE = { 20.4, 39 };   //TODO: verify
     public static double[] SUBSTATION_INTAKE_COORDS = { 20.4, 40.5 };
-    public static double[] HIGH_SCORING_COORDS = { 26.6, 57.5 };
+    public static double[] HIGH_SCORING_COORDS_CONE = { 26.6, 57.5 }; //TODO: verify
+    public static double[] HIGH_SCORING_COORDS_CUBE = { 26.6, 53 };   //TODO: verify
 
     //enums
     private Setpoint setpoint = Setpoint.STOWED;
     private ControlType controlType = ControlType.POSITION;
+    public static GamePiece gamePieceSelected = GamePiece.CONE;
 
     //deadzone to determine when manual control is enabled
     static final double DEADZONE = 0.3;
@@ -52,6 +55,10 @@ public class ElevFourbar {
         MANUAL, POSITION
     }
 
+    public static enum GamePiece {
+        CONE, CUBE
+    }
+
     public static void init() {
         instance.controlType = ControlType.POSITION;
         elevator.init();
@@ -60,16 +67,18 @@ public class ElevFourbar {
 
     /**
      * 
-     * @param substationIntake
+     * @param toggleGamePieceMode
      * @param groundIntake
      * @param mid
      * @param high
      * @param stowed
      */
-    public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean substationIntake, boolean groundIntake, boolean mid, boolean high, boolean stowed, boolean zeroElevEncoder) {
+    public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean toggleGamePieceMode, boolean groundIntake, boolean mid, boolean high, boolean stowed, boolean zeroElevEncoder) {
         
         instance.coords = posToCoords(elevator.getPosition(), fourbar.getPosition());
 
+        //toggle between cone and cube mode
+        toggleGamePiece(toggleGamePieceMode);
 
         //set the setpoint depending on which button is pressed
         if(stowed) {
@@ -77,15 +86,12 @@ public class ElevFourbar {
             instance.targetCoords = STOWED_COORDS;
         } else if(groundIntake) {
             instance.setpoint = Setpoint.GROUND_INTAKE;
-        } else if(substationIntake) {
-            instance.setpoint = Setpoint.SUBSTATION_INTAKE;
-            instance.targetCoords = SUBSTATION_INTAKE_COORDS;
         } else if(mid) {
             instance.setpoint = Setpoint.MID_SCORING;
-            instance.targetCoords = MID_SCORING_COORDS;
+            instance.targetCoords = (gamePieceSelected == GamePiece.CONE ? MID_SCORING_COORDS_CONE : MID_SCORING_COORDS_CUBE);
         } else if(high) {
             instance.setpoint = Setpoint.HIGH_SCORING;
-            instance.targetCoords = HIGH_SCORING_COORDS;
+            instance.targetCoords = (gamePieceSelected == GamePiece.CONE ? HIGH_SCORING_COORDS_CONE : HIGH_SCORING_COORDS_CUBE);
         } 
 
         if(instance.setpoint == Setpoint.GROUND_INTAKE) {
@@ -97,7 +103,7 @@ public class ElevFourbar {
         }
 
         //switches between control modes when button is pressed or manual control detects input
-        if(substationIntake || groundIntake || mid || high || stowed) {
+        if(groundIntake || mid || high || stowed) {
             instance.controlType = ControlType.POSITION;
         } else if(Math.abs(elevatorSpeed) > DEADZONE || Math.abs(fourbarSpeed) > DEADZONE) {
             instance.controlType = ControlType.MANUAL;
@@ -117,6 +123,12 @@ public class ElevFourbar {
         if (zeroElevEncoder) {
             elevator.zeroEncoder();
         }
+    }
+    /**Toggles between cube and cone mode when button pressed
+     * @param buttonReleased The button to toggle the game piece with (use a get button released method)
+     */
+    public static void toggleGamePiece(boolean buttonReleased) {
+        gamePieceSelected = (buttonReleased ? (gamePieceSelected == GamePiece.CONE ? GamePiece.CUBE : GamePiece.CONE) : gamePieceSelected);
     }
 
     /**

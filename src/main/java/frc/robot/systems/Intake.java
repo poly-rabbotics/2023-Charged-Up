@@ -32,7 +32,6 @@ public class Intake {
     public Intake() {
         comp = new Compressor(1, PneumaticsModuleType.REVPH);
         //comp.enableDigital();
-        timer.start();
 
         //initiali
         roller = new Roller(ROLLER_ID);
@@ -44,9 +43,14 @@ public class Intake {
         OPEN, CLOSED, UP, DOWN
     }
 
-    public static void init() {
+    public static void init() { //opens claw if cube is selected, closes claw if cone is selected
         instance.pivotState = SolenoidState.DOWN;
-        instance.clawState = SolenoidState.CLOSED;
+        instance.clawState = (ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CONE) ? SolenoidState.CLOSED : SolenoidState.OPEN;
+    }
+
+    public static void autoInit() {
+        timer.reset();
+        timer.start();
     }
 
     /**
@@ -87,9 +91,15 @@ public class Intake {
         }
     }
 
-    public static void autoRoller(double startTime, double endTime) {
+    /**
+     * Automatically runs rollers for a set amount of time
+     * @param startTime the time to start the rollers
+     * @param endTime the time to stop the rollers
+     * @param speed the speed of the rollers
+     */
+    public static void autoRoller(double startTime, double endTime, double speed) { 
         if(timer.get() > startTime && timer.get() < endTime) {
-            roller.setSpeed(-1);
+            roller.setSpeed(speed);
         }
     }
 
@@ -97,11 +107,7 @@ public class Intake {
      * Runs the rollers, operated with a joystick axis
      * @param rollerSpeed the speed of the rollers from -1 to 1
      */
-    private static void runRoller(double rollerSpeed) {
-        if(Math.abs(rollerSpeed) < ROLLER_DEADZONE) { // scales down the speed of the motor
-            rollerSpeed = 0;
-        }
-
+    public static void runRoller(double rollerSpeed) {
         roller.setSpeed(rollerSpeed);
     }
 
@@ -124,7 +130,7 @@ public class Intake {
             
         } else if(instance.clawState == SolenoidState.CLOSED) {
             claw.close();
-            autoRoller(instance.rollerStartTime, instance.rollerStartTime + 0.3);
+            autoRoller(instance.rollerStartTime, instance.rollerStartTime + 0.3, -1);
         }
     }  
     
