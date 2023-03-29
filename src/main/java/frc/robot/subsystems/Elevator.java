@@ -161,4 +161,8 @@ public class Elevator {
                 break;
         }
     }
+
+    public void zeroEncoder() {
+        elevatorMotor.getSensorCollection().setIntegratedSensorPosition(0, 30);
+    }
 }

@@ -66,7 +66,7 @@ public class ElevFourbar {
      * @param high
      * @param stowed
      */
-    public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean substationIntake, boolean groundIntake, boolean mid, boolean high, boolean stowed) {
+    public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean substationIntake, boolean groundIntake, boolean mid, boolean high, boolean stowed, boolean zeroElevEncoder) {
         
         instance.coords = posToCoords(elevator.getPosition(), fourbar.getPosition());
 
@@ -112,6 +112,10 @@ public class ElevFourbar {
         } else {
             elevator.manualControl(elevatorSpeed, dPadDirection);
             fourbar.manualControl(fourbarSpeed);
+        }
+
+        if (zeroElevEncoder) {
+            elevator.zeroEncoder();
         }
     }
 

@@ -298,7 +298,8 @@ public class Robot extends TimedRobot {
             controlPanel.getRawButton(1), //stowed
             controlPanel.getRawButton(4), //mid
             controlPanel.getRawButton(5), //high
-            controlPanel.getRawButton(2)  //ground
+            controlPanel.getRawButton(2),  //ground
+            controllerTwo.getStartButton() //zero elevator encoder
         );
     }
     
