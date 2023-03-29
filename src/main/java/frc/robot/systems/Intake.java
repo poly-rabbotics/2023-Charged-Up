@@ -32,7 +32,6 @@ public class Intake {
     public Intake() {
         comp = new Compressor(1, PneumaticsModuleType.REVPH);
         //comp.enableDigital();
-        timer.start();
 
         //initiali
         roller = new Roller(ROLLER_ID);
@@ -47,6 +46,11 @@ public class Intake {
     public static void init() { //opens claw if cube is selected, closes claw if cone is selected
         instance.pivotState = SolenoidState.DOWN;
         instance.clawState = (ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CONE) ? SolenoidState.CLOSED : SolenoidState.OPEN;
+    }
+
+    public static void autoInit() {
+        timer.reset();
+        timer.start();
     }
 
     /**
