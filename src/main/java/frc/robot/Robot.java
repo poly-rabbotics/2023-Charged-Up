@@ -295,10 +295,10 @@ public class Robot extends TimedRobot {
             Math.abs(controlPanel.getRawAxis(0) / 2) > Math.abs(controllerTwo.getLeftY()) ? controlPanel.getRawAxis(0) / 2 : controllerTwo.getLeftY(),
             controllerTwo.getPOV(),
             controlPanel.getRawButton(3), //substation
-            controlPanel.getRawButton(2), //ground
+            controlPanel.getRawButton(1), //stowed
             controlPanel.getRawButton(4), //mid
             controlPanel.getRawButton(5), //high
-            controlPanel.getRawButton(1)  //stowed
+            controlPanel.getRawButton(2)  //ground
         );
     }
     

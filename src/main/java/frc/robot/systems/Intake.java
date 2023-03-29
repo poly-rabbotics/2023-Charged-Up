@@ -60,7 +60,7 @@ public class Intake {
         if(intake) {
             runRoller(-1);
         } else if(outtake) {
-            runRoller(0.7);
+            runRoller(0.3);
         } else {
             runRoller(-0.15);
         }
