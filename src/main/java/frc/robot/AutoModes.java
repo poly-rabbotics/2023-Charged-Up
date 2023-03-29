@@ -114,7 +114,6 @@ public class AutoModes {
                 }
 
                 if(secondaryTimer.get() > 1.5) {
-                    Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
                     Intake.runRoller(0); //stop intake
                 }
@@ -156,7 +155,6 @@ public class AutoModes {
                 }
 
                 if(secondaryTimer.get() > 1.5) {
-                    Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
                     Intake.runRoller(0); //stop intake
                 }
@@ -191,7 +189,6 @@ public class AutoModes {
                 }
 
                 if(secondaryTimer.get() > 1.5) {
-                    Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
                     Intake.runRoller(0); //stop intake
                 }
@@ -228,7 +225,6 @@ public class AutoModes {
                 }
 
                 if(secondaryTimer.get() > 1.5) {
-                    Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
                     Intake.runRoller(0); //stop intake
                 }
@@ -269,7 +265,6 @@ public class AutoModes {
                 }
 
                 if(secondaryTimer.get() > 1.5) {
-                    Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
                     Intake.runRoller(0); //stop intake
                 }
@@ -304,7 +299,6 @@ public class AutoModes {
                 }
 
                 if(secondaryTimer.get() > 1.5) {
-                    Intake.autoClaw(SolenoidState.CLOSED);
                     Intake.autoPivot(SolenoidState.DOWN);
                     Intake.runRoller(0); //stop intake
                 }
