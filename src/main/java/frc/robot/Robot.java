@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.systems.AutoBalance;
-import frc.robot.systems.AutoBalanceAlternate;
 import frc.robot.systems.Controls;
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
@@ -83,7 +82,6 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("Comp Pressure", Math.floor(pressureValue));
         SmartDashboard.putBoolean("Fully Pressurized", pressureValue > 60);
         SmartDashboard.putNumber("Auto Mode", AutoModes.getAutoMode());
-        SmartDashboard.putNumber("Auto Balance Step", AutoBalanceAlternate.Balance_Step);
         //SmartDashboard.putNumber("AHH Elev", ElevFourbar.coordsToPos(ElevFourbar.MID_SCORING_COORDS[0], ElevFourbar.MID_SCORING_COORDS[1])[0]);
         //SmartDashboard.putNumber("AHH FB", ElevFourbar.coordsToPos(ElevFourbar.MID_SCORING_COORDS[0], ElevFourbar.MID_SCORING_COORDS[1])[1]);
          
