@@ -2,6 +2,9 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -37,6 +40,8 @@ public class Elevator {
     //variables
     private double encoderPosition;
     private double targetSetpoint;
+
+    private DigitalInput limit;
     
     /**
      * Sets up elevator motor and Xbox controller, configures PID
@@ -56,6 +61,7 @@ public class Elevator {
         
         //Configures motor to brake when not being used
         elevatorMotor.setNeutralMode(NeutralMode.Brake);
+        limit = new DigitalInput(0);
     }
 
     /**
@@ -85,6 +91,12 @@ public class Elevator {
             speed = 0.2;
         } else if (dPadDirection == 0) {
             speed = -0.2;
+        }
+
+        if (!limit.get()) {
+            if (speed > 0.0) {
+                speed = 0.0;
+            }
         }
 
         elevatorMotor.set(ControlMode.PercentOutput, speed * 0.6);

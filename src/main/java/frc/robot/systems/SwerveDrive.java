@@ -38,7 +38,7 @@ public class SwerveDrive {
     private static final int MODULE_ROTATION_CAN_IDS[] = { 5,  6,   7,   8  };
     private static final int MODULE_CANCODER_CAN_IDS[] = { 9,  10,  11,  12 };
     
-    private static final double MODULE_CANCODER_OFFSETS[] = { -251.6307 + 90.0, -44.1210 + 90.0, -192.0409 + 90.0, -175.1659 + 90.0 };
+    private static final double MODULE_CANCODER_OFFSETS[] = { -252.24607237 + 90.0, -405.26363752 + 90.0, -189.66795267 + 90.0, -175.16600078 + 90.0 };
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
     
     private static final double LOW_SENSITIVITY_RATIO = 0.02;

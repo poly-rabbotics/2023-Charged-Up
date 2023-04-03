@@ -16,12 +16,10 @@ public class AutoBalance {
 
     private static final double ANGLE_SPIKE_QUALIFIER = 20.0;
     private static final double ANGLE_STABLILITY_QUALIFIER = 5.0;
-    private static final int HALTING_FRAMES = 10;
     
     private static final AutoBalance instance = new AutoBalance();
 
     private Stage stage;
-    private int haltedFrames;
     private boolean halting = false;
 
     public enum Stage {
@@ -35,7 +33,6 @@ public class AutoBalance {
 
     private AutoBalance() {
         stage = Stage.IDLING;
-        haltedFrames = 0;
     }
 
     /**
@@ -52,9 +49,22 @@ public class AutoBalance {
             instance.stage = Stage.RAMMING;
         }
 
-        if (Math.abs(SwerveDrive.getModulePos(0)) > 335) {
+        if (Math.abs(SwerveDrive.getModulePos(0)) > 330) {
             instance.halting = true;
         }
+
+        /* if (Math.abs(SwerveDrive.getModulePos(0)) < TICKS_OVER && !instance.over) {
+            instance.halting = false;
+        } else if (!instance.over) {
+            instance.over = true;
+            SwerveDrive.zeroPositions();
+        } else if (Math.abs(SwerveDrive.getModulePos(0)) < TICKS_OVER_BALANCE) {
+            instance.halting = false;
+            SwerveDrive.runUncurved(0.0, -RAMMING_SPEED, 0.0);
+            return;
+        } else {
+            instance.halting = true;
+        } */
 
         if (instance.halting) {
             instance.stage = Stage.HALTING;
@@ -65,7 +75,7 @@ public class AutoBalance {
         switch (instance.stage) {
             case RAMMING:
                 instance.ram();
-                break;
+                break;  
             
             case CLIMBING:
                 instance.climb();
@@ -94,6 +104,7 @@ public class AutoBalance {
     public static void setStage(Stage stage) {
         instance.halting = stage == Stage.HALTING;
         instance.stage = stage;
+        
     }
 
     private void ram() {
@@ -131,13 +142,17 @@ public class AutoBalance {
 
     private void halt() {
         if (Math.abs(Pigeon.getPitch()) < 10.0 && Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) < 10.0) {
-            stage = Stage.DONE;
+            SwerveDrive.runUncurved(0.0, 0.0, 0.0);
+            return;
+        }
+
+        if (Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) > 10) {
+            SwerveDrive.runUncurved(0.0, 0.0, 0.0);
             return;
         }
 
         LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.0, 1.0, 0.0), 5.0));
         SwerveDrive.runUncurved(0.0, Math.signum(Pigeon.getPitch()) * HALTING_SPEED, 0.0);
-        haltedFrames++;
     }
 
     public static void print() {

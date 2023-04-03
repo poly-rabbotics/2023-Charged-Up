@@ -16,7 +16,7 @@ public class Intake {
 
     //The deadzone for roller joystick control
     private static final double ROLLER_DEADZONE = 0.3;
-    private double rollerStartTime;
+    private static double rollerStartTime;
 
     public static Compressor comp;
     private static Pivot pivot;
@@ -27,6 +27,7 @@ public class Intake {
     private SolenoidState clawState;
     private SolenoidState pivotState;
 
+    private static boolean rollersRunningAuto = false;
     private static Intake instance = new Intake();
 
     public Intake() {
@@ -46,6 +47,7 @@ public class Intake {
     public static void init() { //opens claw if cube is selected, closes claw if cone is selected
         instance.pivotState = SolenoidState.DOWN;
         instance.clawState = (ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CONE) ? SolenoidState.CLOSED : SolenoidState.OPEN;
+        timer.reset();
     }
 
     public static void autoInit() {
@@ -60,16 +62,16 @@ public class Intake {
      * @param clawButton - The button to extend/retract the claw
      * @param pivotButton - The button to extend/retract the pivot
      */
-    public static void run(boolean pivotToggle, boolean intake, boolean outtake, boolean clawToggle) {
+    public static void run(boolean pivotToggle, boolean intake, boolean outtake, boolean clawHeld, boolean clawReleased) {
         if(intake) {
             runRoller(-1);
         } else if(outtake) {
-            runRoller(0.3);
+            runRoller(1.0);
         } else {
             runRoller(-0.06);
         }
 
-        runClaw(clawToggle);
+        runClaw(clawHeld, clawReleased);
         runPivot(pivotToggle);
 
         updateSmartDashboard();
@@ -100,7 +102,8 @@ public class Intake {
     public static void autoRoller(double startTime, double endTime, double speed) { 
         if(timer.get() > startTime && timer.get() < endTime) {
             roller.setSpeed(speed);
-        }
+            rollersRunningAuto = true;
+        } else rollersRunningAuto = false;
     }
 
     /**
@@ -108,6 +111,7 @@ public class Intake {
      * @param rollerSpeed the speed of the rollers from -1 to 1
      */
     public static void runRoller(double rollerSpeed) {
+        if (!rollersRunningAuto)
         roller.setSpeed(rollerSpeed);
     }
 
@@ -115,23 +119,16 @@ public class Intake {
      * Extends or retracts the claw, toggled with button press
      * @param switchClawState
      */
-    private static void runClaw(boolean switchClawState) {
-        if(switchClawState) {
-            if(instance.clawState == SolenoidState.OPEN) {
-                instance.clawState = SolenoidState.CLOSED;
-                instance.rollerStartTime = timer.get();
-        } else {
-                instance.clawState = SolenoidState.OPEN;
-            }
-        } 
+    private static void runClaw(boolean switchClawState, boolean closeClaw) {
+            if (switchClawState) claw.open();
+            else claw.close();
 
-        if(instance.clawState == SolenoidState.OPEN) {
-            claw.open();
-            
-        } else if(instance.clawState == SolenoidState.CLOSED) {
-            claw.close();
-            autoRoller(instance.rollerStartTime, instance.rollerStartTime + 0.3, -1);
-        }
+            if (closeClaw) {
+                claw.close();
+                rollerStartTime = timer.get();
+                
+            }
+            autoRoller(rollerStartTime, rollerStartTime + 0.5, -1);
     }  
     
     /**

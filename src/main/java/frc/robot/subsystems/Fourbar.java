@@ -7,6 +7,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
@@ -39,10 +40,15 @@ public class Fourbar {
     private static final int STOWED_SETPOINT = 0;
 
     //PID constants
-    private static final double P = 10;
-    private static final double I = 0.0;
-    private static final double D = 1;
-    private static final double F = 0.0;
+    private static final double P0 = 10;
+    private static final double I0 = 0.0;
+    private static final double D0 = 1;
+    private static final double F0 = 0.0;
+
+    private static final double P1 = 10;
+    private static final double I1 = 0.0;
+    private static final double D1 = 4;
+    private static final double F1 = 0.0;
     
     //Motor and controller
     private final CANSparkMax fourbarMotor;   
@@ -53,6 +59,14 @@ public class Fourbar {
     private double targetSetpoint;
     private double encoderPosition;
     
+    public void setBrake(boolean brake) {
+        if (brake) {
+            fourbarMotor.setIdleMode(IdleMode.kBrake);
+        } else {
+            fourbarMotor.setIdleMode(IdleMode.kCoast);
+        }
+    }
+
     /**
      * Sets up fourbar motor and Xbox controller, configures PID
      */
@@ -62,10 +76,15 @@ public class Fourbar {
         absoluteEncoder = fourbarMotor.getAbsoluteEncoder(Type.kDutyCycle);
         pidController = fourbarMotor.getPIDController();
         
-        pidController.setP(P);
-        pidController.setI(I);
-        pidController.setD(D);
-        pidController.setFF(F);
+        pidController.setP(P0, 0);
+        pidController.setI(I0, 0);
+        pidController.setD(D0, 0);
+        pidController.setFF(F0, 0);
+
+        pidController.setP(P1, 1);
+        pidController.setI(I1, 1);
+        pidController.setD(D1, 1);
+        pidController.setFF(F1, 1);
         pidController.setOutputRange(FOURBAR_SPEED_UP, -FOURBAR_SPEED_UP);
 
         pidController.setFeedbackDevice(absoluteEncoder);
@@ -82,6 +101,7 @@ public class Fourbar {
      * @param setpoint The setpoint to move to, as defined in the Setpoint enum
      */
     public void pidControl(Setpoint setpoint){
+
         encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
         
         updateTargetSetpoint(setpoint);
@@ -107,7 +127,7 @@ public class Fourbar {
             targetSetpoint = 112; 
         } */
 
-        pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition);
+        pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 0);
     }
 
     /**
@@ -121,23 +141,10 @@ public class Fourbar {
             speed = 0;
         }
 
-        /* //Restrict movement if fourbar passes limit
-        if(encoderPosition < 0 && speed > 0) {
-            speed = 0;
-        } else if(encoderPosition > FOURBAR_LIMIT && speed < 0) {
-            speed = 0;
-        } */
+        targetSetpoint -= speed * 0.9;
 
-        //Unneeded because of fourbar redesign
-        /* //calculate gravity counteractment
-        if(speed == 0) {
-            double gravityBias = 0.07*Math.sin(encoderPosition*3.14159/180.0);
-            outputSpeed = speed * 0.4-gravityBias;
-        } else {
-            outputSpeed = speed;
-        } */
-
-        fourbarMotor.set(speed * 0.5);
+        pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 1);
+        //fourbarMotor.set(speed * 0.5);
         SmartDashboard.putNumber("Fourbar Power Ouput", fourbarMotor.getOutputCurrent());
     }
 

@@ -13,8 +13,8 @@ public class ElevFourbar {
     private static final double FOURBAR_HYPOTENUSE = 37.5;
 
     //COORDINATE CONSTANTS FOR PID CONTROL
-    public static double[] STOWED_COORDS = { 0, FOURBAR_HYPOTENUSE};
-    public static double[] GROUND_INTAKE_DOWN_COORDS = { 35.2, 18.2 };
+    public static double[] STOWED_COORDS = { 0, FOURBAR_HYPOTENUSE + 1};
+    public static double[] GROUND_INTAKE_DOWN_COORDS = { 35.2, 17 };
     public static double[] GROUND_INTAKE_UP_COORDS = { 29.5, 5 };
     public static double[] MID_SCORING_COORDS_CONE = { 17, 42 }; //TODO: verify
     public static double[] MID_SCORING_COORDS_CUBE = { 29, 37 };   //TODO: verify
@@ -236,4 +236,7 @@ public class ElevFourbar {
         SmartDashboard.putBoolean("Cone Mode Selected?", ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CONE);
     }
 
+    public static void setFourbarBrake(boolean brake) {
+        fourbar.setBrake(brake);
+    }
 }

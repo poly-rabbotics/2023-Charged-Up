@@ -27,9 +27,9 @@ public class SwerveModule {
     private static final double CONVERSION_FACTOR_ROTATION_VELOCITY = CONVERSION_FACTOR_ROTATION * (1 / 60);  // RPM to degrees per second.
     private static final double CONVERSION_FACTOR_MOVEMENT_VELOCITY = CONVERSION_FACTOR_MOVEMENT * (1 / 60);  // RPM to meters per second.
 
-    private static double PID_P = 0.005301;
-    private static double PID_I = 0;
-    private static double PID_D = 0;
+    private static double PID_P = 0.01;
+    private static double PID_I = 0.0;
+    private static double PID_D = 0.0;
 
     private final SwerveModulePosition position;
 
@@ -51,7 +51,8 @@ public class SwerveModule {
 
         rotationMotor = new CANSparkMax(rotationalMotorID, MotorType.kBrushless);
         rotationMotor.setInverted(false);
-        //rotationMotor.setSmartCurrentLimit(40);
+        //rotationMotor.setVoltage(11.0);
+        rotationMotor.setSmartCurrentLimit(30);
         
         movementMotor = new CANSparkMax(movementMotorID, MotorType.kBrushless);
         movementMotor.setInverted(false);

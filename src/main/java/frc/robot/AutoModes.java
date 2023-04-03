@@ -101,14 +101,14 @@ public class AutoModes {
             ElevFourbar.autoRun((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.MID_SCORING_COORDS_CUBE : ElevFourbar.MID_SCORING_COORDS_CONE);
             
             //Move the elevator to the high scoring position
-            if(timer.get() > 3) {
+            if(timer.get() > 2) {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
                 Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 autoStage++;
             } 
-            if(timer.get() > 3.1) Intake.autoClaw(SolenoidState.OPEN);
+            if(timer.get() > 2.1) Intake.autoClaw(SolenoidState.OPEN);
         } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
@@ -125,10 +125,24 @@ public class AutoModes {
             }
         }
         
-        if (timer.get() > 10 && timer.get() < 15) {
-            SwerveDrive.run(0.0, -0.75, 0.0, -1);
+        /*******************
+         * EXIT THE COMUNITY
+         * *****************    
+         */
+        if (
+            Math.max(
+                Math.max(
+                    Math.abs(SwerveDrive.getModulePos(0)), 
+                    Math.abs(SwerveDrive.getModulePos(1))
+                ), Math.max(
+                    Math.abs(SwerveDrive.getModulePos(2)),
+                    Math.abs(SwerveDrive.getModulePos(3))
+                )
+            ) < 670 && 
+            (autoStage == 2 || timer.get() > 10)) {
+            SwerveDrive.runUncurved(0.0, -0.6, 0.0);
         } else {
-            SwerveDrive.run(0.0, 0.0, 0.0, -1);
+            SwerveDrive.runUncurved(0.0, 0.0, 0.0);
         }
     }
 
@@ -142,14 +156,14 @@ public class AutoModes {
             ElevFourbar.autoRun((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.MID_SCORING_COORDS_CUBE : ElevFourbar.MID_SCORING_COORDS_CONE);
             
             //Move the elevator to the high scoring position
-            if(timer.get() > 3) {
+            if(timer.get() > 2) {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
                 Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 autoStage++;
             } 
-            if(timer.get() > 3.1) Intake.autoClaw(SolenoidState.OPEN);
+            if(timer.get() > 2.1) Intake.autoClaw(SolenoidState.OPEN);
         } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
@@ -178,14 +192,14 @@ public class AutoModes {
             ElevFourbar.autoRun((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.MID_SCORING_COORDS_CUBE : ElevFourbar.MID_SCORING_COORDS_CONE);
             
             //Move the elevator to the high scoring position
-            if(timer.get() > 3) {
+            if(timer.get() > 2) {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
                 Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 autoStage++;
             } 
-            if(timer.get() > 3.1) Intake.autoClaw(SolenoidState.OPEN);
+            if(timer.get() > 2.1) Intake.autoClaw(SolenoidState.OPEN);
         } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
@@ -200,7 +214,9 @@ public class AutoModes {
                     Intake.runRoller(0); //stop intake
                 }
             }
-        } else {
+        } 
+        
+        if (autoStage > 1 || timer.get() > 6) {
             AutoBalance.run();
         }
     }
@@ -215,14 +231,14 @@ public class AutoModes {
             ElevFourbar.autoRun((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.HIGH_SCORING_COORDS_CUBE : ElevFourbar.HIGH_SCORING_COORDS_CONE);
             
             //Move the elevator to the high scoring position
-            if(timer.get() > 3) {
+            if(timer.get() > 2) {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
                 Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 autoStage++;
             } 
-            if(timer.get() > 3.1) Intake.autoClaw(SolenoidState.OPEN);
+            if(timer.get() > 2.1) Intake.autoClaw(SolenoidState.OPEN);
         } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
@@ -239,10 +255,24 @@ public class AutoModes {
             }
         }
         
-        if (timer.get() > 10 && timer.get() < 15) {
-            SwerveDrive.run(0.0, -0.75, 0.0, -1);
+        /*******************
+         * EXIT THE COMUNITY
+         * *****************    
+         */
+        if (
+            Math.max(
+                Math.max(
+                    Math.abs(SwerveDrive.getModulePos(0)), 
+                    Math.abs(SwerveDrive.getModulePos(1))
+                ), Math.max(
+                    Math.abs(SwerveDrive.getModulePos(2)),
+                    Math.abs(SwerveDrive.getModulePos(3))
+                )
+            ) < 670 && 
+            (autoStage == 2 || timer.get() > 10)) {
+            SwerveDrive.runUncurved(0.0, -0.6, 0.0);
         } else {
-            SwerveDrive.run(0.0, 0.0, 0.0, -1);
+            SwerveDrive.runUncurved(0.0, 0.0, 0.0);
         }
     }
 
@@ -256,13 +286,13 @@ public class AutoModes {
             ElevFourbar.autoRun((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.HIGH_SCORING_COORDS_CUBE : ElevFourbar.HIGH_SCORING_COORDS_CONE);
             
             //Move the elevator to the high scoring position
-            if(timer.get() > 3) {
+            if(timer.get() > 2) {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE); //run intake out
                 autoStage++;
             }
-            if(timer.get() > 3.1) Intake.autoClaw(SolenoidState.OPEN);
+            if(timer.get() > 2.1) Intake.autoClaw(SolenoidState.OPEN);
         } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
@@ -290,14 +320,14 @@ public class AutoModes {
             ElevFourbar.autoRun((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.HIGH_SCORING_COORDS_CUBE : ElevFourbar.HIGH_SCORING_COORDS_CONE);
             
             //Move the elevator to the high scoring position
-            if(timer.get() > 3) {
+            if(timer.get() > 2) {
                 //Open claw when the position has been reached
                 secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
                 Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 autoStage++;
             } 
-            if(timer.get() > 3.1) Intake.autoClaw(SolenoidState.OPEN);
+            if(timer.get() > 2.1) Intake.autoClaw(SolenoidState.OPEN);
         } else if(autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(secondaryTimer.get() > 1) {
@@ -312,7 +342,9 @@ public class AutoModes {
                     Intake.runRoller(0); //stop intake
                 }
             }
-        } else {
+        } 
+        
+        if (autoStage > 1 || timer.get() > 6) {
             AutoBalance.run();
         }
     }
@@ -321,36 +353,7 @@ public class AutoModes {
      * Only drop game piece and move out of the community
      */
     private static void modeSeven() {
-        Intake.autoPivot(SolenoidState.UP);
-        Intake.autoClaw(SolenoidState.OPEN);
-        Intake.runRoller(0.8);
-        //autoBalanceAlternate.run();
-        if (timer.get() > 10 && timer.get() < 15) {
-            SwerveDrive.run(0.0, -0.75, 0.0, -1);
-        } else {
-            SwerveDrive.run(0.0, 0.0, 0.0, -1);
-        }
-    }
-
-    private static void autoBalance(double startTime) {
-        if (timer.get() > startTime) {
-            if (startTimeBalance == -1.0) {
-                startTimeBalance = timer.get();
-            }
-
-            if (timer.get() - startTimeBalance >= 1.5) {
-                SwerveDrive.run(0.0, 0.0, 0.0, -1);
-                return;
-            }
-
-            /* if (false) {
-                startTimeBalance = -1.0;
-                if (timer.get() > 0 && timer.get() < 15) {
-                    SwerveDrive.run(0.0, -0.85, 0.0, -1);
-                } else {
-                    SwerveDrive.run(0.0, 0.0, 0.0, -1);
-                }
-            } */
-        }
+        AutoBalance.run();
     }
 }
+    

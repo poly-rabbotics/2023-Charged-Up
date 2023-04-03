@@ -4,7 +4,10 @@
 
 package frc.robot;
 
+import javax.swing.ComboBoxEditor;
+
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -19,6 +22,7 @@ import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
 import frc.robot.systems.SwerveDrive;
 import frc.robot.systems.AutoBalance.Stage;
+import frc.robot.systems.ElevFourbar.GamePiece;
 import frc.robot.systems.LEDLights;
 
 import frc.robot.subsystems.SwerveMode;
@@ -41,10 +45,15 @@ public class Robot extends TimedRobot {
     public static Joystick controlPanel = (Joystick)Controls.getControllerByPort(2);
     public static AnalogInput pressureSensor = new AnalogInput(0);
     Timer timer = new Timer();
+
+    DigitalInput brakeSwitch = new DigitalInput(1);
     
     boolean autoStageOne;
     int autoMode;
     double fbSpeedInput = 0;
+
+    Color yellow = new Color(255, 200, 0);
+    Color purple = new Color(255, 0, 255);
 
     /**
     * This function is run when the robot is first started up and should be used for any
@@ -62,6 +71,7 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void robotPeriodic() {
+        ElevFourbar.setFourbarBrake(brakeSwitch.get());
         AutoBalance.print();
         SwerveDrive.print();
         ElevFourbar.updateSmartDashboard(0, 0);
@@ -118,17 +128,21 @@ public class Robot extends TimedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        Pigeon.setFeildZero();
+        //Pigeon.setFeildZero();
         SwerveDrive.setMode(SwerveMode.Headless);
-        LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.0, 1.0, 0.0), 0.5));
         ElevFourbar.init();
         Intake.init();
+
+        if(ElevFourbar.gamePieceSelected == GamePiece.CONE) {
+            LEDLights.setPatternIfNotEqual(new Breathe(yellow, 0.5));
+        } else {
+            LEDLights.setPatternIfNotEqual(new Breathe(purple, 0.5));
+        }
     }
     
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-
         //Determine
         if(Math.abs(controlPanel.getRawAxis(0)/2) > controllerTwo.getLeftY()) {
             fbSpeedInput = -controlPanel.getRawAxis(0)/2;
@@ -137,6 +151,8 @@ public class Robot extends TimedRobot {
         }
         
         //SwerveDrive.autoBalance()
+        SmartDashboard.putNumber("controller Y", controllerOne.getLeftY());
+        SmartDashboard.putNumber("controller X", controllerOne.getLeftX());
         SwerveDrive.run(controllerOne.getLeftX(), controllerOne.getLeftY(), controllerOne.getRightX(), controllerOne.getPOV());
         
         // Left stick changes between headless and relative control modes.
@@ -152,7 +168,9 @@ public class Robot extends TimedRobot {
             controlPanel.getRawButtonPressed(8), //controller one dpad to control pivot
             controlPanel.getRawButton(9),
             controlPanel.getRawButton(7),
-            controlPanel.getRawButtonPressed(6)
+            controlPanel.getRawButton(6),
+            controlPanel.getRawButtonReleased(6)
+
         );
         
         ElevFourbar.run(
@@ -166,6 +184,13 @@ public class Robot extends TimedRobot {
             controlPanel.getRawButton(2),  //stowed
             controllerTwo.getStartButtonPressed() //zero elevator encoder
         );
+
+        //Change color base on which gamepiece we have selected
+        if(ElevFourbar.gamePieceSelected == GamePiece.CONE) {
+            LEDLights.setPatternIfNotEqual(new Breathe(yellow, 0.5));
+        } else {
+            LEDLights.setPatternIfNotEqual(new Breathe(purple, 0.5));
+        }
     }
     
     /** This function is called once when the robot is disabled. */
