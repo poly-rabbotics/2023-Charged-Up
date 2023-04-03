@@ -1,5 +1,6 @@
 package frc.robot.systems;
 
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.patterns.Breathe;
@@ -79,6 +80,18 @@ public class AutoBalance {
 
     private Stage ram() {
         if (Math.abs(SwerveDrive.getModulePos(0)) > 330) {
+            return adjust();
+        }
+
+        SwerveDrive.runUncurved(0.0, RAMMING_SPEED, 0.0);
+        LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 5.0));
+        return Stage.RAMMING;
+    }
+
+    // Hopefully achieves a similar result to the distance based ram but from 
+    // any start point given the orientation of the bot.
+    private Stage dynamicRam() {
+        if (spiking() & !balanced()) {
             return adjust();
         }
 
