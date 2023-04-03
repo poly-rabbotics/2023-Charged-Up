@@ -5,13 +5,10 @@
 package frc.robot.systems;
 
 import java.security.InvalidParameterException;
-import java.util.List;
+
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -19,13 +16,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.subsystems.SwerveModule;
@@ -55,6 +45,7 @@ public class SwerveDrive {
     private final SwerveModulePosition positions[] = new SwerveModulePosition[4];
     private final SwerveDriveKinematics kinematics;
     private final SwerveDriveOdometry odometry;
+    
     private SwerveMode mode = SwerveMode.Headless;
 
     private SwerveDrive() {
@@ -234,57 +225,6 @@ public class SwerveDrive {
         instance.turnCurve = curve;
     }
 
-    public static SequentialCommandGroup getAutoCommand() {
-        TrajectoryConfig trajectoryConfig = new TrajectoryConfig(0.5, 0.5);
-
-        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-            new Pose2d(0.0, 0.0, new Rotation2d(0.0)),
-            List.of(
-                new Translation2d(0.0, 1.0),
-                new Translation2d(1.0, 1.0)
-            ),
-            new Pose2d(1.0, 1.0, new Rotation2d(0.0)),
-            trajectoryConfig
-        );
-
-        PIDController xController = new PIDController(0.05, 0.0, 0.0);
-        PIDController yController = new PIDController(0.05, 0.0, 0.0);
-        ProfiledPIDController profiledController = new ProfiledPIDController(0.1, 0.0, 0.0, new Constraints(1.0, 1.0));
-
-        SwerveControllerCommand command = new SwerveControllerCommand(
-            trajectory, 
-            instance.odometry::getPoseMeters, 
-            instance.kinematics,
-            xController,
-            yController,
-            profiledController,
-            SwerveDrive::setModuleStates
-        );
-
-        return new SequentialCommandGroup(
-            new InstantCommand(() -> SwerveDrive.resetOdometry(trajectory.getInitialPose())),
-            command,
-            new InstantCommand(() -> SwerveDrive.runUncurved(0.0, 0.0, 0.0))
-        );
-    }
-
-    /**
-     * Sets all module states.
-     */
-    private static void setModuleStates(SwerveModuleState[] states) {
-        for (int i = 0; i < states.length; i++) {
-            instance.modules[i].setDesiredState(states[i]);
-        }
-    }
-
-    /**
-     * resets the odometry position.
-     * @param position
-     */
-    private static void resetOdometry(Pose2d position) {
-        instance.odometry.resetPosition(new Rotation2d(Pigeon.getFeildRelativeRotation() * RADIAN_DEGREE_RATIO), instance.positions, position);
-    }
-
     /**
      * Print data to smart dashboard.
      */
@@ -294,10 +234,17 @@ public class SwerveDrive {
         }
     }
 
+    /**
+     * Gets the encoder position of a given module.
+     * @param id CAN ID of the modules movement motor (this is also the internal array index)
+     */
     public static double getModulePos(int id) {
         return instance.modules[id].getMovementPos();
     }
 
+    /**
+     * Zeros all movement encoder positions.
+     */
     public static void zeroPositions() {
         for (SwerveModule module : instance.modules) {
             module.zeroPositions();
