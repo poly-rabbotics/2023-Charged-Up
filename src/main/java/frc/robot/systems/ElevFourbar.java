@@ -239,4 +239,4 @@ public class ElevFourbar {
     public static void setFourbarBrake(boolean brake) {
         fourbar.setBrake(brake);
     }
-}
+    }
