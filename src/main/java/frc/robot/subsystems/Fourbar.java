@@ -20,16 +20,15 @@ import frc.robot.systems.Intake.SolenoidState;
 public class Fourbar {
     //Not currently utilized, may be implemented in the future
     private static final int FOURBAR_LIMIT = 140; 
-    
-    //PID max speed values
+
     private static final double FOURBAR_SPEED_UP = -0.45;
 
-    //encoder offset
     public final double ENCODER_OFFSET = 0.145 * 360;
-    
-    //constant variables
+
     private static final int MOTOR_ID = 61; //CORRECT ID
     private static final double MANUAL_DEADZONE = 0.3;
+    private static final double BUMPER_X = 7 + 5;
+    private static final double BUMPER_Y = 19;
 
     //position constants, in degrees
     private static final int SUBSTATION_INTAKE_SETPOINT = 33 ;
@@ -135,6 +134,12 @@ public class Fourbar {
      */
     public void manualControl(double speed){
         encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
+
+        //Experimental stuff, doesn't do anything for now
+        double[] coords = ElevFourbar.posToCoords(ElevFourbar.elevator.getPosition(), encoderPosition);
+        double b = ElevFourbar.elevator.getPosition();
+        double m = (coords[1] - b) / coords[0];
+        double y = m * BUMPER_X + b;
 
         //Deadzone
         if(Math.abs(speed) < MANUAL_DEADZONE) {
