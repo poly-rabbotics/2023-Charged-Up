@@ -13,9 +13,7 @@ public class Intake {
     private static final int CLAW_REVERSE_CHANNEL = 0;
     private static final int PIVOT_FORWARD_CHANNEL = 2;
     private static final int PIVOT_REVERSE_CHANNEL = 3;
-
-    //The deadzone for roller joystick control
-    private static final double ROLLER_DEADZONE = 0.3;
+    
     private static double rollerStartTime;
 
     public static Compressor comp;

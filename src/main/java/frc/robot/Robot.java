@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import javax.swing.ComboBoxEditor;
-
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick;

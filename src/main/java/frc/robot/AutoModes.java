@@ -18,7 +18,6 @@ public class AutoModes {
     
     private static int autoMode;
     private static int autoStage;
-    private static double startTimeBalance = -1.0;
 
     private static double OUTTAKE_SPEED_CUBE = 0.3;
     private static double OUTTAKE_SPEED_CONE = 0.4;

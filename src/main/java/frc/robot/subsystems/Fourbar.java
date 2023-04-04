@@ -7,8 +7,6 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.ElevFourbar.Setpoint;
@@ -18,8 +16,6 @@ import frc.robot.systems.Intake.SolenoidState;
  * Class to control the fourbar mechanism 
  */
 public class Fourbar {
-    //Not currently utilized, may be implemented in the future
-    private static final int FOURBAR_LIMIT = 140; 
     
     //PID max speed values
     private static final double FOURBAR_SPEED_UP = -0.45;
@@ -144,8 +140,6 @@ public class Fourbar {
         targetSetpoint -= speed * 0.9;
 
         pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 1);
-        //fourbarMotor.set(speed * 0.5);
-        SmartDashboard.putNumber("Fourbar Power Ouput", fourbarMotor.getOutputCurrent());
     }
 
     private void updateTargetSetpoint(Setpoint setpoint) {
