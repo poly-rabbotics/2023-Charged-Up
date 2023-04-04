@@ -23,9 +23,6 @@ public class AutoModes {
     private static double OUTTAKE_SPEED_CUBE = 0.3;
     private static double OUTTAKE_SPEED_CONE = 0.4;
 
-
-    static AutoBalanceAlternate autoBalanceAlternate = new AutoBalanceAlternate(6);
-
     public static int getAutoMode()
     {
         //Calculate auto mode
