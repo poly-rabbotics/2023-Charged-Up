@@ -17,10 +17,28 @@ public class AutoBalance {
     private Stage stage;
 
     public enum Stage {
-        IDLING, 
+        /** 
+         * auto balance is doing nothing. 
+         */
+        IDLING,
+
+        /** 
+         * auto balance is ramming, meant to dock the charge station. 
+         */
+
         RAMMING,
-        HALTING, 
-        DONE
+
+        /** 
+         * auto balance is on the charge station and trying to engage the charge
+         * station. 
+         */
+        ADJUSTING,
+        
+        /** 
+         * auto balance has paused, either becaue it has finished, or because 
+         * it has encountered a spike in angular change. 
+         */
+        PAUSED,
     }
 
     private AutoBalance() {
@@ -28,13 +46,12 @@ public class AutoBalance {
     }
 
     /**
-     * Call in a loop once aimed at the charge station to run auto balance. Get
-     * the current stage and check for "DONE" to see if it has completed.
+     * Call in a loop during autonomous to auto balance, auto balance expects 
+     * to be the last action taken during autonomous and other actions affecting
+     * the drive train should not be taken.
      */
     public static void run() {
-        if (Math.abs(SwerveDrive.getModulePos(0)) > 330) {
-            instance.stage = Stage.HALTING;
-        } else {
+        if (instance.stage == Stage.IDLING) {
             instance.stage = Stage.RAMMING;
         }
 
@@ -43,8 +60,12 @@ public class AutoBalance {
                 instance.ram();
                 break;  
             
-            case HALTING:
-                instance.halt();
+            case ADJUSTING:
+                instance.adjust();
+                break;
+            
+            case PAUSED:
+                instance.pause();
                 break;
             
             default:
@@ -59,32 +80,72 @@ public class AutoBalance {
         return instance.stage;
     }
 
+    /**
+     * Manually sets the stage of auto balance.
+     */
     public static void setStage(Stage stage) {
         instance.stage = stage;
     }
 
-    private void ram() {
-        SwerveDrive.runUncurved(0.0, RAMMING_SPEED, 0.0);
-        LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 5.0));
-    }
-
-    private void halt() {
-        if (Math.abs(Pigeon.getPitch()) < 10.0 && Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) < 10.0) {
-            SwerveDrive.runUncurved(0.0, 0.0, 0.0);
-            LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.0, 1.0, 0.0), 5.0));
-            return;
+    private Stage ram() {
+        if (Math.abs(SwerveDrive.getModulePos(0)) > 330) {
+            return adjust();
         }
 
-        if (Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) > 10) {
-            SwerveDrive.runUncurved(0.0, 0.0, 0.0);
-            LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 1.0), 5.0));
-            return;
+        SwerveDrive.runUncurved(0.0, RAMMING_SPEED, 0.0);
+        LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 5.0));
+        return Stage.RAMMING;
+    }
+
+    // Hopefully achieves a similar result to the distance based ram but from 
+    // any start point given the orientation of the bot.
+    private Stage dynamicRam() {
+        if (spiking() & !balanced()) {
+            return adjust();
+        }
+
+        SwerveDrive.runUncurved(0.0, RAMMING_SPEED, 0.0);
+        LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 5.0));
+        return Stage.RAMMING;
+    }
+
+    private Stage adjust() {
+        if (balanced() | spiking()) {
+            return pause();
         }
 
         SwerveDrive.runUncurved(0.0, Math.signum(Pigeon.getPitch()) * HALTING_SPEED, 0.0);
         LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 1.0), 5.0));
+        return Stage.ADJUSTING;
     }
 
+    private Stage pause() {
+        if (!balanced()) {
+            return instance.stage = adjust();
+        }
+
+        SwerveDrive.runUncurved(0.0, 0.0, 0.0);
+        LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 1.0), 5.0));
+        return Stage.PAUSED;
+    }
+
+    /**
+     * Returns true if auto balance beleives it is balanced, not 100% accurate.
+     */
+    private boolean balanced() {
+        return Math.abs(Pigeon.getPitch()) < 10.0 && Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) < 10.0;
+    }
+
+    /**
+     * Returns true if auto balance beleives it is spiking in angle.
+     */
+    private boolean spiking() {
+        return Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) > 10;
+    }
+
+    /**
+     * Print information about auto balance.
+     */
     public static void print() {
         SmartDashboard.putString("Auto Balance Stage: ", instance.stage.toString());
     }
