@@ -1,6 +1,5 @@
 package frc.robot.systems;
 
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.patterns.Breathe;
@@ -18,17 +17,27 @@ public class AutoBalance {
     private Stage stage;
 
     public enum Stage {
-        /** auto balance is doing nothing. */
+        /** 
+         * auto balance is doing nothing. 
+         */
         IDLING,
 
-        /** auto balance is ramming, meant to dock the charge station. */
+        /** 
+         * auto balance is ramming, meant to dock the charge station. 
+         */
 
         RAMMING,
 
-        /** auto balance is on the charge station and trying to engage the charge station. */
+        /** 
+         * auto balance is on the charge station and trying to engage the charge
+         * station. 
+         */
         ADJUSTING,
         
-        /** auto balance has paused, either becaue it has finished, or because it has encountered a spike in angular change. */
+        /** 
+         * auto balance has paused, either becaue it has finished, or because 
+         * it has encountered a spike in angular change. 
+         */
         PAUSED,
     }
 
