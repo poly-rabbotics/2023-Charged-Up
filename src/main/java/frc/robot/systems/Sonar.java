@@ -19,7 +19,11 @@ public class Sonar {
         sonar1 = new Ultrasonic(SONAR1_PING_CHANNEL, SONAR1_ECHO_CHANNEL);
     }
 
-    public static double getAverage() {
+    /**
+     * Get the average distance from the two sonars in inches
+     * @return distance in inches
+     */
+    public static double getDistance() {
         return (instance.sonar0.getRangeInches() + instance.sonar1.getRangeInches()) / 2;
     }
 }

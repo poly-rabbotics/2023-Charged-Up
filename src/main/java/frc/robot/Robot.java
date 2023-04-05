@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.systems.AutoAlign;
 import frc.robot.systems.AutoBalance;
 import frc.robot.systems.AutoBalanceAlternate;
 import frc.robot.systems.Controls;
@@ -153,8 +154,16 @@ public class Robot extends TimedRobot {
         //SwerveDrive.autoBalance()
         SmartDashboard.putNumber("controller Y", controllerOne.getLeftY());
         SmartDashboard.putNumber("controller X", controllerOne.getLeftX());
-        SwerveDrive.run(controllerOne.getLeftX(), controllerOne.getLeftY(), controllerOne.getRightX(), controllerOne.getPOV());
         
+        AutoAlign.run(controllerOne.getAButton());
+
+        if (!AutoAlign.autoAligning) {
+            SwerveDrive.run(
+                controllerOne.getLeftX(), 
+                controllerOne.getLeftY(), 
+                controllerOne.getRightX(), 
+                controllerOne.getPOV());
+        }
         // Left stick changes between headless and relative control modes.
         if (controllerOne.getLeftStickButtonReleased()) {
             if (SwerveDrive.getMode() == SwerveMode.Headless) {
