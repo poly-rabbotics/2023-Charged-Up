@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.systems.AutoAlign;
+import frc.robot.systems.AutoAlignIntaking;
 import frc.robot.systems.AutoBalance;
 import frc.robot.systems.AutoBalanceAlternate;
 import frc.robot.systems.Controls;
@@ -155,9 +155,9 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("controller Y", controllerOne.getLeftY());
         SmartDashboard.putNumber("controller X", controllerOne.getLeftX());
         
-        AutoAlign.run(controllerOne.getAButton());
+        AutoAlignIntaking.run(controllerOne.getAButton());
 
-        if (!AutoAlign.autoAligning) {
+        if (!AutoAlignIntaking.autoAligning) {
             SwerveDrive.run(
                 controllerOne.getLeftX(), 
                 controllerOne.getLeftY(), 

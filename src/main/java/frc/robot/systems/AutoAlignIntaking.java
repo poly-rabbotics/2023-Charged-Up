@@ -3,9 +3,9 @@ package frc.robot.systems;
 import edu.wpi.first.math.controller.PIDController;
 import frc.robot.Limelight;
 
-public class AutoAlign {
+public class AutoAlignIntaking {
     
-    public static AutoAlign instance = new AutoAlign();
+    public static AutoAlignIntaking instance = new AutoAlignIntaking();
 
     public static boolean autoAligning = false;
     
@@ -22,7 +22,7 @@ public class AutoAlign {
 
     private static final double INTAKE_LENGTH = 16; //inches //TODO: Tune this value
 
-    public AutoAlign() {
+    public AutoAlignIntaking() {
         //TODO: Tune PID values (these are completely untested)
         kP_X = 0.0001;
         kI_X = 0.0000000;
@@ -53,8 +53,8 @@ public class AutoAlign {
         
         if (holdToAlign) {
             autoAligning = true;
-            SwerveDrive.runUncurved(driveSpeedX, driveSpeedY, 0);
-        } else autoAligning = false;
+            SwerveDrive.runUncurved(driveSpeedX, -driveSpeedY, 0); //y speed negated because claw side forward 
+        } else autoAligning = false;  
         
     }
 
