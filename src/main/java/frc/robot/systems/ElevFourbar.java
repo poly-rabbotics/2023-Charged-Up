@@ -212,6 +212,10 @@ public class ElevFourbar {
         return output;
     }
 
+    public static double[] getCoords() {
+        return instance.coords;
+    }
+
     public static void updateSmartDashboard(double elevSpeed, double fourbarSpeed) {
         SmartDashboard.putString("Setpoint", instance.setpoint.toString());
         SmartDashboard.putString("Control Type", instance.controlType.toString());
@@ -220,6 +224,8 @@ public class ElevFourbar {
         SmartDashboard.putString("X", df.format(instance.coords[0]));
         SmartDashboard.putString("Y", df.format(instance.coords[1]));
         SmartDashboard.putString("Target Coords", "(" + instance.targetCoords[0] + ", " + instance.targetCoords[1] + ")");
+        SmartDashboard.putNumber("Bumper Intercept", fourbar.getBumperIntercept());
+        SmartDashboard.putNumber("Fourbar Slope", fourbar.getSlope());
 
         //Elevator values
         SmartDashboard.putNumber("Elevator Position", elevator.getPosition());
