@@ -21,6 +21,7 @@ import frc.robot.systems.Controls;
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
+import frc.robot.systems.Sonar;
 import frc.robot.systems.SwerveDrive;
 import frc.robot.systems.AutoBalance.Stage;
 import frc.robot.systems.ElevFourbar.GamePiece;
@@ -80,6 +81,8 @@ public class Robot extends TimedRobot {
         double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
         LEDLights.run();
         
+        Sonar.reportDistance();
+
         SmartDashboard.putNumber("FB Position", ElevFourbar.fourbar.getPosition());
         SmartDashboard.putNumber("Comp Pressure", Math.floor(pressureValue));
         SmartDashboard.putBoolean("Fully Pressurized", pressureValue > 60);

@@ -1,5 +1,7 @@
 package frc.robot.systems;
 import edu.wpi.first.wpilibj.Ultrasonic;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.DashboardLog;
 
 public class Sonar {
 
@@ -24,6 +26,20 @@ public class Sonar {
      * @return distance in inches
      */
     public static double getDistance() {
+        if (instance.sonar0.getRangeInches() == 0) {
+            return instance.sonar1.getRangeInches();
+        }
+        if (instance.sonar1.getRangeInches() == 0) {
+            return instance.sonar0.getRangeInches();
+        }
+        if (instance.sonar0.getRangeInches() + instance.sonar1.getRangeInches() ==0)
+            DashboardLog.logError(new Exception("Electrical Issue in Sonar."));
+
         return (instance.sonar0.getRangeInches() + instance.sonar1.getRangeInches()) / 2;
     }
+
+    public static void reportDistance() {
+        SmartDashboard.putNumber("Sonar Distance Inches", getDistance());
+    }
+    
 }
