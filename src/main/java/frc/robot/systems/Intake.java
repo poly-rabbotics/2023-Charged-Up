@@ -31,7 +31,7 @@ public class Intake extends SmartPrintable {
 
     public Intake() {
         super();
-        
+
         comp = new Compressor(1, PneumaticsModuleType.REVPH);
         //comp.enableDigital();
 
@@ -74,8 +74,6 @@ public class Intake extends SmartPrintable {
 
         runClaw(clawHeld, clawReleased);
         runPivot(pivotToggle);
-
-        updateSmartDashboard();
     }
 
     public static void autoClaw(SolenoidState state) {
@@ -160,7 +158,7 @@ public class Intake extends SmartPrintable {
      * Updates Smart Dashboard with important variables
      * @param rollerSpeed
      */
-    private static void print() {
+    public void print() {
         SmartDashboard.putString("Claw State", instance.clawState.toString());
         SmartDashboard.putString("Pivot State", instance.pivotState.toString());
     }
