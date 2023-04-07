@@ -74,6 +74,9 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         ElevFourbar.setFourbarBrake(brakeSwitch.get());
+        SmartDashboard.putNumber("Sonar Distance", Sonar.getDistance());
+        SmartDashboard.putBoolean("Sonar Enabled", Sonar.getIsEnabled());
+        SmartDashboard.putBoolean("Sonar Range Valid", Sonar.getIsRangeValid());
         AutoBalance.print();
         SwerveDrive.print();
         ElevFourbar.updateSmartDashboard(0, 0);

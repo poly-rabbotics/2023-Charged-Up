@@ -48,6 +48,7 @@ public class Intake {
         instance.pivotState = SolenoidState.DOWN;
         instance.clawState = (ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CONE) ? SolenoidState.CLOSED : SolenoidState.OPEN;
         timer.reset();
+        timer.start();
     }
 
     public static void autoInit() {
@@ -121,7 +122,13 @@ public class Intake {
      */
     private static void runClaw(boolean switchClawState, boolean closeClaw) {
             if (switchClawState) claw.open();
-            else claw.close();
+            else {
+                claw.close();
+                //rollerStartTime = timer.get();
+
+            }
+            
+            SmartDashboard.putNumber("RST", rollerStartTime);
 
             if (closeClaw) {
                 claw.close();
