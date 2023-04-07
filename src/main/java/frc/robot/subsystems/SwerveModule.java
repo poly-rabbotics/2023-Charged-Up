@@ -17,11 +17,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.SmartPrintable;
 
 /** 
  * Class for managing and manipulating a swerve module. 
  */
-public class SwerveModule {
+public class SwerveModule extends SmartPrintable {
     private static final double CONVERSION_FACTOR_ROTATION = 150 / 7;                                         // Rotations to degrees.
     private static final double CONVERSION_FACTOR_MOVEMENT = 6.75;                                            // Rotations to meters.
     private static final double CONVERSION_FACTOR_ROTATION_VELOCITY = CONVERSION_FACTOR_ROTATION * (1 / 60);  // RPM to degrees per second.
@@ -58,6 +59,8 @@ public class SwerveModule {
     private double rockPos;
 
     public SwerveModule(int movementMotorID, int rotationalMotorID, int canCoderID, double canCoderOffset, double coefficient) {
+        super();
+        
         this.canCoderOffset = canCoderOffset;
         this.coefficient = coefficient;
 
@@ -94,6 +97,9 @@ public class SwerveModule {
         position = new SwerveModulePosition(movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT, new Rotation2d(angularEncoder.getPosition() / 180.0 * Math.PI));
     }
 
+    /**
+     * Sets the desired module state for this module.
+     */
     public void setDesiredState(SwerveModuleState state) {
         if (Math.abs(state.speedMetersPerSecond) < 0.001) {
             movementMotor.set(0.0);
@@ -115,23 +121,40 @@ public class SwerveModule {
         position.distanceMeters = movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT;
     }
 
-    public void rockMode(boolean shouldHold) {
+    /**
+     * True if the module should be in rock mode.
+     */
+    public void setRockMode(boolean shouldHold) {
         if (!shouldHold) {
             rockPos = Double.NaN;
             return;
         }
 
         if (shouldHold && rockPos != rockPos) {
-            rockPos = getMovementPos();
+            rockPos = getPosition();
         }
 
-        movementMotor.set(rockController.calculate(getMovementPos(), rockPos));
+        movementMotor.set(rockController.calculate(getPosition(), rockPos));
     }
 
-    public double getMovementPos() {
+    /**
+     * True if in rock mode.
+     */
+    public boolean getRockMode() {
+        return rockPos != rockPos;
+    }
+
+    /**
+     * Gets distance traveled, should not be used for ablsolute distances as 
+     * this function currently makes no guarantee as to the starting position
+     * of the module. (This can be mitigated if you zero positions, but it will
+     * interupt odometry).
+     */
+    public double getPosition() {
         return movementEncoder.getPosition();
     }
 
+    @Override
     public void print() {
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position", angularEncoder.getPosition());
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position mod 360", angularEncoder.getPosition() % 360);
@@ -140,10 +163,16 @@ public class SwerveModule {
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position (Distance) ", movementEncoder.getPosition());
     }
 
-    public SwerveModulePosition getPosition() {
+    /**
+     * Gets the angle of the module. 
+     */
+    public SwerveModulePosition getAngle() {
         return position;
     }
 
+    /**
+     * Sets movement position to zero, will mess up odometry.
+     */
     public void zeroPositions() {
         movementEncoder.setPosition(0.0);
     }
