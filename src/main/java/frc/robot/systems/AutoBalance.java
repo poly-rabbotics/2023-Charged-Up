@@ -1,14 +1,13 @@
 package frc.robot.systems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
-import frc.robot.patterns.Breathe;
+import frc.robot.SmartPrintable;
 
 /**
  * Manages the SwerDrive class for auto balancing, this is only seperate since
  * SwerveDrive was becoming a bit large to handle.
  */
-public class AutoBalance {
+public class AutoBalance extends SmartPrintable {
     private static final double RAMMING_SPEED = -0.5;
     private static final double HALTING_SPEED = 0.1;
     
@@ -42,6 +41,7 @@ public class AutoBalance {
     }
 
     private AutoBalance() {
+        super();
         stage = Stage.IDLING;
     }
 
@@ -93,7 +93,6 @@ public class AutoBalance {
         }
 
         SwerveDrive.runUncurved(0.0, RAMMING_SPEED, 0.0);
-        LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 5.0));
         return Stage.RAMMING;
     }
 
@@ -105,7 +104,6 @@ public class AutoBalance {
         }
 
         SwerveDrive.runUncurved(0.0, RAMMING_SPEED, 0.0);
-        LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 5.0));
         return Stage.RAMMING;
     }
 
@@ -115,7 +113,6 @@ public class AutoBalance {
         }
 
         SwerveDrive.runUncurved(0.0, Math.signum(Pigeon.getPitch()) * HALTING_SPEED, 0.0);
-        LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 1.0), 5.0));
         return Stage.ADJUSTING;
     }
 
@@ -125,7 +122,6 @@ public class AutoBalance {
         }
 
         SwerveDrive.runUncurved(0.0, 0.0, 0.0);
-        LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 1.0), 5.0));
         return Stage.PAUSED;
     }
 
@@ -146,7 +142,8 @@ public class AutoBalance {
     /**
      * Print information about auto balance.
      */
-    public static void print() {
+    @Override
+    public void print() {
         SmartDashboard.putString("Auto Balance Stage: ", instance.stage.toString());
     }
 }
