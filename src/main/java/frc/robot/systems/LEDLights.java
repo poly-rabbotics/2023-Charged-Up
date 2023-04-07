@@ -1,5 +1,6 @@
 package frc.robot.systems;
 
+import frc.robot.Robot;
 import frc.robot.patterns.Rainbow;
 import frc.robot.subsystems.LightPattern;
 import frc.robot.subsystems.LightRenderer;
@@ -22,11 +23,8 @@ public class LEDLights {
         //executorService.scheduleAtFixedRate(renderer, 0, 20, TimeUnit.MILLISECONDS);
     }
 
-    public static void setPatternIfNotEqual(LightPattern pattern) {
-        instance.renderer.setIfNotEqual(pattern);
-    }
-
     public static void run() {
+        
         instance.renderer.run();
     }
 }
