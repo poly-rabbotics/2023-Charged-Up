@@ -123,10 +123,10 @@ public class Intake {
 
             if (closeClaw) {
                 claw.close();
+                autoRoller(rollerStartTime, rollerStartTime + 0.5, -1);
                 rollerStartTime = timer.get();
                 
             }
-            autoRoller(rollerStartTime, rollerStartTime + 0.5, -1);
     }  
     
     /**

@@ -82,7 +82,6 @@ public class Robot extends TimedRobot {
         SmartPrinter.print();
         ElevFourbar.setFourbarBrake(brakeSwitch.get());
         AutoBalance.print();
-        ElevFourbar.updateSmartDashboard(0, 0);
 
         double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
         LEDLights.run();
@@ -93,7 +92,7 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("Auto Mode", AutoModes.getAutoMode());
         //SmartDashboard.putNumber("AHH Elev", ElevFourbar.coordsToPos(ElevFourbar.MID_SCORING_COORDS[0], ElevFourbar.MID_SCORING_COORDS[1])[0]);
         //SmartDashboard.putNumber("AHH FB", ElevFourbar.coordsToPos(ElevFourbar.MID_SCORING_COORDS[0], ElevFourbar.MID_SCORING_COORDS[1])[1]);
-         
+        
     }
     
     /**
@@ -187,7 +186,7 @@ public class Robot extends TimedRobot {
         
         ElevFourbar.run(
             controllerTwo.getRightY(),
-            Math.abs(controlPanel.getRawAxis(0) / 2) > Math.abs(controllerTwo.getLeftY()) ? controlPanel.getRawAxis(0) / 2 : controllerTwo.getLeftY(),
+            Math.abs(controlPanel.getRawAxis(0) / 2) > Math.abs(controllerTwo.getLeftY()) ? controlPanel.getRawAxis(0) / 2 : -controllerTwo.getLeftY(),
             controllerTwo.getPOV(),
             controlPanel.getRawButtonPressed(5), //toggle game piece
             controlPanel.getRawButton(1), //ground

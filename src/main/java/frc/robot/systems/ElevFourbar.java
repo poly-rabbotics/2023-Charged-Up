@@ -1,13 +1,14 @@
 package frc.robot.systems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.SmartPrintable;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Fourbar;
 import frc.robot.systems.Intake.SolenoidState;
 
 import java.text.DecimalFormat;
 
-public class ElevFourbar {
+public class ElevFourbar extends SmartPrintable {
 
     //The legnth of the fourbar in inches, used for trig functions
     private static final double FOURBAR_HYPOTENUSE = 37.5;
@@ -43,6 +44,7 @@ public class ElevFourbar {
     public static Elevator elevator;
 
     public ElevFourbar() {
+        super();
         fourbar = new Fourbar();
         elevator = new Elevator();
     }
@@ -216,7 +218,7 @@ public class ElevFourbar {
         return instance.coords;
     }
 
-    public static void updateSmartDashboard(double elevSpeed, double fourbarSpeed) {
+    public void print() {
         SmartDashboard.putString("Setpoint", instance.setpoint.toString());
         SmartDashboard.putString("Control Type", instance.controlType.toString());
 
@@ -230,12 +232,10 @@ public class ElevFourbar {
         //Elevator values
         SmartDashboard.putNumber("Elevator Position", elevator.getPosition());
         SmartDashboard.putNumber("Elevator Target", elevator.getTargetPosition()); //ADD THIS
-        SmartDashboard.putNumber("Elevator Speed", elevSpeed);
 
         //Fourbar values
         SmartDashboard.putNumber("Fourbar Position", fourbar.getPosition());
         SmartDashboard.putNumber("Fourbar Target", (fourbar.getTargetPosition() + fourbar.ENCODER_OFFSET)/360.0); //ADD THIS
-        SmartDashboard.putNumber("Fourbar Speed", fourbarSpeed);
         SmartDashboard.putNumber("Abs Encoder Position", fourbar.getAbsolutePosition());
 
         SmartDashboard.putBoolean("Cube Mode Selected?", ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE);

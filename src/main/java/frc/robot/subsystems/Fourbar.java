@@ -24,7 +24,7 @@ public class Fourbar {
     public final double ENCODER_OFFSET = 0.145 * 360;
 
     public static final double BUMPER_X = 16;
-    public static final double BUMPER_Y = 5;
+    public static final double BUMPER_Y = 8;
     
     //constant variables
     private static final int MOTOR_ID = 61; //CORRECT ID
@@ -145,6 +145,14 @@ public class Fourbar {
         bumperIntercept = (slope * BUMPER_X) + b;
 
         if(bumperIntercept <= BUMPER_Y) {
+            if(speed < 0) {
+                speed = 0;
+            }
+        } else if(coords[1] <= -3 && Intake.getPivotState() == SolenoidState.UP) {
+            if(speed < 0) {
+                speed = 0;
+            }
+        } else if(coords[1] <= 21 && Intake.getPivotState() == SolenoidState.DOWN) {
             if(speed < 0) {
                 speed = 0;
             }
