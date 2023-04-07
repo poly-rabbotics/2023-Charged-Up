@@ -13,11 +13,12 @@ import java.util.concurrent.TimeUnit;
 import com.ctre.phoenix.sensors.Pigeon2;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.SmartPrintable;
 
 /*
  * Manages the robot's pigeon.
  */
-public class Pigeon {
+public class Pigeon extends SmartPrintable {
     private static final int PIGEON_CAN_ID = 20;
     private static final Pigeon instance = new Pigeon(PIGEON_CAN_ID);
 
@@ -27,8 +28,8 @@ public class Pigeon {
     private OrientationalChange changePerSecond;
 
     private Pigeon(int canID) {
+        super();
         pigeon = new Pigeon2(canID);
-        //pigeon.setYaw(0.0);
 
         /* 
          * Starts the thread so that it calls 'run()' every 40 ms (25hz). This
@@ -50,18 +51,6 @@ public class Pigeon {
         
     }
 
-    /* public static void setStartingAngle(double angle) {
-        instance.startingAngle = angle;
-    } */
-
-    /**
-     * Gets the robot's rotation in respect to relative forward, if relative
-     * forward has not been set then it simply returns the absolute rotaton.
-     */
-    public static double getFeildRelativeRotation() {
-        return instance.pigeon.getYaw() % 360.0;
-    }
-
     /**
      * Gets the change per second in the orientation of the Pigeon.
      */
@@ -69,8 +58,40 @@ public class Pigeon {
         return instance.changePerSecond;
     }
 
+    /**
+     * Gets Yaw.
+     */
+    public static double getYaw() {
+        return instance.pigeon.getYaw() % 360.0;
+    }
+
+    /**
+     * Gets pitch.
+     */
     public static double getPitch() {
+        // Pitch and roll are flipped due to mounting orientation.
         return instance.pigeon.getRoll();
+    }
+
+    /**
+     * Gets roll.
+     */
+    public static double getRoll() {
+        // Pitch and roll are flipped due to mounting orientation.
+        return instance.pigeon.getPitch();
+    }
+    
+    @Override
+    public void print() {
+        SmartDashboard.putNumber("Pigeon Yaw", getYaw());
+        SmartDashboard.putNumber("Pigeon Pitch", getPitch());
+        SmartDashboard.putNumber("Pigeon Roll", getRoll());
+
+        OrientationalChange change = getChangePerSecond();
+
+        SmartDashboard.putNumber("Pigeon Yaw/Sec", change.yawPerSecond);
+        SmartDashboard.putNumber("Pigeon Pitch/Sec", change.pitchPerSecond);
+        SmartDashboard.putNumber("Pigeon Roll/Sec", change.rollPerSecond);
     }
 
     /**
@@ -124,21 +145,12 @@ public class Pigeon {
             recordedInstant = clock.instant();
             
             double differenceSeconds = (double)(recordedInstant.toEpochMilli() - previousInstant.toEpochMilli()) / 1000.0;
-            SmartDashboard.putNumber("Difference Seconds", differenceSeconds);
 
             double changeYaw = (yaw - previousYaw) / differenceSeconds;
             double changeRoll = (roll - previousRoll) / differenceSeconds;
             double changePitch = -((pitch - previousPitch) / differenceSeconds);
 
             pigeon.changePerSecond = new OrientationalChange(changeYaw, changeRoll, changePitch);
-
-            SmartDashboard.putNumber("Pigon Yaw", yaw);
-            SmartDashboard.putNumber("Pigon Pitch", pitch);
-            SmartDashboard.putNumber("Pigon Roll", roll);
-
-            SmartDashboard.putNumber("Pigon Yaw/Sec", changeYaw);
-            SmartDashboard.putNumber("Pigon Pitch/Sec", changePitch);
-            SmartDashboard.putNumber("Pigon Roll/Sec", changeRoll);
 
             previousYaw = yaw;
             previousRoll = roll;
