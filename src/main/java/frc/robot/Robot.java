@@ -35,24 +35,16 @@ import frc.robot.patterns.*;
 * project.
 */
 public class Robot extends TimedRobot {
-    /* public static XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
-    public static XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
-    public static Joystick controlPanel = (Joystick)Controls.getControllerByPort(2); */
-    public static XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
-    public static XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
-    public static Joystick controlPanel = (Joystick)Controls.getControllerByPort(2);
-    public static AnalogInput pressureSensor = new AnalogInput(0);
-    Timer timer = new Timer();
+    private static final XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
+    private static final XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
+    private static final Joystick controlPanel = (Joystick)Controls.getControllerByPort(2);
 
-    DigitalInput brakeSwitch = new DigitalInput(1);
-    
-    boolean autoStageOne;
-    int autoMode;
-    double fbSpeedInput = 0;
+    private static final AnalogInput pressureSensor = new AnalogInput(0);
+    private static final DigitalInput brakeSwitch = new DigitalInput(1);
 
-    Color yellow = new Color(255, 200, 0);
-    Color purple = new Color(255, 0, 255);
-
+    /**
+     * Custom turning curve for Rohan.
+     */
     private static double turnCurveRohan(double x) {
         if (Math.abs(x) < 0.1) {
             return 0.0;
@@ -79,20 +71,16 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void robotPeriodic() {
-        SmartPrinter.print();
         ElevFourbar.setFourbarBrake(brakeSwitch.get());
-        AutoBalance.print();
-
         double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
-        LEDLights.run();
         
         SmartDashboard.putNumber("FB Position", ElevFourbar.fourbar.getPosition());
         SmartDashboard.putNumber("Comp Pressure", Math.floor(pressureValue));
         SmartDashboard.putBoolean("Fully Pressurized", pressureValue > 60);
         SmartDashboard.putNumber("Auto Mode", AutoModes.getAutoMode());
-        //SmartDashboard.putNumber("AHH Elev", ElevFourbar.coordsToPos(ElevFourbar.MID_SCORING_COORDS[0], ElevFourbar.MID_SCORING_COORDS[1])[0]);
-        //SmartDashboard.putNumber("AHH FB", ElevFourbar.coordsToPos(ElevFourbar.MID_SCORING_COORDS[0], ElevFourbar.MID_SCORING_COORDS[1])[1]);
         
+        SmartPrinter.print();
+        LEDLights.run();
     }
     
     /**
@@ -111,31 +99,23 @@ public class Robot extends TimedRobot {
         SwerveDrive.zeroPositions();
         LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.8, 0.3, 0.0), 0.5));
         ElevFourbar.autonomousInit();
-        timer.reset();
-        timer.stop();
-        autoStageOne = false;
 
+        // Reset Auto Balance to the idling stage in case autonomous has been 
+        // run more than once since code start.
         AutoBalance.setStage(Stage.IDLING);
-        
         AutoModes.init();
-
         Intake.init();
     }
-
-    double startTimeBalance = -1.0;
     
     /** This function is called periodically during autonomous. */
     @Override
     public void autonomousPeriodic() {
-        timer.start();
         AutoModes.run();
     }
     
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        LEDLights.setPatternIfNotEqual(new Rainbow());
-        //Pigeon.setFeildZero();
         SwerveDrive.setMode(SwerveMode.Headless);
         ElevFourbar.init();
         Intake.init();
@@ -143,15 +123,7 @@ public class Robot extends TimedRobot {
     
     /** This function is called periodically during operator control. */
     @Override
-    public void teleopPeriodic() {
-        //Determine
-        if(Math.abs(controlPanel.getRawAxis(0)/2) > controllerTwo.getLeftY()) {
-            fbSpeedInput = -controlPanel.getRawAxis(0)/2;
-        } else {
-            fbSpeedInput = controllerTwo.getLeftY();
-        }
-        
-        //SwerveDrive.autoBalance()
+    public void teleopPeriodic() {        
         SmartDashboard.putNumber("controller Y", controllerOne.getLeftY());
         SmartDashboard.putNumber("controller X", controllerOne.getLeftX());
 
@@ -181,7 +153,6 @@ public class Robot extends TimedRobot {
             controlPanel.getRawButton(7),
             controlPanel.getRawButton(6),
             controlPanel.getRawButtonReleased(6)
-
         );
         
         ElevFourbar.run(
@@ -222,9 +193,7 @@ public class Robot extends TimedRobot {
     
     /** This function is called periodically during test mode. */
     @Override
-    public void testPeriodic() {
-        if(controllerOne.getStartButtonReleased()) SwerveDrive.zeroPositions();
-    }
+    public void testPeriodic() {}
     
     /** This function is called once when the robot is first started up. */
     @Override
