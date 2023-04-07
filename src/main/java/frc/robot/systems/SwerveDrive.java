@@ -17,10 +17,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-
-import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.SmartPrintable;
-import frc.robot.patterns.Breathe;
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.subsystems.SwerveModule;
 
@@ -66,7 +64,7 @@ public class SwerveDrive extends SmartPrintable {
         }
 
         for (int i = 0; i < modules.length; i++) {
-            positions[i] = modules[i].getPosition();
+            positions[i] = modules[i].getAngle();
         }
 
         kinematics = new SwerveDriveKinematics(
@@ -76,7 +74,7 @@ public class SwerveDrive extends SmartPrintable {
             new Translation2d(   CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2)
         );
 
-        odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(Pigeon.getFeildRelativeRotation() * RADIAN_DEGREE_RATIO), positions);
+        odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(Pigeon.getYaw() * RADIAN_DEGREE_RATIO), positions);
     }
 
     /**
@@ -95,10 +93,6 @@ public class SwerveDrive extends SmartPrintable {
         return instance.mode;
     }
 
-    public static SwerveModule getModuleInfo(int module) {
-        return instance.modules[module];
-    }
-
     /**
      * Runs swerve, behavior changes based on the drive's mode. Derives speed
      * from directional inputs.
@@ -108,7 +102,7 @@ public class SwerveDrive extends SmartPrintable {
      * @param lowSense The angle to move in low sensitivity in degrees, -1 for no movement.
      */
     public static void run(double directionalX, double directionalY, double turn, int lowSense) {
-        instance.odometry.update(new Rotation2d(Pigeon.getFeildRelativeRotation() * RADIAN_DEGREE_RATIO), instance.positions);
+        instance.odometry.update(new Rotation2d(Pigeon.getYaw() * RADIAN_DEGREE_RATIO), instance.positions);
         
         if (lowSense != -1) {
             double angle = (2 * Math.PI) - ((double)lowSense * RADIAN_DEGREE_RATIO);
@@ -128,7 +122,7 @@ public class SwerveDrive extends SmartPrintable {
         ChassisSpeeds chassisSpeeds;
 
         if (instance.mode == SwerveMode.Headless) {
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getFeildRelativeRotation() * RADIAN_DEGREE_RATIO));
+            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getYaw() * RADIAN_DEGREE_RATIO));
         } else {
             chassisSpeeds = new ChassisSpeeds(directionalX, -directionalY, turn);
         }
@@ -151,7 +145,7 @@ public class SwerveDrive extends SmartPrintable {
         ChassisSpeeds chassisSpeeds;
 
         if (instance.mode == SwerveMode.Headless) {
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getFeildRelativeRotation() * RADIAN_DEGREE_RATIO));
+            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getYaw() * RADIAN_DEGREE_RATIO));
         } else {
             chassisSpeeds = new ChassisSpeeds(directionalX, -directionalY, turn);
         }
@@ -163,12 +157,26 @@ public class SwerveDrive extends SmartPrintable {
         }
     }
 
-    public static void rockMode(boolean shouldHold) {
+    /**
+     * True if rock mode should be active.
+     */
+    public static void setRockMode(boolean shouldHold) {
         for (SwerveModule module : instance.modules) {
-            module.rockMode(shouldHold);
+            module.setRockMode(shouldHold);
+        }
+    }
+
+    /**
+     * Returns true if in rock mode.
+     */
+    public static boolean getRockMode() {
+        boolean rockMode = false;
+
+        for (SwerveModule module : instance.modules) {
+            rockMode |= module.getRockMode();
         }
 
-        LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 0.0));
+        return rockMode;
     }
 
     /**
@@ -242,10 +250,10 @@ public class SwerveDrive extends SmartPrintable {
     /**
      * Print data to smart dashboard.
      */
+    @Override
     public void print() {
-        for (SwerveModule module : instance.modules) {
-            module.print();
-        }
+        SmartDashboard.putString("Orientation", getMode().toString());
+        SmartDashboard.putBoolean("In Rock Mode", getRockMode());
     }
 
     /**
@@ -253,7 +261,7 @@ public class SwerveDrive extends SmartPrintable {
      * @param id CAN ID of the modules movement motor (this is also the internal array index)
      */
     public static double getModulePos(int id) {
-        return instance.modules[id].getMovementPos();
+        return instance.modules[id].getPosition();
     }
 
     /**

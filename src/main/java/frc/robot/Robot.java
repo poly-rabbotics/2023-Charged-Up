@@ -8,9 +8,7 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.systems.AutoBalance;
 import frc.robot.systems.Controls;
@@ -20,13 +18,9 @@ import frc.robot.systems.Pigeon;
 import frc.robot.systems.SmartPrinter;
 import frc.robot.systems.SwerveDrive;
 import frc.robot.systems.AutoBalance.Stage;
-import frc.robot.systems.ElevFourbar.GamePiece;
 import frc.robot.systems.LEDLights;
 
 import frc.robot.subsystems.SwerveMode;
-
-import frc.robot.patterns.*;
-
 
 /**
 * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -35,12 +29,30 @@ import frc.robot.patterns.*;
 * project.
 */
 public class Robot extends TimedRobot {
+    public enum ControlMode {
+        DISABLED,
+        AUTONOMOUS,
+        TELEOPERATED
+    }
+
     private static final XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
     private static final XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
     private static final Joystick controlPanel = (Joystick)Controls.getControllerByPort(2);
 
     private static final AnalogInput pressureSensor = new AnalogInput(0);
     private static final DigitalInput brakeSwitch = new DigitalInput(1);
+
+    private static Robot instance;
+    private ControlMode controlMode = ControlMode.DISABLED;
+
+    /**
+     * Exists only to enable static methods to gain access to non static data,
+     * OOP fans be damned I just made your class a singleton.
+     */
+    public Robot() {
+        super();
+        instance = this;
+    }
 
     /**
      * Custom turning curve for Rohan.
@@ -51,6 +63,10 @@ public class Robot extends TimedRobot {
         }
 
         return Math.pow(x, 5);
+    }
+
+    public static ControlMode getControlMode() {
+        return instance.controlMode;
     }
 
     /**
@@ -77,7 +93,6 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("FB Position", ElevFourbar.fourbar.getPosition());
         SmartDashboard.putNumber("Comp Pressure", Math.floor(pressureValue));
         SmartDashboard.putBoolean("Fully Pressurized", pressureValue > 60);
-        SmartDashboard.putNumber("Auto Mode", AutoModes.getAutoMode());
         
         SmartPrinter.print();
         LEDLights.run();
@@ -95,22 +110,28 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void autonomousInit() {
+        int autoMode = 
+            (controlPanel.getRawButton(12) ? 1 << 0 : 0) + 
+            (controlPanel.getRawButton(11) ? 1 << 1 : 0) + 
+            (controlPanel.getRawButton(10) ? 1 << 2 : 0);
+        
+        AutonomousRunner.init();
+        AutonomousRunner.setAutoMode(autoMode);
+
         Pigeon.setFeildZero();
         SwerveDrive.zeroPositions();
-        LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.8, 0.3, 0.0), 0.5));
         ElevFourbar.autonomousInit();
+        Intake.init();
 
         // Reset Auto Balance to the idling stage in case autonomous has been 
         // run more than once since code start.
         AutoBalance.setStage(Stage.IDLING);
-        AutoModes.init();
-        Intake.init();
     }
     
     /** This function is called periodically during autonomous. */
     @Override
     public void autonomousPeriodic() {
-        AutoModes.run();
+        AutonomousRunner.run();
     }
     
     /** This function is called once when teleop is enabled. */
@@ -136,7 +157,7 @@ public class Robot extends TimedRobot {
         }
 
         SwerveDrive.run(x, y, controllerOne.getRightX(), controllerOne.getPOV());
-        SwerveDrive.rockMode(controllerOne.getRightTriggerAxis() > 0.25);
+        SwerveDrive.setRockMode(controllerOne.getRightTriggerAxis() > 0.25);
         
         // Left stick changes between headless and relative control modes.
         if (controllerOne.getLeftStickButtonReleased()) {
@@ -166,20 +187,11 @@ public class Robot extends TimedRobot {
             controlPanel.getRawButton(2),  //stowed
             controllerTwo.getStartButtonPressed() //zero elevator encoder
         );
-
-        //Change color base on which gamepiece we have selected
-        if(ElevFourbar.gamePieceSelected == GamePiece.CONE) {
-            LEDLights.setPatternIfNotEqual(new Breathe(yellow, 0.5));
-        } else {
-            LEDLights.setPatternIfNotEqual(new Breathe(purple, 0.5));
-        }
     }
     
     /** This function is called once when the robot is disabled. */
     @Override
-    public void disabledInit() {
-        LEDLights.setPatternIfNotEqual(new Rainbow(LEDLights.LED_LENGTH, 50));
-    }
+    public void disabledInit() {}
     
     /** This function is called periodically when disabled. */
     @Override
