@@ -44,9 +44,9 @@ public class LEDLights {
                 instance.renderer.setIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 1.5));
             } else {
                 // When in telop make the color cooralate with game peice.
-                if (ElevFourbar.gamePieceSelected == GamePiece.CONE) {
+                if (ElevFourbar.getSelectedGamePeice() == GamePiece.CONE) {
                     instance.renderer.setIfNotEqual(new Breathe(new Color(1.0, 1.0, 0.0), 0.5));
-                } else if (ElevFourbar.gamePieceSelected == GamePiece.CUBE) {
+                } else if (ElevFourbar.getSelectedGamePeice() == GamePiece.CUBE) {
                     instance.renderer.setIfNotEqual(new Breathe(new Color(1.0, 0.0, 1.0), 0.5));
                 }
             }

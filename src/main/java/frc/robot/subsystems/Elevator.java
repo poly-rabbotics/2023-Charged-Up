@@ -158,7 +158,7 @@ public class Elevator {
                 targetSetpoint = SUBSTATION_INTAKE_SETPOINT;
                 break;
             case GROUND_INTAKE:
-                if(ElevFourbar.fourbar.getPosition() > 5)
+                if(ElevFourbar.getFourbarPosition() > 5)
                     targetSetpoint = GROUND_INTAKE_SETPOINT;
                 break;
             case MID_SCORING:

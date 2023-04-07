@@ -47,7 +47,7 @@ public class Intake extends SmartPrintable {
 
     public static void init() { //opens claw if cube is selected, closes claw if cone is selected
         instance.pivotState = SolenoidState.DOWN;
-        instance.clawState = (ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CONE) ? SolenoidState.CLOSED : SolenoidState.OPEN;
+        instance.clawState = (ElevFourbar.getSelectedGamePeice() == ElevFourbar.GamePiece.CONE) ? SolenoidState.CLOSED : SolenoidState.OPEN;
         timer.reset();
     }
 

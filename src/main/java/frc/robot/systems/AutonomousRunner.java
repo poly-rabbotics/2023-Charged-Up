@@ -77,14 +77,14 @@ public class AutonomousRunner extends SmartPrintable {
         if(instance.autoStage == 0){
             //Move the pivot up
             Intake.autoPivot(SolenoidState.UP);
-            ElevFourbar.autoRun((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.MID_SCORING_COORDS_CUBE : ElevFourbar.MID_SCORING_COORDS_CONE);
+            ElevFourbar.autoRun((ElevFourbar.getSelectedGamePeice() == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.MID_SCORING_COORDS_CUBE : ElevFourbar.MID_SCORING_COORDS_CONE);
             
             //Move the elevator to the high scoring position
             if(instance.timer.get() > 2) {
                 //Open claw when the position has been reached
                 instance.secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
-                Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
+                Intake.runRoller((ElevFourbar.getSelectedGamePeice() == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 instance.autoStage++;
             } 
             if(instance.timer.get() > 2.1) Intake.autoClaw(SolenoidState.OPEN);
@@ -122,14 +122,14 @@ public class AutonomousRunner extends SmartPrintable {
         if(instance.autoStage == 0){
             //Move the pivot up
             Intake.autoPivot(SolenoidState.UP);
-            ElevFourbar.autoRun((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.MID_SCORING_COORDS_CUBE : ElevFourbar.MID_SCORING_COORDS_CONE);
+            ElevFourbar.autoRun((ElevFourbar.getSelectedGamePeice() == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.MID_SCORING_COORDS_CUBE : ElevFourbar.MID_SCORING_COORDS_CONE);
             
             //Move the elevator to the high scoring position
             if(instance.timer.get() > 2) {
                 //Open claw when the position has been reached
                 instance.secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
-                Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
+                Intake.runRoller((ElevFourbar.getSelectedGamePeice() == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 instance.autoStage++;
             } 
             if(instance.timer.get() > 2.1) Intake.autoClaw(SolenoidState.OPEN);
@@ -158,14 +158,14 @@ public class AutonomousRunner extends SmartPrintable {
         if(instance.autoStage == 0){
             //Move the pivot up
             Intake.autoPivot(SolenoidState.UP);
-            ElevFourbar.autoRun((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.MID_SCORING_COORDS_CUBE : ElevFourbar.MID_SCORING_COORDS_CONE);
+            ElevFourbar.autoRun((ElevFourbar.getSelectedGamePeice() == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.MID_SCORING_COORDS_CUBE : ElevFourbar.MID_SCORING_COORDS_CONE);
             
             //Move the elevator to the high scoring position
             if(instance.timer.get() > 2) {
                 //Open claw when the position has been reached
                 instance.secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
-                Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
+                Intake.runRoller((ElevFourbar.getSelectedGamePeice() == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 instance.autoStage++;
             } 
             if(instance.timer.get() > 2.1) Intake.autoClaw(SolenoidState.OPEN);
@@ -197,14 +197,14 @@ public class AutonomousRunner extends SmartPrintable {
         if(instance.autoStage == 0){
             //Move the pivot up
             Intake.autoPivot(SolenoidState.UP);
-            ElevFourbar.autoRun((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.HIGH_SCORING_COORDS_CUBE : ElevFourbar.HIGH_SCORING_COORDS_CONE);
+            ElevFourbar.autoRun((ElevFourbar.getSelectedGamePeice() == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.HIGH_SCORING_COORDS_CUBE : ElevFourbar.HIGH_SCORING_COORDS_CONE);
             
             //Move the elevator to the high scoring position
             if(instance.timer.get() > 2) {
                 //Open claw when the position has been reached
                 instance.secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
-                Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
+                Intake.runRoller((ElevFourbar.getSelectedGamePeice() == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 instance.autoStage++;
             } 
             if(instance.timer.get() > 2.1) Intake.autoClaw(SolenoidState.OPEN);
@@ -242,13 +242,13 @@ public class AutonomousRunner extends SmartPrintable {
         if(instance.autoStage == 0){
             //Move the pivot up
             Intake.autoPivot(SolenoidState.UP);
-            ElevFourbar.autoRun((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.HIGH_SCORING_COORDS_CUBE : ElevFourbar.HIGH_SCORING_COORDS_CONE);
+            ElevFourbar.autoRun((ElevFourbar.getSelectedGamePeice() == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.HIGH_SCORING_COORDS_CUBE : ElevFourbar.HIGH_SCORING_COORDS_CONE);
             
             //Move the elevator to the high scoring position
             if(instance.timer.get() > 2) {
                 //Open claw when the position has been reached
                 instance.secondaryTimer.reset();
-                Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE); //run intake out
+                Intake.runRoller((ElevFourbar.getSelectedGamePeice() == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE); //run intake out
                 instance.autoStage++;
             }
             if(instance.timer.get() > 2.1) Intake.autoClaw(SolenoidState.OPEN);
@@ -276,14 +276,14 @@ public class AutonomousRunner extends SmartPrintable {
         if(instance.autoStage == 0){
             //Move the pivot up
             Intake.autoPivot(SolenoidState.UP);
-            ElevFourbar.autoRun((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.HIGH_SCORING_COORDS_CUBE : ElevFourbar.HIGH_SCORING_COORDS_CONE);
+            ElevFourbar.autoRun((ElevFourbar.getSelectedGamePeice() == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.HIGH_SCORING_COORDS_CUBE : ElevFourbar.HIGH_SCORING_COORDS_CONE);
             
             //Move the elevator to the high scoring position
             if(instance.timer.get() > 2) {
                 //Open claw when the position has been reached
                 instance.secondaryTimer.reset();
                 Intake.autoClaw(SolenoidState.OPEN);
-                Intake.runRoller((ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
+                Intake.runRoller((ElevFourbar.getSelectedGamePeice() == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE);
                 instance.autoStage++;
             } 
             if(instance.timer.get() > 2.1) Intake.autoClaw(SolenoidState.OPEN);

@@ -139,7 +139,7 @@ public class Fourbar {
 
         //ignore this for now
         double[] coords = ElevFourbar.getCoords();
-        double b = ElevFourbar.elevator.getPosition();
+        double b = ElevFourbar.getElevatorPosition();
         slope = (coords[1] - b) / coords[0];
 
         bumperIntercept = (slope * BUMPER_X) + b;
