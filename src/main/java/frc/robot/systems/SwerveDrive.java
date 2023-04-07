@@ -31,7 +31,7 @@ public class SwerveDrive {
     private static final double MODULE_CANCODER_OFFSETS[] = { -252.24607237 + 90.0, -405.26363752 + 90.0, -189.66795267 + 90.0, -175.16600078 + 90.0 };
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
     
-    private static final double LOW_SENSITIVITY_RATIO = 0.02;
+    private static final double LOW_SENSITIVITY_RATIO = 0.06;
 
     private static final double CHASSIS_SIDE_LENGTH = 0.6;
     private static final double RADIAN_DEGREE_RATIO = Math.PI / 180.0;
