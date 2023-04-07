@@ -38,6 +38,12 @@ public class LightRenderer implements Runnable {
 		this.pattern = pattern;
 	}
 
+	/**
+	 * Sets the pattern if the current pattern determins the given one to be
+	 * unequal, this usually means that any two patterns made with the same
+	 * construction parameters will be equal and therefore not reset their
+	 * animation when set.
+	 */
 	public void setIfNotEqual(LightPattern pattern) {
 		if (this.pattern.isEqual(pattern)) {
 			return;
