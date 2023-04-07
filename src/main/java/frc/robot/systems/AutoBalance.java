@@ -88,7 +88,7 @@ public class AutoBalance extends SmartPrintable {
     }
 
     private Stage ram() {
-        if (Math.abs(SwerveDrive.getModulePos(0)) > 330) {
+        if (Math.abs(SwerveDrive.getDistance()) > 330) {
             return adjust();
         }
 

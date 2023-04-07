@@ -108,17 +108,7 @@ public class AutonomousRunner extends SmartPrintable {
          * EXIT THE COMUNITY
          * *****************    
          */
-        if (
-            Math.max(
-                Math.max(
-                    Math.abs(SwerveDrive.getModulePos(0)), 
-                    Math.abs(SwerveDrive.getModulePos(1))
-                ), Math.max(
-                    Math.abs(SwerveDrive.getModulePos(2)),
-                    Math.abs(SwerveDrive.getModulePos(3))
-                )
-            ) < 670 && 
-            (instance.autoStage == 2 || instance.timer.get() > 10)) {
+        if (SwerveDrive.getDistance() < 670 && (instance.autoStage == 2 || instance.timer.get() > 10)) {
             SwerveDrive.runUncurved(0.0, -0.6, 0.0);
         } else {
             SwerveDrive.runUncurved(0.0, 0.0, 0.0);
@@ -238,17 +228,7 @@ public class AutonomousRunner extends SmartPrintable {
          * EXIT THE COMUNITY
          * *****************    
          */
-        if (
-            Math.max(
-                Math.max(
-                    Math.abs(SwerveDrive.getModulePos(0)), 
-                    Math.abs(SwerveDrive.getModulePos(1))
-                ), Math.max(
-                    Math.abs(SwerveDrive.getModulePos(2)),
-                    Math.abs(SwerveDrive.getModulePos(3))
-                )
-            ) < 670 && 
-            (instance.autoStage == 2 || instance.timer.get() > 10)) {
+        if (SwerveDrive.getDistance() < 670 && (instance.autoStage == 2 || instance.timer.get() > 10)) {
             SwerveDrive.runUncurved(0.0, -0.6, 0.0);
         } else {
             SwerveDrive.runUncurved(0.0, 0.0, 0.0);

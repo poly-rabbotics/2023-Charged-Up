@@ -9,6 +9,8 @@ import java.security.InvalidParameterException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.annotation.JsonCreator.Mode;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
@@ -257,11 +259,16 @@ public class SwerveDrive extends SmartPrintable {
     }
 
     /**
-     * Gets the encoder position of a given module.
-     * @param id CAN ID of the modules movement motor (this is also the internal array index)
+     * Gets the longest distance traveled by any modules.
      */
-    public static double getModulePos(int id) {
-        return instance.modules[id].getPosition();
+    public static double getDistance() {
+        double ret = 0.0;
+
+        for (SwerveModule module : instance.modules) {
+            ret = Math.max(Math.abs(ret), Math.abs(module.getPosition()));
+        }
+
+        return ret;
     }
 
     /**
