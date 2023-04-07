@@ -22,6 +22,9 @@ public class Fourbar {
 
     //encoder offset
     public final double ENCODER_OFFSET = 0.145 * 360;
+
+    public static final double BUMPER_X = 16;
+    public static final double BUMPER_Y = 5;
     
     //constant variables
     private static final int MOTOR_ID = 61; //CORRECT ID
@@ -54,6 +57,8 @@ public class Fourbar {
     //variables
     private double targetSetpoint;
     private double encoderPosition;
+    private double bumperIntercept = 0;
+    private double slope = 0;
     
     public void setBrake(boolean brake) {
         if (brake) {
@@ -132,6 +137,19 @@ public class Fourbar {
     public void manualControl(double speed){
         encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
 
+        //ignore this for now
+        double[] coords = ElevFourbar.getCoords();
+        double b = ElevFourbar.elevator.getPosition();
+        slope = (coords[1] - b) / coords[0];
+
+        bumperIntercept = (slope * BUMPER_X) + b;
+
+        if(bumperIntercept <= BUMPER_Y) {
+            if(speed < 0) {
+                speed = 0;
+            }
+        }
+
         //Deadzone
         if(Math.abs(speed) < MANUAL_DEADZONE) {
             speed = 0;
@@ -187,5 +205,13 @@ public class Fourbar {
     public void setPIDSpeed(double speed) {
         pidController.setOutputRange(-speed, speed);
         
+    }
+
+    public double getBumperIntercept() {
+        return bumperIntercept;
+    }
+
+    public double getSlope() {
+        return slope;
     }
 }
