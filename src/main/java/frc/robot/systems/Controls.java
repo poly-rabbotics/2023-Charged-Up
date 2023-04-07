@@ -4,16 +4,9 @@
 
 package frc.robot.systems;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.simulation.GenericHIDSim;
 
 /**
  * Manages the recording, playback, and wrapping of controller input.
@@ -59,6 +52,17 @@ public class Controls {
         }
 
         return Math.pow(x, DEFAULT_CURVE_EXPONENT);
+    }
+
+    /**
+     * Custom turning curve for Rohan.
+     */
+    public static double turnCurveRohan(double x) {
+        if (Math.abs(x) < 0.1) {
+            return 0.0;
+        }
+
+        return Math.pow(x, 5);
     }
 
     /**

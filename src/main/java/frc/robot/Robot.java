@@ -56,17 +56,6 @@ public class Robot extends TimedRobot {
         instance = this;
     }
 
-    /**
-     * Custom turning curve for Rohan.
-     */
-    private static double turnCurveRohan(double x) {
-        if (Math.abs(x) < 0.1) {
-            return 0.0;
-        }
-
-        return Math.pow(x, 5);
-    }
-
     public static ControlMode getControlMode() {
         return instance.controlMode;
     }
@@ -77,7 +66,7 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void robotInit() {
-        SwerveDrive.setTurnCurve(Robot::turnCurveRohan);
+        SwerveDrive.setTurnCurve(Controls::turnCurveRohan);
     }
     
     /**
