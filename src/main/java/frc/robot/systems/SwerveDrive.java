@@ -11,19 +11,23 @@ import java.util.function.Function;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
+import edu.wpi.first.wpilibj.util.Color;
+import frc.robot.SmartPrintable;
+import frc.robot.patterns.Breathe;
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.subsystems.SwerveModule;
 
 /*
  * Manages the swerve drive train.
  */
-public class SwerveDrive {
+public class SwerveDrive extends SmartPrintable {
     private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1,  2,   3,   4  };
     private static final int MODULE_ROTATION_CAN_IDS[] = { 5,  6,   7,   8  };
     private static final int MODULE_CANCODER_CAN_IDS[] = { 9,  10,  11,  12 };
@@ -31,7 +35,7 @@ public class SwerveDrive {
     private static final double MODULE_CANCODER_OFFSETS[] = { -252.24607237 + 90.0, -405.26363752 + 90.0, -189.66795267 + 90.0, -175.16600078 + 90.0 };
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
     
-    private static final double LOW_SENSITIVITY_RATIO = 0.02;
+    private static final double LOW_SENSITIVITY_RATIO = 0.06;
 
     private static final double CHASSIS_SIDE_LENGTH = 0.6;
     private static final double RADIAN_DEGREE_RATIO = Math.PI / 180.0;
@@ -49,6 +53,8 @@ public class SwerveDrive {
     private SwerveMode mode = SwerveMode.Headless;
 
     private SwerveDrive() {
+        super();
+        
         for (int i = 0; i < MODULE_MOVEMENT_CAN_IDS.length; i++) {
             modules[i] = new SwerveModule(
                 MODULE_MOVEMENT_CAN_IDS[i], 
@@ -157,6 +163,14 @@ public class SwerveDrive {
         }
     }
 
+    public static void rockMode(boolean shouldHold) {
+        for (SwerveModule module : instance.modules) {
+            module.rockMode(shouldHold);
+        }
+
+        LEDLights.setPatternIfNotEqual(new Breathe(new Color(1.0, 0.0, 0.0), 0.0));
+    }
+
     /**
      * Sets the curve function for directional inputs (translations).
      * @param curve The BiFunction to use for proccessing the curve, the first 
@@ -228,7 +242,7 @@ public class SwerveDrive {
     /**
      * Print data to smart dashboard.
      */
-    public static void print() {
+    public void print() {
         for (SwerveModule module : instance.modules) {
             module.print();
         }

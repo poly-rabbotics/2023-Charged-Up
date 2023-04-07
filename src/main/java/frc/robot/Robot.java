@@ -17,6 +17,7 @@ import frc.robot.systems.Controls;
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 import frc.robot.systems.Pigeon;
+import frc.robot.systems.SmartPrinter;
 import frc.robot.systems.SwerveDrive;
 import frc.robot.systems.AutoBalance.Stage;
 import frc.robot.systems.ElevFourbar.GamePiece;
@@ -52,12 +53,22 @@ public class Robot extends TimedRobot {
     Color yellow = new Color(255, 200, 0);
     Color purple = new Color(255, 0, 255);
 
+    private static double turnCurveRohan(double x) {
+        if (Math.abs(x) < 0.1) {
+            return 0.0;
+        }
+
+        return Math.pow(x, 5);
+    }
+
     /**
     * This function is run when the robot is first started up and should be used for any
     * initialization code.
     */
     @Override
-    public void robotInit() {}
+    public void robotInit() {
+        SwerveDrive.setTurnCurve(Robot::turnCurveRohan);
+    }
     
     /**
     * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -68,9 +79,9 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void robotPeriodic() {
+        SmartPrinter.print();
         ElevFourbar.setFourbarBrake(brakeSwitch.get());
         AutoBalance.print();
-        SwerveDrive.print();
         ElevFourbar.updateSmartDashboard(0, 0);
 
         double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
@@ -124,16 +135,11 @@ public class Robot extends TimedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
+        LEDLights.setPatternIfNotEqual(new Rainbow());
         //Pigeon.setFeildZero();
         SwerveDrive.setMode(SwerveMode.Headless);
         ElevFourbar.init();
         Intake.init();
-
-        if(ElevFourbar.gamePieceSelected == GamePiece.CONE) {
-            LEDLights.setPatternIfNotEqual(new Breathe(yellow, 0.5));
-        } else {
-            LEDLights.setPatternIfNotEqual(new Breathe(purple, 0.5));
-        }
     }
     
     /** This function is called periodically during operator control. */
@@ -149,7 +155,17 @@ public class Robot extends TimedRobot {
         //SwerveDrive.autoBalance()
         SmartDashboard.putNumber("controller Y", controllerOne.getLeftY());
         SmartDashboard.putNumber("controller X", controllerOne.getLeftX());
-        SwerveDrive.run(controllerOne.getLeftX(), controllerOne.getLeftY(), controllerOne.getRightX(), controllerOne.getPOV());
+
+        double x = controllerOne.getLeftX();
+        double y = controllerOne.getLeftY();
+
+        if (controllerOne.getLeftTriggerAxis() > 0.25) {
+            x = Math.abs(x) > Math.abs(y) ? x : 0.0;
+            y = x == 0.0 ? y : 0.0;
+        }
+
+        SwerveDrive.run(x, y, controllerOne.getRightX(), controllerOne.getPOV());
+        SwerveDrive.rockMode(controllerOne.getRightTriggerAxis() > 0.25);
         
         // Left stick changes between headless and relative control modes.
         if (controllerOne.getLeftStickButtonReleased()) {

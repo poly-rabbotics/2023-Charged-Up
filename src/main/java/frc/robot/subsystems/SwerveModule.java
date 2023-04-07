@@ -31,6 +31,10 @@ public class SwerveModule {
     private static double PID_I = 0.0;
     private static double PID_D = 0.0;
 
+    private static double ROCK_PID_P = 0.01;
+    private static double ROCK_PID_I = 0.0;
+    private static double ROCK_PID_D = 0.0;
+
     private final SwerveModulePosition position;
 
     private final CANSparkMax rotationMotor;  // The motor responsible for rotating the module.
@@ -41,9 +45,17 @@ public class SwerveModule {
     private final RelativeEncoder movementEncoder; // Relative encoder for tracking translational movement.
 
     private final PIDController rotationController;
+    private final PIDController rockController;
 
     private final double canCoderOffset;
     private final double coefficient;
+
+    /**
+     * Set to NaN if not in rock mode, NaN does not equal itself by definition
+     * (see some IEEE standard or something) and so this is how rock mode is 
+     * checked.
+     */
+    private double rockPos;
 
     public SwerveModule(int movementMotorID, int rotationalMotorID, int canCoderID, double canCoderOffset, double coefficient) {
         this.canCoderOffset = canCoderOffset;
@@ -76,6 +88,9 @@ public class SwerveModule {
         rotationController.enableContinuousInput(0.0, 360.0);
         rotationController.setTolerance(0.5);
 
+        rockController = new PIDController(ROCK_PID_P, ROCK_PID_I, ROCK_PID_D);
+        rockController.setTolerance(0.5);
+
         position = new SwerveModulePosition(movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT, new Rotation2d(angularEncoder.getPosition() / 180.0 * Math.PI));
     }
 
@@ -90,11 +105,27 @@ public class SwerveModule {
         state = SwerveModuleState.optimize(state, new Rotation2d(currentPosition * Math.PI / 180.0));
         double calculation = rotationController.calculate(currentPosition, (state.angle.getDegrees() + 360.0) % 360.0);
         
-        movementMotor.set(state.speedMetersPerSecond);
+        if (rockPos != rockPos) {
+            movementMotor.set(state.speedMetersPerSecond);
+        }
+
         rotationMotor.set(calculation * coefficient);
 
         position.angle = new Rotation2d(angularEncoder.getPosition());
         position.distanceMeters = movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT;
+    }
+
+    public void rockMode(boolean shouldHold) {
+        if (!shouldHold) {
+            rockPos = Double.NaN;
+            return;
+        }
+
+        if (shouldHold && rockPos != rockPos) {
+            rockPos = getMovementPos();
+        }
+
+        movementMotor.set(rockController.calculate(getMovementPos(), rockPos));
     }
 
     public double getMovementPos() {

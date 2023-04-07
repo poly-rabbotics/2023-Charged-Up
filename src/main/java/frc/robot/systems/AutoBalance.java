@@ -57,15 +57,15 @@ public class AutoBalance {
 
         switch (instance.stage) {
             case RAMMING:
-                instance.ram();
+                instance.stage = instance.ram();
                 break;  
             
             case ADJUSTING:
-                instance.adjust();
+                instance.stage = instance.adjust();
                 break;
             
             case PAUSED:
-                instance.pause();
+                instance.stage = instance.pause();
                 break;
             
             default:
