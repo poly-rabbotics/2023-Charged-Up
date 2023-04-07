@@ -41,7 +41,6 @@ public class AutoModes {
         autoMode = getAutoMode();
         ElevFourbar.autonomousInit();
         Pigeon.setFeildZero();
-        LEDLights.setPatternIfNotEqual(new Breathe(new Color(0.8, 0.3, 0.0), 0.5));
         
         timer.reset();
         timer.start();

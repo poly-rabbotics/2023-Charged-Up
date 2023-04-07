@@ -4,9 +4,10 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.SmartPrintable;
 import frc.robot.subsystems.*;
 
-public class Intake {
+public class Intake extends SmartPrintable {
     //ID constants
     private static final int ROLLER_ID = 0;
     private static final int CLAW_FORWARD_CHANNEL = 1;
@@ -29,6 +30,8 @@ public class Intake {
     private static Intake instance = new Intake();
 
     public Intake() {
+        super();
+        
         comp = new Compressor(1, PneumaticsModuleType.REVPH);
         //comp.enableDigital();
 
@@ -157,7 +160,7 @@ public class Intake {
      * Updates Smart Dashboard with important variables
      * @param rollerSpeed
      */
-    private static void updateSmartDashboard() {
+    private static void print() {
         SmartDashboard.putString("Claw State", instance.clawState.toString());
         SmartDashboard.putString("Pivot State", instance.pivotState.toString());
     }
