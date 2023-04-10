@@ -32,7 +32,7 @@ public class SwerveModule extends SmartPrintable {
     private static double PID_I = 0.0;
     private static double PID_D = 0.0;
 
-    private static double ROCK_PID_P = 0.01;
+    private static double ROCK_PID_P = 0.1;
     private static double ROCK_PID_I = 0.0;
     private static double ROCK_PID_D = 0.0;
 
@@ -141,7 +141,7 @@ public class SwerveModule extends SmartPrintable {
      * True if in rock mode.
      */
     public boolean getRockMode() {
-        return rockPos != rockPos;
+        return rockPos == rockPos;
     }
 
     /**

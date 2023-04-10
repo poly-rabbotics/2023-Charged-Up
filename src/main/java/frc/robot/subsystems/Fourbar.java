@@ -122,6 +122,8 @@ public class Fourbar {
 
         if(coords[0] == 35.2) {
             targetSetpoint = 105;
+        } else if (coords == ElevFourbar.STOWED_COORDS_CONE) {
+            targetSetpoint = 19.1;
         }
 
         /* if(Math.abs(targetSetpoint - 68) < 0.5) {

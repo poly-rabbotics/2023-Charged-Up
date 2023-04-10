@@ -4,6 +4,9 @@
 
 package frc.robot.systems;
 
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -13,6 +16,7 @@ import edu.wpi.first.wpilibj.XboxController;
  */
 public class Controls {
     private static final double DEFAULT_CURVE_EXPONENT = 3;
+    private static final double DEFAULT_PLATEAU = 0.15;
 
     public static final int CONTROLLER_PORT_DRIVE = 0;
     public static final int CONTROLLER_PORT_MECHS = 1;
@@ -83,5 +87,38 @@ public class Controls {
         double distanceRatio = curvedDistance * distance;
 
         return x * distanceRatio;
-    };
+    }
+
+    /**
+     * Runs th default curve with a plateau.
+     */
+    public static double plateauingCurve(double x) {
+        return plateau(x, Controls::defaultCurve);
+    }
+
+    /**
+     * Runs the default 2D curve with a plateau.
+     */
+    public static double plateauingCurveTwoDimensional(double x, double y) {
+        return plateauTwoDimensional(x, y, Controls::defaultCurveTwoDimensional);
+    }
+
+    /**
+     * Plateaus the given value and runs it through the given curve.
+     */
+    public static double plateau(double x, Function<Double, Double> curve) {
+        x = x + (x * DEFAULT_PLATEAU);
+        x = x > 1.0 ? 1.0 : x;
+        return curve.apply(x);
+    }
+
+    /**
+     * Plateaus the given value and runs it through the given curve.
+     */
+    public static double plateauTwoDimensional(double x, double y, BiFunction<Double, Double, Double> curve) {
+        double magnitude = Math.sqrt(x*x + y*y);
+        magnitude = magnitude + (magnitude * DEFAULT_PLATEAU);
+        magnitude = magnitude > 1.0 ? 1.0 : magnitude;
+        return curve.apply(x * magnitude, y * magnitude);
+    }
 }

@@ -176,7 +176,7 @@ public class AutonomousRunner extends SmartPrintable {
             //1 second delay to prevent closing on the cube again >:(
             if(instance.secondaryTimer.get() > 1) {
                 //Move to stowed setpoint
-                if(ElevFourbar.autoRun(ElevFourbar.STOWED_COORDS)) {
+                if(ElevFourbar.autoRun(ElevFourbar.STOWED_COORDS_CUBES)) {
                     //Close the claw and put the pivot down
                     instance.autoStage++;
                 }

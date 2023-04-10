@@ -4,16 +4,16 @@ import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.subsystems.LightPattern;
 
 /**
- * A pattern that creates a swell up and down effect using brightness.
+ * Swell into a solid color.
  */
-public class Breathe implements LightPattern {
+public class FadeIn implements LightPattern {
 	Color[] pattern;
-	Color color;
+	final Color color;
 	double speed;
 	double time = 0.0;
-	boolean requestingReset = false;
+	boolean fadedIn = false;
 
-	public Breathe() {
+	public FadeIn() {
 		speed = 0.4;
 		color = new Color(0.0, 1.0, 0.0);
 		pattern = new Color[] { color };
@@ -28,7 +28,7 @@ public class Breathe implements LightPattern {
 	 * @param speed
 	 * The speed to breathe at, should be lower than most other patterns.
 	 */
-	public Breathe(Color color, double speed) {
+	public FadeIn(Color color, double speed) {
 		this.speed = speed;
 		this.color = color;
 		pattern = new Color[] { color };
@@ -48,7 +48,7 @@ public class Breathe implements LightPattern {
 
 	@Override
 	public boolean getShouldResetTimer() {
-		return requestingReset;
+		return fadedIn;
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class Breathe implements LightPattern {
 			return false;
 		}
 
-		Breathe castPattern = (Breathe)pattern;
+		FadeIn castPattern = (FadeIn)pattern;
 		return castPattern.color.red == color.red && 
 			   castPattern.color.green == color.green &&
 			   castPattern.color.blue == color.blue &&
@@ -65,14 +65,13 @@ public class Breathe implements LightPattern {
 	}
 
 	private void updatePattern() {
-		double fadeAmount = speed * time;
-		requestingReset = fadeAmount >= 1.0;
-		
-		// If we get halfway through our timer period we want to fade back down.
-		if (fadeAmount > 0.5)
-			fadeAmount = 0.5 - (fadeAmount - 0.5);
-		fadeAmount *= 2;
+		if (fadedIn) {
+			pattern[0] = color;
+			return;
+		}
 
+		double fadeAmount = Math.pow(speed * time, 3);
+		fadedIn = fadeAmount >= 1.0;
 		pattern[0] = new Color(color.red * fadeAmount, color.green * fadeAmount, color.blue * fadeAmount);
 	}
 }

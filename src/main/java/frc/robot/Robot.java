@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.function.BiFunction;
+
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick;
@@ -21,7 +23,8 @@ import frc.robot.systems.SmartPrinter;
 import frc.robot.systems.SwerveDrive;
 import frc.robot.systems.AutoBalance.Stage;
 import frc.robot.systems.LEDLights;
-
+import frc.robot.systems.Bat;
+import frc.robot.subsystems.AxisRateLimiter;
 import frc.robot.subsystems.SwerveMode;
 
 /**
@@ -41,10 +44,15 @@ public class Robot extends TimedRobot {
     private static final XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
     private static final Joystick controlPanel = (Joystick)Controls.getControllerByPort(2);
 
+    private static final AxisRateLimiter translationLimiter = new AxisRateLimiter(0.1, "Translation");
+    private static final BiFunction<Double, Double, Double> limitedTranslationCurve = 
+        (Double x, Double y) -> translationLimiter.apply(Controls.plateauingCurveTwoDimensional(x, y));
+
     private static final AnalogInput pressureSensor = new AnalogInput(0);
     private static final DigitalInput brakeSwitch = new DigitalInput(1);
 
     private static Robot instance;
+
     private ControlMode controlMode = ControlMode.DISABLED;
 
     /**
@@ -66,7 +74,9 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void robotInit() {
+        controlMode = ControlMode.DISABLED;
         SwerveDrive.setTurnCurve(Controls::turnCurveRohan);
+        SwerveDrive.setDirectionalCurve(limitedTranslationCurve, true);
     }
     
     /**
@@ -81,12 +91,12 @@ public class Robot extends TimedRobot {
         ElevFourbar.setFourbarBrake(brakeSwitch.get());
         double pressureValue = (pressureSensor.getValue() - 410) / 13.5;
         
-        SmartDashboard.putNumber("FB Position", ElevFourbar.fourbar.getPosition());
         SmartDashboard.putNumber("Comp Pressure", Math.floor(pressureValue));
         SmartDashboard.putBoolean("Fully Pressurized", pressureValue > 60);
         
         SmartPrinter.print();
         LEDLights.run();
+        Bat.getRange();
     }
     
     /**
@@ -101,6 +111,8 @@ public class Robot extends TimedRobot {
     */
     @Override
     public void autonomousInit() {
+        controlMode = ControlMode.AUTONOMOUS;
+
         int autoMode = 
             (controlPanel.getRawButton(12) ? 1 << 0 : 0) + 
             (controlPanel.getRawButton(11) ? 1 << 1 : 0) + 
@@ -128,6 +140,7 @@ public class Robot extends TimedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
+        controlMode = ControlMode.TELEOPERATED;
         SwerveDrive.setMode(SwerveMode.Headless);
         ElevFourbar.init();
         Intake.init();
@@ -138,6 +151,11 @@ public class Robot extends TimedRobot {
     public void teleopPeriodic() {        
         SmartDashboard.putNumber("controller Y", controllerOne.getLeftY());
         SmartDashboard.putNumber("controller X", controllerOne.getLeftX());
+
+        // Toggle translation curve
+        if (controllerOne.getLeftBumperReleased()) {
+            translationLimiter.toggleEnabled();
+        }
 
         double x = controllerOne.getLeftX();
         double y = controllerOne.getLeftY();
@@ -182,7 +200,9 @@ public class Robot extends TimedRobot {
     
     /** This function is called once when the robot is disabled. */
     @Override
-    public void disabledInit() {}
+    public void disabledInit() {
+        controlMode = ControlMode.DISABLED;
+    }
     
     /** This function is called periodically when disabled. */
     @Override

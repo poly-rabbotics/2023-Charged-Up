@@ -14,7 +14,8 @@ public class ElevFourbar extends SmartPrintable {
     private static final double FOURBAR_HYPOTENUSE = 37.5;
 
     //COORDINATE CONSTANTS FOR PID CONTROL
-    public static double[] STOWED_COORDS = { 0, FOURBAR_HYPOTENUSE};
+    public static double[] STOWED_COORDS_CUBES = { 0, FOURBAR_HYPOTENUSE};
+    public static double[] STOWED_COORDS_CONE = { 12.466, 35.346 };
     public static double[] GROUND_INTAKE_DOWN_COORDS = { 35.2, 17 };
     public static double[] GROUND_INTAKE_UP_COORDS = { 29.5, 5 };
     public static double[] MID_SCORING_COORDS_CONE = { 17, 42 - 4 }; //TODO: verify
@@ -26,7 +27,7 @@ public class ElevFourbar extends SmartPrintable {
     //enums
     private Setpoint setpoint = Setpoint.STOWED;
     private ControlType controlType = ControlType.POSITION;
-    public static GamePiece gamePieceSelected = GamePiece.CONE;
+    public static GamePiece gamePieceSelected = GamePiece.CUBE;
 
     //deadzone to determine when manual control is enabled
     static final double DEADZONE = 0.3;
@@ -85,7 +86,7 @@ public class ElevFourbar extends SmartPrintable {
         //set the setpoint depending on which button is pressed
         if(stowed) {
             instance.setpoint = Setpoint.STOWED;
-            instance.targetCoords = STOWED_COORDS;
+            instance.targetCoords = (gamePieceSelected == GamePiece.CONE) ? STOWED_COORDS_CONE : STOWED_COORDS_CUBES;
         } else if(groundIntake) {
             instance.setpoint = Setpoint.GROUND_INTAKE;
         } else if(mid) {

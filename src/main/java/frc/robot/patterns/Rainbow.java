@@ -42,6 +42,10 @@ public class Rainbow implements LightPattern {
 	
 	@Override
 	public boolean isEqual(LightPattern pattern) {
+		if (pattern == null) {
+			return false;
+		}
+		
 		if (pattern.getClass() != this.getClass()) {
 			return false;
 		}

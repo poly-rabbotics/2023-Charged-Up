@@ -220,6 +220,15 @@ public class SwerveDrive extends SmartPrintable {
         instance.directionCurve = curve;
     }
 
+    public static void setDirectionalCurve(BiFunction<Double, Double, Double> curve, boolean overrideTests) {
+        if (overrideTests) {
+            instance.directionCurve = curve;
+            return;
+        }
+
+        setDirectionalCurve(curve);
+    }
+
     /**
      * Sets the curve function for turn inputs.
      * @param curve The Function to use for proccessing the curve.
