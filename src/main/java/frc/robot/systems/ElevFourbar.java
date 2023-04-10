@@ -10,8 +10,9 @@ import java.text.DecimalFormat;
 
 public class ElevFourbar extends SmartPrintable {
 
-    //The legnth of the fourbar in inches, used for trig functions
+    //Constants for trig functions
     private static final double FOURBAR_HYPOTENUSE = 37.5;
+    private static final double ELEVATOR_MAX_POS = 31;
 
     //COORDINATE CONSTANTS FOR PID CONTROL
     public static double[] STOWED_COORDS_CUBES = { 0, FOURBAR_HYPOTENUSE};
@@ -193,17 +194,24 @@ public class ElevFourbar extends SmartPrintable {
      * Converts x and y coordinates into encoder positions for the elevator and fourbar
      * @param x
      * @param y
-     * @return [elevator position (in), fourbar position (deg)]
+     * @return [elevator position (in), fourbar position (deg), is coord invalid (0 if coordinates were not altered, 1 if coordinates were altered due to being out of bounds)]
      */
     public static double[] coordsToPos(double x, double y) {
 
         double elevPos;
         double fourbarDeg;
+        boolean isValid;
 
         //calculate elevator position
         elevPos = y >= Math.sqrt((Math.pow(FOURBAR_HYPOTENUSE, 2) - Math.pow(x, 2)))
             ? y - Math.sqrt((Math.pow(FOURBAR_HYPOTENUSE, 2) - Math.pow(x, 2)))
             : y + Math.sqrt((Math.pow(FOURBAR_HYPOTENUSE, 2) - Math.pow(x, 2)));
+
+        //correct position if the calculation returns a position that is out of range
+        if(elevPos > ELEVATOR_MAX_POS || elevPos < 0) {
+            elevPos = 0;
+            isValid = false;
+        } else isValid = true;
 
         //calculate fourbar position
         fourbarDeg = y > elevPos
@@ -211,12 +219,16 @@ public class ElevFourbar extends SmartPrintable {
             : 180 - Math.toDegrees(Math.atan(x / (elevPos - y)));
 
         //return positions
-        double[] output = { elevPos, fourbarDeg };
+        double[] output = { elevPos, fourbarDeg, isValid ? 0 : 1 };
         return output;
     }
 
     public static double[] getCoords() {
         return instance.coords;
+    }
+
+    public static GamePiece getGamePieceSelected() {
+        return gamePieceSelected;
     }
 
     public void print() {

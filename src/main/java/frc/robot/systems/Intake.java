@@ -8,6 +8,11 @@ import frc.robot.SmartPrintable;
 import frc.robot.subsystems.*;
 
 public class Intake extends SmartPrintable {
+
+    public enum SolenoidState {
+        OPEN, CLOSED, UP, DOWN
+    }
+
     //ID constants
     private static final int ROLLER_ID = 0;
     private static final int CLAW_FORWARD_CHANNEL = 1;
@@ -17,6 +22,7 @@ public class Intake extends SmartPrintable {
     
     private static double rollerStartTime;
 
+    //declare objects
     public static Compressor comp;
     private static Pivot pivot;
     private static Roller roller;
@@ -27,6 +33,8 @@ public class Intake extends SmartPrintable {
     private SolenoidState pivotState;
 
     private static boolean rollersRunningAuto = false;
+
+    //instantiate instance of class
     private static Intake instance = new Intake();
 
     public Intake() {
@@ -41,13 +49,9 @@ public class Intake extends SmartPrintable {
         pivot = new Pivot(PIVOT_FORWARD_CHANNEL, PIVOT_REVERSE_CHANNEL);
     }
 
-    public enum SolenoidState {
-        OPEN, CLOSED, UP, DOWN
-    }
-
     public static void init() { //opens claw if cube is selected, closes claw if cone is selected
         instance.pivotState = SolenoidState.DOWN;
-        instance.clawState = (ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CONE) ? SolenoidState.CLOSED : SolenoidState.OPEN;
+        instance.clawState = (ElevFourbar.getGamePieceSelected() == ElevFourbar.GamePiece.CONE) ? SolenoidState.CLOSED : SolenoidState.OPEN;
         timer.reset();
     }
 
@@ -64,13 +68,9 @@ public class Intake extends SmartPrintable {
      * @param pivotButton - The button to extend/retract the pivot
      */
     public static void run(boolean pivotToggle, boolean intake, boolean outtake, boolean clawHeld, boolean clawReleased) {
-        if(intake) {
-            runRoller(-1);
-        } else if(outtake) {
-            runRoller(1.0);
-        } else {
-            runRoller(-0.06);
-        }
+        instance.clawState = claw.getState();
+
+        runRoller(intake, outtake);
 
         runClaw(clawHeld, clawReleased);
         runPivot(pivotToggle);
@@ -99,6 +99,7 @@ public class Intake extends SmartPrintable {
      * @param speed the speed of the rollers
      */
     public static void autoRoller(double startTime, double endTime, double speed) { 
+        //if the timer is between the start and end times, run the rollers at the given speed
         if(timer.get() > startTime && timer.get() < endTime) {
             roller.setSpeed(speed);
             rollersRunningAuto = true;
@@ -106,12 +107,42 @@ public class Intake extends SmartPrintable {
     }
 
     /**
-     * Runs the rollers, operated with a joystick axis
-     * @param rollerSpeed the speed of the rollers from -1 to 1
+     * Runs the roller at speeds determined by the state of the claw and the game piece selected
+     * @param intake
+     * @param outtake
      */
-    public static void runRoller(double rollerSpeed) {
-        if (!rollersRunningAuto)
-        roller.setSpeed(rollerSpeed);
+    public static void runRoller(boolean intake, boolean outtake) {
+        double rollerSpeed;
+
+        if(intake) {
+            //intake at 100 percent
+            rollerSpeed = -1.0;
+        } else if(outtake) {
+            //in cube mode, outtake at 100 percent if closed (shooting) and 60 percent if open (dispensing)
+            if(ElevFourbar.getGamePieceSelected() == ElevFourbar.GamePiece.CUBE) {
+                if(instance.clawState == SolenoidState.CLOSED) 
+                    rollerSpeed = 1.0;
+                else rollerSpeed = 0.6;
+            } else {
+                //outtake at 100 percent if in cone mode
+                rollerSpeed = 1.0;
+            }
+        } else {
+            //idly run rollers at 6 percent to secure game pieces
+            rollerSpeed = -0.06;
+        }
+
+        if (!rollersRunningAuto) {
+            roller.setSpeed(rollerSpeed);
+        }
+    }
+
+    /**
+     * Runs the roller at a given speed
+     * @param speed
+     */
+    public static void runRoller(double speed) {
+        roller.setSpeed(speed);
     }
 
     /**
@@ -119,13 +150,17 @@ public class Intake extends SmartPrintable {
      * @param switchClawState
      */
     private static void runClaw(boolean switchClawState, boolean closeClaw) {
-            if (switchClawState) claw.open();
-            else claw.close();
+            if (switchClawState) {
+                claw.open();
+            }
+            else {
+                claw.close();
+            }
 
             if (closeClaw) {
                 claw.close();
-                autoRoller(rollerStartTime, rollerStartTime + 0.5, -1);
                 rollerStartTime = timer.get();
+                autoRoller(rollerStartTime, rollerStartTime + 0.5, -1);
                 
             }
     }  
