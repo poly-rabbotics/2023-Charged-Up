@@ -56,13 +56,9 @@ public class LEDLights {
             } else {
                 // When in telop make the color cooralate with game peice.
                 if (ElevFourbar.gamePieceSelected == GamePiece.CONE) {
-                    //setPattern = new FadeIn(new Color(1.0, 0.5, 0.0), 1.0);
-                    setPattern = new FadeIn(new Color(0.0, 1.0, 0.0), 1.0);
+                    setPattern = new FadeIn(new Color(1.0, 0.5, 0.0), 1.0);
                 } else if (ElevFourbar.gamePieceSelected == GamePiece.CUBE) {
-                    //setPattern = new FadeIn(new Color(1.0, 0.0, 1.0), 1.0);
-                    setPattern = new Solid(new Color(0.0, 0.0, 0.0));
-                } else {
-                    setPattern = new Solid(new Color(0.0, 1.0, 0.0));
+                    setPattern = new FadeIn(new Color(1.0, 0.0, 1.0), 1.0);
                 }
             }
         }
