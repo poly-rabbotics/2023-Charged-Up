@@ -117,10 +117,8 @@ public class Fourbar {
         double[] pos = ElevFourbar.coordsToPos(coords[0], coords[1]);
         targetSetpoint = pos[1];
 
-        if(coords[0] == 35.2) {
+        if(coords == ElevFourbar.GROUND_INTAKE_DOWN_COORDS) {
             targetSetpoint = 105;
-        } else if (coords == ElevFourbar.STOWED_COORDS_CONE) {
-            targetSetpoint = 19.1;
         }
 
         /* if(Math.abs(targetSetpoint - 68) < 0.5) {

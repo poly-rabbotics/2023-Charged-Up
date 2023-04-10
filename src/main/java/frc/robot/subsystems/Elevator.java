@@ -126,8 +126,6 @@ public class Elevator {
 
         if(coords[0] == 35.2) {
             targetSetpoint = 31;
-        } else if (coords == ElevFourbar.STOWED_COORDS_CONE) {
-            targetSetpoint = 0.0;
         }
 
         /* if(Math.abs(targetSetpoint - 2.9) < 0.5) {
