@@ -22,9 +22,6 @@ public class Fourbar {
 
     //encoder offset
     public final double ENCODER_OFFSET = 0.145 * 360;
-
-    public static final double BUMPER_X = 16;
-    public static final double BUMPER_Y = 8;
     
     //constant variables
     private static final int MOTOR_ID = 61; //CORRECT ID
@@ -144,9 +141,9 @@ public class Fourbar {
         double b = ElevFourbar.elevator.getPosition();
         slope = (coords[1] - b) / coords[0];
 
-        bumperIntercept = (slope * BUMPER_X) + b;
+        bumperIntercept = (slope * ElevFourbar.BUMPER_X) + b;
 
-        if(bumperIntercept <= BUMPER_Y) {
+        if(bumperIntercept <= ElevFourbar.BUMPER_Y) {
             if(speed < 0) {
                 speed = 0;
             }

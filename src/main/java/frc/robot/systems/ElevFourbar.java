@@ -5,6 +5,7 @@ import frc.robot.SmartPrintable;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Fourbar;
 import frc.robot.systems.Intake.SolenoidState;
+import java.awt.geom.Point2D;
 
 import java.text.DecimalFormat;
 
@@ -12,7 +13,9 @@ public class ElevFourbar extends SmartPrintable {
 
     //Constants for trig functions
     private static final double FOURBAR_HYPOTENUSE = 37.5;
-    private static final double ELEVATOR_MAX_POS = 31;
+    private static final double ELEVATOR_MAX_POS = 31.0;
+    public static final double BUMPER_X = 16;
+    public static final double BUMPER_Y = 8.0;
 
     //COORDINATE CONSTANTS FOR PID CONTROL
     public static double[] STOWED_COORDS_CUBES = { 0, FOURBAR_HYPOTENUSE};
@@ -194,13 +197,13 @@ public class ElevFourbar extends SmartPrintable {
      * Converts x and y coordinates into encoder positions for the elevator and fourbar
      * @param x
      * @param y
-     * @return [elevator position (in), fourbar position (deg), is coord invalid (0 if coordinates were not altered, 1 if coordinates were altered due to being out of bounds)]
+     * @return [elevator position (in), fourbar position (deg), is coord altered (0 if no, 1 if yes)]
      */
     public static double[] coordsToPos(double x, double y) {
 
         double elevPos;
         double fourbarDeg;
-        boolean isValid;
+        boolean isAltered = false;
 
         //calculate elevator position
         elevPos = y >= Math.sqrt((Math.pow(FOURBAR_HYPOTENUSE, 2) - Math.pow(x, 2)))
@@ -210,16 +213,30 @@ public class ElevFourbar extends SmartPrintable {
         //correct position if the calculation returns a position that is out of range
         if(elevPos > ELEVATOR_MAX_POS || elevPos < 0) {
             elevPos = 0;
-            isValid = false;
-        } else isValid = true;
+            isAltered = true;
+        }
 
         //calculate fourbar position
-        fourbarDeg = y > elevPos
+        fourbarDeg = Math.toDegrees(Math.atan2(x, y-elevPos));
+        
+        //old method of finding foubrar position, delete after testing new method
+        /* fourbarDeg = y > elevPos
             ? -Math.toDegrees(Math.atan(x / (elevPos - y)))
-            : 180 - Math.toDegrees(Math.atan(x / (elevPos - y)));
+            : 180 - Math.toDegrees(Math.atan(x / (elevPos - y))); */
+
+        //Correct fourbar pos if out of bounds
+        double maxAngle = Math.toDegrees(Math.atan2(BUMPER_X, BUMPER_Y - elevPos));
+
+        if(fourbarDeg > maxAngle) {
+            fourbarDeg = maxAngle;
+            isAltered = true;
+        } else if(fourbarDeg < 0) {
+            fourbarDeg = 0;
+            isAltered = true;
+        }
 
         //return positions
-        double[] output = { elevPos, fourbarDeg, isValid ? 0 : 1 };
+        double[] output = { elevPos, fourbarDeg, isAltered ? 1 : 0 };
         return output;
     }
 
