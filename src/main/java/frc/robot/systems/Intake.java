@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.SmartPrintable;
 import frc.robot.subsystems.*;
+import frc.robot.systems.ElevFourbar.GamePiece;
 
 public class Intake extends SmartPrintable {
 
@@ -47,12 +48,14 @@ public class Intake extends SmartPrintable {
         roller = new Roller(ROLLER_ID);
         claw = new Claw(PneumaticsModuleType.REVPH, CLAW_FORWARD_CHANNEL, CLAW_REVERSE_CHANNEL);
         pivot = new Pivot(PIVOT_FORWARD_CHANNEL, PIVOT_REVERSE_CHANNEL);
+        timer.start();
     }
 
     public static void init() { //opens claw if cube is selected, closes claw if cone is selected
         instance.pivotState = SolenoidState.DOWN;
         instance.clawState = (ElevFourbar.getGamePieceSelected() == ElevFourbar.GamePiece.CONE) ? SolenoidState.CLOSED : SolenoidState.OPEN;
         timer.reset();
+        timer.start();
     }
 
     public static void autoInit() {
@@ -70,9 +73,24 @@ public class Intake extends SmartPrintable {
     public static void run(boolean pivotToggle, boolean intake, boolean outtake, boolean clawHeld, boolean clawReleased) {
         instance.clawState = claw.getState();
 
-        runRoller(intake, outtake);
+        if(ElevFourbar.getGamePieceSelected() == GamePiece.CUBE) {
+            runClaw(clawHeld, clawReleased);
 
-        runClaw(clawHeld, clawReleased);
+            //dispense cubes at low power
+            if(intake)
+                runRoller(-1.0);
+            else if(clawHeld)
+                runRoller(0.3);
+            else if(outtake)
+                runRoller(1.0);
+            else 
+                runRoller(0);
+        } else {
+            runClaw(clawHeld, clawReleased);
+
+            runRoller(intake, outtake);
+        }
+
         runPivot(pivotToggle);
     }
 
@@ -102,8 +120,7 @@ public class Intake extends SmartPrintable {
         //if the timer is between the start and end times, run the rollers at the given speed
         if(timer.get() > startTime && timer.get() < endTime) {
             roller.setSpeed(speed);
-            rollersRunningAuto = true;
-        } else rollersRunningAuto = false;
+        }
     }
 
     /**
@@ -132,9 +149,7 @@ public class Intake extends SmartPrintable {
             rollerSpeed = -0.06;
         }
 
-        if (!rollersRunningAuto) {
-            roller.setSpeed(rollerSpeed);
-        }
+        roller.setSpeed(rollerSpeed);
     }
 
     /**
@@ -155,14 +170,18 @@ public class Intake extends SmartPrintable {
             }
             else {
                 claw.close();
+                autoRoller(rollerStartTime, rollerStartTime + 0.5, -1);
             }
 
             if (closeClaw) {
                 claw.close();
                 rollerStartTime = timer.get();
-                autoRoller(rollerStartTime, rollerStartTime + 0.5, -1);
                 
             }
+
+            SmartDashboard.putNumber("Roller start time", rollerStartTime);
+            SmartDashboard.putNumber("Rotime", timer.get());
+            SmartDashboard.putBoolean("Close claw", switchClawState);
     }  
     
     /**
