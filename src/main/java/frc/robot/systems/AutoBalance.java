@@ -121,6 +121,7 @@ public class AutoBalance extends SmartPrintable {
             return instance.stage = adjust();
         }
 
+        SwerveDrive.setRockMode(true);
         SwerveDrive.runUncurved(0.0, 0.0, 0.0);
         return Stage.PAUSED;
     }
