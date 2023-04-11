@@ -31,6 +31,7 @@ public class SwerveDrive extends SmartPrintable {
     private static final int MODULE_CANCODER_CAN_IDS[] = { 9,  10,  11,  12 };
     
     private static final double MODULE_CANCODER_OFFSETS[] = { -252.24607237 + 90.0, -405.26363752 + 90.0, -189.66795267 + 90.0, -175.16600078 + 90.0 };
+    private static final double MODULE_ROCK_MODE_PSOITIONS[] = { -Math.PI / 4, Math.PI / 4, -Math.PI / 4, Math.PI / 4 };
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
     
     private static final double LOW_SENSITIVITY_RATIO = 0.06;
@@ -43,8 +44,8 @@ public class SwerveDrive extends SmartPrintable {
     private BiFunction<Double, Double, Double> directionCurve = Controls::defaultCurveTwoDimensional;
     private Function<Double, Double> turnCurve = Controls::defaultCurve;
 
-    private final SwerveModule modules[] = new SwerveModule[4];
-    private final SwerveModulePosition positions[] = new SwerveModulePosition[4];
+    private final SwerveModule modules[] = new SwerveModule[MODULE_MOVEMENT_CAN_IDS.length];
+    private final SwerveModulePosition positions[] = new SwerveModulePosition[MODULE_MOVEMENT_CAN_IDS.length];
     private final SwerveDriveKinematics kinematics;
     private final SwerveDriveOdometry odometry;
     
@@ -102,6 +103,11 @@ public class SwerveDrive extends SmartPrintable {
      * @param lowSense The angle to move in low sensitivity in degrees, -1 for no movement.
      */
     public static void run(double directionalX, double directionalY, double turn, int lowSense) {
+        if (getRockMode()) {
+            runRockMode();
+            return;
+        }
+        
         instance.odometry.update(new Rotation2d(Pigeon.getYaw() * RADIAN_DEGREE_RATIO), instance.positions);
         
         if (lowSense != -1) {
@@ -142,6 +148,11 @@ public class SwerveDrive extends SmartPrintable {
      * @param turn Rate of turn. -1.0 - 1.0
      */
     public static void runUncurved(double directionalX, double directionalY, double turn) {
+        if (getRockMode()) {
+            runRockMode();
+            return;
+        }
+
         ChassisSpeeds chassisSpeeds;
 
         if (instance.mode == SwerveMode.Headless) {
@@ -154,6 +165,12 @@ public class SwerveDrive extends SmartPrintable {
 
         for (int i = 0; i < instance.modules.length; i++) {
             instance.modules[i].setDesiredState(moduleStates[i]);
+        }
+    }
+
+    private static void runRockMode() {
+        for (int i = 0; i < instance.modules.length; i++) {
+            instance.modules[i].setDesiredState(new SwerveModuleState(0.0, new Rotation2d(MODULE_ROCK_MODE_PSOITIONS[i])));
         }
     }
 
