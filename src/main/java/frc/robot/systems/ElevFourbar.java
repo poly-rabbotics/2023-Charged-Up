@@ -5,7 +5,6 @@ import frc.robot.SmartPrintable;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Fourbar;
 import frc.robot.systems.Intake.SolenoidState;
-import java.awt.geom.Point2D;
 
 import java.text.DecimalFormat;
 

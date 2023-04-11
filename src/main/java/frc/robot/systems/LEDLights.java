@@ -1,15 +1,9 @@
 package frc.robot.systems;
 
-import java.util.regex.Pattern;
-
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Robot;
-import frc.robot.SmartPrintable;
 import frc.robot.Robot.ControlMode;
-import frc.robot.patterns.Breathe;
 import frc.robot.patterns.Rainbow;
-import frc.robot.patterns.Solid;
 import frc.robot.patterns.FadeIn;
 import frc.robot.patterns.FadeIntoPattern;
 import frc.robot.subsystems.LightPattern;

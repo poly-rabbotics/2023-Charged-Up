@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import java.util.TooManyListenersException;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.SmartPrintable;
