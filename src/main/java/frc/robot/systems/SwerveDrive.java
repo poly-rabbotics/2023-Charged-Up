@@ -168,6 +168,9 @@ public class SwerveDrive extends SmartPrintable {
         }
     }
 
+    /**
+     * Wyvern becomes rock, rock do not move, Wyvern do not move...
+     */
     private static void runRockMode() {
         for (int i = 0; i < instance.modules.length; i++) {
             instance.modules[i].setDesiredState(new SwerveModuleState(0.0, new Rotation2d(MODULE_ROCK_MODE_PSOITIONS[i])));
