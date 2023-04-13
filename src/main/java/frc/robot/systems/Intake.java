@@ -167,16 +167,16 @@ public class Intake extends SmartPrintable {
     private static void runClaw(boolean switchClawState, boolean closeClaw) {
             if (switchClawState) {
                 claw.open();
-            }
-            else {
+            } else {
                 claw.close();
                 autoRoller(rollerStartTime, rollerStartTime + 0.5, -1);
             }
+            
 
             if (closeClaw) {
                 claw.close();
-                rollerStartTime = timer.get();
-                
+                if (ElevFourbar.gamePieceSelected == GamePiece.CONE)
+                    rollerStartTime = timer.get();
             }
 
             SmartDashboard.putNumber("Roller start time", rollerStartTime);
