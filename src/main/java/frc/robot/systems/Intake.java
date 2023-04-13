@@ -33,8 +33,6 @@ public class Intake extends SmartPrintable {
     private SolenoidState clawState;
     private SolenoidState pivotState;
 
-    private static boolean rollersRunningAuto = false;
-
     //instantiate instance of class
     private static Intake instance = new Intake();
 
@@ -74,17 +72,19 @@ public class Intake extends SmartPrintable {
         instance.clawState = claw.getState();
 
         if(ElevFourbar.getGamePieceSelected() == GamePiece.CUBE) {
-            runClaw(clawHeld, clawReleased);
-
             //dispense cubes at low power
-            if(intake)
+            if(intake) {
                 runRoller(-1.0);
+                clawHeld = true;
+            }
             else if(clawHeld)
                 runRoller(0.3);
             else if(outtake)
                 runRoller(1.0);
             else 
                 runRoller(0);
+
+            runClaw(clawHeld, clawReleased);
         } else {
             runClaw(clawHeld, clawReleased);
 
