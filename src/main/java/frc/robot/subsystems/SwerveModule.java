@@ -101,11 +101,11 @@ public class SwerveModule extends SmartPrintable {
      * Sets the desired module state for this module.
      */
     public void setDesiredState(SwerveModuleState state) {
-        if (Math.abs(state.speedMetersPerSecond) < 0.001) {
+        /* if (Math.abs(state.speedMetersPerSecond) < 0.001) {
             movementMotor.set(0.0);
             rotationMotor.set(0.0);
             return;
-        }
+        } */
         
         double currentPosition = (angularEncoder.getPosition() + canCoderOffset) % 360.0;
         state = SwerveModuleState.optimize(state, new Rotation2d(currentPosition * Math.PI / 180.0));
