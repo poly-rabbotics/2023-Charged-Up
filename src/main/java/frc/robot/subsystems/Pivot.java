@@ -8,7 +8,7 @@ public class Pivot {
     private final DoubleSolenoid pivotSolenoid;
 
     public Pivot(int forwardChannel, int reverseChannel) {
-        pivotSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, forwardChannel, reverseChannel);
+        pivotSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, forwardChannel, reverseChannel);
     }
 
     public void up() {

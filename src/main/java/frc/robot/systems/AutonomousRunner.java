@@ -4,6 +4,7 @@ import java.security.InvalidParameterException;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.*;
+import frc.robot.systems.AutoBalance.BalanceType;
 import frc.robot.systems.ElevFourbar.Setpoint;
 import frc.robot.systems.Intake.SolenoidState;
 import frc.robot.SmartPrintable;
@@ -13,14 +14,15 @@ public class AutonomousRunner extends SmartPrintable {
     private static final double OUTTAKE_SPEED_CONE = 0.4;
 
     private static final Runnable[] MODES = {
-        () -> {},
+        //() -> {},
+        AutonomousRunner::modeSeven,
         AutonomousRunner::modeOne,
         AutonomousRunner::modeTwo,
         AutonomousRunner::modeThree,
         AutonomousRunner::modeFour,
         AutonomousRunner::modeFive,
         AutonomousRunner::modeSix,
-        AutonomousRunner::modeSeven,
+        () -> {},
     };
 
     private static final AutonomousRunner instance = new AutonomousRunner();
@@ -64,6 +66,8 @@ public class AutonomousRunner extends SmartPrintable {
     }
     
     public static void run() {
+        SwerveDrive.setRockMode(false);
+
         SmartDashboard.putNumber("Auto Stage", instance.autoStage);
 
         //Run the auto mode
@@ -148,7 +152,12 @@ public class AutonomousRunner extends SmartPrintable {
      * Only drop game piece and move out of the community
      */
     private static void modeSeven() {
-        AutoBalance.run();
+        score(Setpoint.HIGH_SCORING);
+        
+        if (instance.autoStage > 1 || instance.timer.get() > 6) {
+            AutoBalance.setType(BalanceType.OVER_AND_BACK);
+            AutoBalance.run();
+        }
     }
 
     private static void score(Setpoint setpoint) {
@@ -165,13 +174,13 @@ public class AutonomousRunner extends SmartPrintable {
                 ElevFourbar.autoRun(setpoint);
             
             //Move the elevator to the high scoring position
-            if(instance.timer.get() > 2) {
+            if(instance.timer.get() > 1.0) {
                 //Open claw when the position has been reached
                 instance.secondaryTimer.reset();
                 Intake.runRoller((ElevFourbar.getGamePieceSelected() == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE); //run intake out
                 instance.autoStage++;
             }
-            if(instance.timer.get() > 2.1) Intake.autoClaw(SolenoidState.OPEN);
+            if(instance.timer.get() > 1.1) Intake.autoClaw(SolenoidState.OPEN);
         } else if(instance.autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(instance.secondaryTimer.get() > 1) {

@@ -39,12 +39,12 @@ public class Intake extends SmartPrintable {
     public Intake() {
         super();
 
-        comp = new Compressor(1, PneumaticsModuleType.REVPH);
+        comp = new Compressor(0, PneumaticsModuleType.CTREPCM);
         //comp.enableDigital();
 
         //initiali
         roller = new Roller(ROLLER_ID);
-        claw = new Claw(PneumaticsModuleType.REVPH, CLAW_FORWARD_CHANNEL, CLAW_REVERSE_CHANNEL);
+        claw = new Claw(PneumaticsModuleType.CTREPCM, CLAW_FORWARD_CHANNEL, CLAW_REVERSE_CHANNEL);
         pivot = new Pivot(PIVOT_FORWARD_CHANNEL, PIVOT_REVERSE_CHANNEL);
         timer.start();
     }

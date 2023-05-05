@@ -86,7 +86,7 @@ public class Controls {
         double curvedDistance = Math.pow(distance, DEFAULT_CURVE_EXPONENT);
         double distanceRatio = curvedDistance * distance;
 
-        return x * distanceRatio;
+        return Math.sqrt(x * x * distanceRatio) * Math.signum(x);
     }
 
     /**

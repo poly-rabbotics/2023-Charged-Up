@@ -36,7 +36,7 @@ public class Fourbar {
     private static final int STOWED_SETPOINT = 0;
 
     //PID constants
-    private static final double P0 = 10;
+    private static final double P0 = 10;    
     private static final double I0 = 0.0;
     private static final double D0 = 1;
     private static final double F0 = 0.0;
@@ -118,7 +118,7 @@ public class Fourbar {
         targetSetpoint = pos[1];
 
         if(coords == ElevFourbar.GROUND_INTAKE_DOWN_COORDS) {
-            targetSetpoint = 105;
+            targetSetpoint = 103;
         }
 
         /* if(Math.abs(targetSetpoint - 68) < 0.5) {

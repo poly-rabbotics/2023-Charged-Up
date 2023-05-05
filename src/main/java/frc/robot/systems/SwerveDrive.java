@@ -35,7 +35,7 @@ public class SwerveDrive extends SmartPrintable {
     private static final double MODULE_ROCK_MODE_PSOITIONS[] = { -Math.PI / 4, Math.PI / 4, -Math.PI / 4, Math.PI / 4 };
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
     
-    private static final double LOW_SENSITIVITY_RATIO = 0.06;
+    private static final double LOW_SENSITIVITY_RATIO = 0.08;
 
     private static final double CHASSIS_SIDE_LENGTH = 0.6;
     private static final double RADIAN_DEGREE_RATIO = Math.PI / 180.0;
@@ -172,7 +172,7 @@ public class SwerveDrive extends SmartPrintable {
     /**
      * Wyvern becomes rock, rock do not move, Wyvern do not move...
      */
-    private static void runRockMode() {
+    public static void runRockMode() {
         for (int i = 0; i < instance.modules.length; i++) {
             instance.modules[i].setDesiredState(new SwerveModuleState(0.0, new Rotation2d(MODULE_ROCK_MODE_PSOITIONS[i])));
         }
@@ -290,13 +290,7 @@ public class SwerveDrive extends SmartPrintable {
      * Gets the longest distance traveled by any modules.
      */
     public static double getDistance() {
-        double ret = 0.0;
-
-        for (SwerveModule module : instance.modules) {
-            ret = Math.max(Math.abs(ret), Math.abs(module.getPosition()));
-        }
-
-        return ret;
+        return Math.max(Math.abs(instance.modules[0].getPosition()), Math.abs(instance.modules[1].getPosition()));
     }
 
     /**

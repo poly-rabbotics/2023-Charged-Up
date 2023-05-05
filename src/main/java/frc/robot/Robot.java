@@ -22,6 +22,8 @@ import frc.robot.systems.Pigeon;
 import frc.robot.systems.SmartPrinter;
 import frc.robot.systems.SwerveDrive;
 import frc.robot.systems.AutoBalance.Stage;
+import frc.robot.systems.ElevFourbar.ControlType;
+import frc.robot.systems.ElevFourbar.Setpoint;
 import frc.robot.systems.LEDLights;
 import frc.robot.systems.Bat;
 import frc.robot.subsystems.AxisRateLimiter;
@@ -76,7 +78,7 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         controlMode = ControlMode.DISABLED;
         SwerveDrive.setTurnCurve(Controls::turnCurveRohan);
-        SwerveDrive.setDirectionalCurve(limitedTranslationCurve, true);
+        SwerveDrive.setDirectionalCurve(Controls::defaultCurveTwoDimensional, true);
     }
     
     /**
@@ -185,15 +187,22 @@ public class Robot extends TimedRobot {
             controlPanel.getRawButtonReleased(6)
         );
         
+        // Hold button for setpoints.
+        if (controlPanel.getRawButton(4)) {
+            ElevFourbar.setSetPoint(Setpoint.HIGH_SCORING);
+        } else if (controlPanel.getRawButton(3)) {
+            ElevFourbar.setSetPoint(Setpoint.MID_SCORING);
+        } else if (controlPanel.getRawButton(1)) {
+            ElevFourbar.setSetPoint(Setpoint.GROUND_INTAKE);
+        } else if (ElevFourbar.getControlType() == ControlType.POSITION) {
+            ElevFourbar.setSetPoint(Setpoint.STOWED);
+        }
+
         ElevFourbar.run(
             controllerTwo.getRightY(),
             Math.abs(controlPanel.getRawAxis(0) / 2) > Math.abs(controllerTwo.getLeftY()) ? controlPanel.getRawAxis(0) / 2 : -controllerTwo.getLeftY(),
             controllerTwo.getPOV(),
             controlPanel.getRawButtonPressed(5), //toggle game piece
-            controlPanel.getRawButton(1), //ground
-            controlPanel.getRawButton(3), //mid
-            controlPanel.getRawButton(4), //high
-            controlPanel.getRawButton(2),  //stowed
             controllerTwo.getStartButtonPressed() //zero elevator encoder
         );
     }

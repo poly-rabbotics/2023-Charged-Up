@@ -12,20 +12,20 @@ public class ElevFourbar extends SmartPrintable {
 
     //Constants for trig functions
     private static final double FOURBAR_HYPOTENUSE = 37.5;
-    private static final double ELEVATOR_MAX_POS = 31.0;
-    public static final double BUMPER_X = 16;
-    public static final double BUMPER_Y = 8.0;
+    private static final double ELEVATOR_MAX_POS = 32.0;
+    public static final double BUMPER_X = 14;
+    public static final double BUMPER_Y = 8;
 
     //COORDINATE CONSTANTS FOR PID CONTROL
     public static double[] STOWED_COORDS_CUBES = { 0, FOURBAR_HYPOTENUSE};
-    public static double[] STOWED_COORDS_CONE = { 12.466, 35.346 };
-    public static double[] GROUND_INTAKE_DOWN_COORDS = { 35.2, 17 };
-    public static double[] GROUND_INTAKE_UP_COORDS = { 29.5, 5 };
-    public static double[] MID_SCORING_COORDS_CONE = { 17, 42 - 4 }; //TODO: verify
-    public static double[] MID_SCORING_COORDS_CUBE = { 29, 37 };   //TODO: verify
+    public static double[] STOWED_COORDS_CONE = STOWED_COORDS_CUBES;
+    public static double[] GROUND_INTAKE_DOWN_COORDS = { 35.2, 15 -4};
+    public static double[] GROUND_INTAKE_UP_COORDS = { 30, 1 };
+    public static double[] MID_SCORING_COORDS_CONE = { 15, 34 };
+    public static double[] MID_SCORING_COORDS_CUBE = { 15, 37 };
     public static double[] SUBSTATION_INTAKE_COORDS = { 20.4, 40.5 };
-    public static double[] HIGH_SCORING_COORDS_CONE = { 26.6, 57.5 }; //TODO: verify
-    public static double[] HIGH_SCORING_COORDS_CUBE = { 26.6, 50 };   //TODO: verify
+    public static double[] HIGH_SCORING_COORDS_CONE = { 33.194, 48.581 };
+    public static double[] HIGH_SCORING_COORDS_CUBE = { 26.6, 50 };
 
     //enums
     private Setpoint setpoint = Setpoint.STOWED;
@@ -69,6 +69,66 @@ public class ElevFourbar extends SmartPrintable {
         instance.controlType = ControlType.POSITION;
         elevator.init();
         fourbar.setPIDSpeed(0.45);
+    }
+
+    public static void setSetPoint(Setpoint set) {
+        instance.controlType = ControlType.POSITION;
+        instance.setpoint = set;
+
+        if (set == Setpoint.STOWED) {
+            instance.targetCoords = (gamePieceSelected == GamePiece.CONE) ? STOWED_COORDS_CONE : STOWED_COORDS_CUBES;
+        } else if (set == Setpoint.GROUND_INTAKE) {
+            instance.setpoint = Setpoint.GROUND_INTAKE;
+            if (Intake.getPivotState() == SolenoidState.UP) {
+                instance.targetCoords = GROUND_INTAKE_UP_COORDS;
+            } else {
+                instance.targetCoords = GROUND_INTAKE_DOWN_COORDS;
+            }
+        } else if (set == Setpoint.MID_SCORING) {
+            instance.targetCoords = (gamePieceSelected == GamePiece.CONE ? MID_SCORING_COORDS_CONE : MID_SCORING_COORDS_CUBE);
+        } else if(set == Setpoint.HIGH_SCORING) {
+            instance.targetCoords = (gamePieceSelected == GamePiece.CONE ? HIGH_SCORING_COORDS_CONE : HIGH_SCORING_COORDS_CUBE);
+        } 
+    }
+
+    public static ControlType getControlType() {
+        return instance.controlType;
+    }
+
+    public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean toggleGamePieceMode, boolean zeroElevEncoder) {
+        
+        instance.coords = posToCoords(elevator.getPosition(), fourbar.getPosition());
+
+        //toggle between cone and cube mode
+        toggleGamePiece(toggleGamePieceMode);
+
+        if(instance.setpoint == Setpoint.GROUND_INTAKE) {
+            if(Intake.getPivotState() == SolenoidState.UP) {
+                instance.targetCoords = GROUND_INTAKE_UP_COORDS;
+            } else {
+                instance.targetCoords = GROUND_INTAKE_DOWN_COORDS;
+            }
+        }
+
+        //switches between control modes when button is pressed or manual control detects input
+        if(Math.abs(elevatorSpeed) > DEADZONE || Math.abs(fourbarSpeed) > DEADZONE) {
+            instance.controlType = ControlType.MANUAL;
+        }
+
+        if(instance.controlType == ControlType.POSITION) {
+            /* elevator.pidControl(instance.setpoint);
+            fourbar.pidControl(instance.setpoint); */
+
+            elevator.pidControl(instance.targetCoords);
+            fourbar.pidControl(instance.targetCoords);
+        } else {
+            elevator.manualControl(elevatorSpeed, dPadDirection);
+            fourbar.manualControl(fourbarSpeed);
+        }
+
+        if (zeroElevEncoder) {
+            elevator.zeroEncoder();
+        }
     }
 
     /**

@@ -40,9 +40,7 @@ public class LEDLights {
             //setPattern = new Rainbow();
             setPattern = new FadeIntoPattern(new Rainbow(), 0.15);
         } else if (Robot.getControlMode() == ControlMode.AUTONOMOUS) {
-            // TODO: expose some information about autonomous modes, e.g. what 
-            // actions they perform. This way we can set colors for auto balance
-            // selectively.
+            setPattern = new FadeIn(new Color(0.0, 1.0, 0.0), 1.0);
         } else {
             if (SwerveDrive.getRockMode()) {
                 // If in rock mode make wyvern scary >:D
