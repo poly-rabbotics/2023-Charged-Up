@@ -39,7 +39,8 @@ public class Robot extends TimedRobot {
     public enum ControlMode {
         DISABLED,
         AUTONOMOUS,
-        TELEOPERATED
+        TELEOPERATED,
+        SAFETY
     }
 
     private static final XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
@@ -146,6 +147,7 @@ public class Robot extends TimedRobot {
         SwerveDrive.setMode(SwerveMode.Headless);
         ElevFourbar.init();
         Intake.init();
+        ElevFourbar.enableSafetyMode(false);
     }
     
     /** This function is called periodically during operator control. */
@@ -221,11 +223,66 @@ public class Robot extends TimedRobot {
     
     /** This  function is called once when test mode is enabled. */
     @Override
-    public void testInit() {}
+    public void testInit() {
+        controlMode = ControlMode.SAFETY;
+        SwerveDrive.setMode(SwerveMode.Headless);
+        ElevFourbar.init();
+        Intake.init();
+        ElevFourbar.enableSafetyMode(true);
+    }
     
     /** This function is called periodically during test mode. */
     @Override
-    public void testPeriodic() {}
+    public void testPeriodic() {
+        SmartDashboard.putNumber("controller Y", controllerOne.getLeftY());
+        SmartDashboard.putNumber("controller X", controllerOne.getLeftX());
+
+        // Toggle translation curve
+        if (controllerOne.getLeftBumperReleased()) {
+            translationLimiter.toggleEnabled();
+        }
+
+        double x = controllerOne.getLeftX();
+        double y = controllerOne.getLeftY();
+
+        if (controllerOne.getLeftTriggerAxis() > 0.25) {
+            x = Math.abs(x) > Math.abs(y) ? x : 0.0;
+            y = x == 0.0 ? y : 0.0;
+        }
+
+        //SCALES DOWN DRIVE SPEED FOR 
+        SwerveDrive.run(x*0.2, y*0.2, controllerOne.getRightX(), controllerOne.getPOV());
+        SwerveDrive.setRockMode(controllerOne.getRightTriggerAxis() > 0.25);
+        
+        // Left stick changes between headless and relative control modes.
+        if (controllerOne.getLeftStickButtonReleased()) {
+            if (SwerveDrive.getMode() == SwerveMode.Headless) {
+                SwerveDrive.setMode(SwerveMode.Relative);
+            } else {
+                SwerveDrive.setMode(SwerveMode.Headless);
+            }
+        }
+        
+        Intake.run(
+            controlPanel.getRawButtonPressed(8), //controller one dpad to control pivot
+            controlPanel.getRawButton(9),
+            controlPanel.getRawButton(7),
+            controlPanel.getRawButton(6),
+            controlPanel.getRawButtonReleased(6)
+        );
+        
+        ElevFourbar.run(
+            controllerTwo.getRightY(),
+            Math.abs(controlPanel.getRawAxis(0) / 2) > Math.abs(controllerTwo.getLeftY()) ? controlPanel.getRawAxis(0) / 2 : -controllerTwo.getLeftY(),
+            controllerTwo.getPOV(),
+            controlPanel.getRawButtonPressed(5), //toggle game piece
+            controlPanel.getRawButtonReleased(1), //ground
+            controlPanel.getRawButtonReleased(3), //mid
+            controlPanel.getRawButtonReleased(4), //high
+            controlPanel.getRawButtonReleased(2),  //stowed
+            controllerTwo.getStartButtonPressed() //zero elevator encoder
+        );
+    }
     
     /** This function is called once when the robot is first started up. */
     @Override
