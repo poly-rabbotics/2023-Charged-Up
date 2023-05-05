@@ -18,14 +18,14 @@ public class ElevFourbar extends SmartPrintable {
 
     //COORDINATE CONSTANTS FOR PID CONTROL
     public static double[] STOWED_COORDS_CUBES = { 0, FOURBAR_HYPOTENUSE};
-    public static double[] STOWED_COORDS_CONE = STOWED_COORDS_CUBES;
-    public static double[] GROUND_INTAKE_DOWN_COORDS = { 35.2, 15 -4};
-    public static double[] GROUND_INTAKE_UP_COORDS = { 30, 1 };
-    public static double[] MID_SCORING_COORDS_CONE = { 15, 34 };
-    public static double[] MID_SCORING_COORDS_CUBE = { 15, 37 };
+    public static double[] STOWED_COORDS_CONE = { 12.466, 35.346 };
+    public static double[] GROUND_INTAKE_DOWN_COORDS = { 35.2, 17 };
+    public static double[] GROUND_INTAKE_UP_COORDS = { 29.5, 5 };
+    public static double[] MID_SCORING_COORDS_CONE = { 17, 42 - 4 }; 
+    public static double[] MID_SCORING_COORDS_CUBE = { 29, 37 };   
     public static double[] SUBSTATION_INTAKE_COORDS = { 20.4, 40.5 };
-    public static double[] HIGH_SCORING_COORDS_CONE = { 33.194, 48.581 };
-    public static double[] HIGH_SCORING_COORDS_CUBE = { 26.6, 50 };
+    public static double[] HIGH_SCORING_COORDS_CONE = { 26.6, 57 };   //57.5
+    public static double[] HIGH_SCORING_COORDS_CUBE = { 26.6, 50 };   
 
     //enums
     private Setpoint setpoint = Setpoint.STOWED;
@@ -69,6 +69,11 @@ public class ElevFourbar extends SmartPrintable {
         instance.controlType = ControlType.POSITION;
         elevator.init();
         fourbar.setPIDSpeed(0.45);
+    }
+    /** Halves the speed of fourbar and elevator  */
+    public static void enableSafetyMode(boolean enable) {
+        elevator.enableSafetyMode(enable);
+        fourbar.enableSafetyMode(enable);
     }
 
     public static void setSetPoint(Setpoint set) {
@@ -283,6 +288,8 @@ public class ElevFourbar extends SmartPrintable {
             ? -Math.toDegrees(Math.atan(x / (elevPos - y)))
             : 180 - Math.toDegrees(Math.atan(x / (elevPos - y))); */
 
+
+        
         //Correct fourbar pos if out of bounds
         double maxAngle = Math.toDegrees(Math.atan2(BUMPER_X, BUMPER_Y - elevPos));
 
@@ -293,7 +300,7 @@ public class ElevFourbar extends SmartPrintable {
             fourbarDeg = 0;
             isAltered = true;
         }
-
+        
         //return positions
         double[] output = { elevPos, fourbarDeg, isAltered ? 1 : 0 };
         return output;

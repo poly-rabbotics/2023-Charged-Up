@@ -107,6 +107,14 @@ public class Fourbar {
         pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition);
     }
 
+    public void enableSafetyMode(boolean enable) {
+        if (enable) {
+            pidController.setOutputRange(FOURBAR_SPEED_UP*.5, -FOURBAR_SPEED_UP*.5);
+        } else {
+            pidController.setOutputRange(FOURBAR_SPEED_UP, -FOURBAR_SPEED_UP);
+        }
+    }
+
     /**
      * Allows for translating to setpoints using PID
      * @param coords The coordinates to move to, on an x and y plane

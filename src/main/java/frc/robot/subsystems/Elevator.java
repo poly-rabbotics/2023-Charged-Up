@@ -69,6 +69,17 @@ public class Elevator {
     public void init() {
     }
 
+    public void enableSafetyMode(boolean enable) {
+        if (enable) {
+            elevatorMotor.configPeakOutputForward(0.4);
+            elevatorMotor.configPeakOutputReverse(-0.4);
+        } else {
+            elevatorMotor.configPeakOutputForward(0.85);
+            elevatorMotor.configPeakOutputReverse(-0.85);
+        }
+        
+    }
+
     public void autonomousInit() {
         targetSetpoint = STOWED_SETPOINT;
     }
