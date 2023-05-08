@@ -22,7 +22,8 @@ public class Setpoint {
      * isNeg forces the fourbar to be angled down (if possible)
      * just to help with the occasional ambiguity of positions
      */
-    public Setpoint(double[] coords, boolean isNegative) {
+    public Setpoint(double x, double y, boolean isNegative) {
+        double[] coords = { x, y };
         this.coords = coords;
         this.isNegative = isNegative;
 
@@ -34,20 +35,20 @@ public class Setpoint {
     /**
      * Initialize a setpoint without override of position
      */
-    public Setpoint(double[] coords) {
-        this(coords, false);
+    public Setpoint(double x, double y) {
+        this(x, y, false);
     }
 
     /**
      * Ew dont use this one at least make use of my hard work :(
      */
-    public Setpoint(double elevPos, double fourbarPos) {
+    /* public Setpoint(double elevPos, double fourbarPos) {
         this.elevPos = elevPos;
         this.fourbarPos = fourbarPos;
 
         this.coords = toCoords(elevPos, fourbarPos);
         this.isNegative = false;
-    }
+    } */
 
     /**
      * @return ( x, y ) coordinates of the setpoint
@@ -113,7 +114,9 @@ public class Setpoint {
 
         //JESUS CHRIST WHY WAS THIS PART SO HARD
         double adj = Math.sqrt((Math.pow(HYPOTENUSE, 2) - Math.pow(x, 2)));
-        e = y < adj || isNegative ? y + adj : y - adj;
+        e = y < adj || !approx(y, adj, 0.0001) || isNegative 
+            ? y + adj 
+            : y - adj;
 
         e = clamp(e, 0, ELEVATOR_MAX);
 
@@ -124,6 +127,8 @@ public class Setpoint {
         double maxAngle = Math.toDegrees(Math.atan2(BUMPER_X, BUMPER_Y - e));
         f = clamp(f, 0, maxAngle);
 
+        //TODO: LIMIT THE FOURBAR ANGLE SO IT DOESNT HIT THE BUMPER
+
 
         double[] res = { e, f };
         return res;
@@ -133,7 +138,18 @@ public class Setpoint {
      * Used to clamp the range of variables so I don't bend
      * any more steel hex shafts :)
      */
-    public static double clamp(double val, double min, double max) {
+    private static double clamp(double val, double min, double max) {
         return Math.max(min, Math.min(max, val));
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param sensitivity
+     * @return true if the difference between a and b is less than sensitivity
+     */
+    private static boolean approx(double a, double b, double sensitivity) {
+        return Math.abs(a - b) < sensitivity;
     }
 }

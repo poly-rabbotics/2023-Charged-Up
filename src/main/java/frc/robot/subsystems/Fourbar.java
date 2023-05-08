@@ -1,16 +1,15 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkMaxAbsoluteEncoder;
-import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkMaxAbsoluteEncoder;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import frc.robot.systems.Intake.SolenoidState;
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
-import frc.robot.systems.ElevFourbar.Setpoint;
-import frc.robot.systems.Intake.SolenoidState;
 
 /** 
  * Class to control the fourbar mechanism 
@@ -26,14 +25,6 @@ public class Fourbar {
     //constant variables
     private static final int MOTOR_ID = 61; //CORRECT ID
     private static final double MANUAL_DEADZONE = 0.3;
-
-    //position constants, in degrees
-    private static final int SUBSTATION_INTAKE_SETPOINT = 33 ;
-    private static final int GROUND_INTAKE_UP_SETPOINT = 140;
-    private static final int GROUND_INTAKE_DOWN_SETPOINT = 112;
-    private static final int MID_SCORING_SETPOINT = 33;
-    private static final int HIGH_SCORING_SETPOINT = 73;
-    private static final int STOWED_SETPOINT = 0;
 
     //PID constants
     private static final double P0 = 10;    
@@ -51,7 +42,7 @@ public class Fourbar {
     private final SparkMaxPIDController pidController; 
     private SparkMaxAbsoluteEncoder absoluteEncoder;
 
-    //variables
+    //instance variables
     private double targetSetpoint;
     private double encoderPosition;
     private double bumperIntercept = 0;
@@ -102,30 +93,9 @@ public class Fourbar {
 
         encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
         
-        updateTargetSetpoint(setpoint);
+        targetSetpoint = setpoint.getFourbarPos();
 
         pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition);
-    }
-
-    /**
-     * Allows for translating to setpoints using PID
-     * @param coords The coordinates to move to, on an x and y plane
-     */
-    public void pidControl(double[] coords) {
-        encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
-
-        double[] pos = ElevFourbar.coordsToPos(coords[0], coords[1]);
-        targetSetpoint = pos[1];
-
-        if(coords == ElevFourbar.GROUND_INTAKE_DOWN_COORDS) {
-            targetSetpoint = 103;
-        }
-
-        /* if(Math.abs(targetSetpoint - 68) < 0.5) {
-            targetSetpoint = 112; 
-        } */
-
-        pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 0);
     }
 
     /**
@@ -134,14 +104,14 @@ public class Fourbar {
     public void manualControl(double speed){
         encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
 
-        //ignore this for now
-        double[] coords = ElevFourbar.getCoords();
+        //TODO: FIX THIS
+        double[] coords = ElevFourbar.getSetpoint().getCoords();
         double b = ElevFourbar.elevator.getPosition();
         slope = (coords[1] - b) / coords[0];
 
-        bumperIntercept = (slope * ElevFourbar.BUMPER_X) + b;
+        bumperIntercept = (slope * Setpoint.BUMPER_X) + b;
 
-        if(bumperIntercept <= ElevFourbar.BUMPER_Y) {
+        if(bumperIntercept <= Setpoint.BUMPER_Y) {
             if(speed < 0) {
                 speed = 0;
             }
@@ -165,30 +135,6 @@ public class Fourbar {
         pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 1);
     }
 
-    private void updateTargetSetpoint(Setpoint setpoint) {
-        switch (setpoint) {
-            case SUBSTATION_INTAKE:
-                targetSetpoint = SUBSTATION_INTAKE_SETPOINT;
-                break;
-            case GROUND_INTAKE:
-                if(Intake.getPivotState() == SolenoidState.UP) {
-                    targetSetpoint = GROUND_INTAKE_UP_SETPOINT;
-                } else{
-                    targetSetpoint = GROUND_INTAKE_DOWN_SETPOINT;
-                }
-                break;
-            case MID_SCORING:
-                targetSetpoint = MID_SCORING_SETPOINT;
-                break;
-            case HIGH_SCORING:
-                targetSetpoint = HIGH_SCORING_SETPOINT;
-                break;
-            case STOWED:
-                targetSetpoint = STOWED_SETPOINT;
-                break;
-        }
-    }
-
     /**
      * @return Encoder position in degrees
      */
@@ -203,6 +149,9 @@ public class Fourbar {
         return targetSetpoint;
     }
 
+    /**
+     * @return Position of the absolute encoder from 0 to 1
+     */
     public double getAbsolutePosition() {
         return absoluteEncoder.getPosition();
     }

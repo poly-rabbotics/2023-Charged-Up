@@ -1,14 +1,10 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
-
-import edu.wpi.first.wpilibj.DigitalInput;
-
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import frc.robot.systems.ElevFourbar.Setpoint;
-import frc.robot.systems.ElevFourbar;
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 /**
  * Controls the elevator
@@ -20,13 +16,6 @@ public class Elevator {
     //constant variables
     private static final double MANUAL_DEADZONE = 0.3;
     private static final int ELEVATOR_MOTOR_ID = 62; //CORRECT ID
-    
-    //position constants, in inches
-    private static final double SUBSTATION_INTAKE_SETPOINT = 9;
-    private static final double GROUND_INTAKE_SETPOINT = 30;
-    private static final double MID_SCORING_SETPOINT = 11;
-    private static final double HIGH_SCORING_SETPOINT = 30;
-    private static final double STOWED_SETPOINT = 0;
     
     //PID constants
     private static final double P = 1.0;
@@ -67,10 +56,11 @@ public class Elevator {
      * The method to be run in teleopInit to reset variables
      */
     public void init() {
+
     }
 
     public void autonomousInit() {
-        targetSetpoint = STOWED_SETPOINT;
+        targetSetpoint = 0;
     }
 
     /**
@@ -108,30 +98,8 @@ public class Elevator {
     public void pidControl(Setpoint setpoint) {
         encoderPosition = elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
 
-        updateTargetSetpoint(setpoint);
+        targetSetpoint = setpoint.getElevPos();
 
-        //set elevator PID position to target setpoint
-        elevatorMotor.set(ControlMode.Position, targetSetpoint * TICKS_PER_INCH);
-    }
-
-    /**
-     * PID Control of the elevator using coordinates
-     * @param coords The coordinates to move to, on an x and y plane
-     */
-    public void pidControl(double[] coords) {
-        encoderPosition = elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
-
-        double[] pos = ElevFourbar.coordsToPos(coords[0], coords[1]);
-        targetSetpoint = pos[0];
-
-        if(coords[0] == 35.2) {
-            targetSetpoint = 31;
-        }
-
-        /* if(Math.abs(targetSetpoint - 2.9) < 0.5) {
-            targetSetpoint = GROUND_INTAKE_SETPOINT;
-        } */
-        
         //set elevator PID position to target setpoint
         elevatorMotor.set(ControlMode.Position, targetSetpoint * TICKS_PER_INCH);
     }
@@ -150,27 +118,6 @@ public class Elevator {
      */
     public double getTargetPosition() {
         return targetSetpoint;
-    }
-
-    private void updateTargetSetpoint(Setpoint setpoint) {
-        switch (setpoint) {
-            case SUBSTATION_INTAKE:
-                targetSetpoint = SUBSTATION_INTAKE_SETPOINT;
-                break;
-            case GROUND_INTAKE:
-                if(ElevFourbar.fourbar.getPosition() > 5)
-                    targetSetpoint = GROUND_INTAKE_SETPOINT;
-                break;
-            case MID_SCORING:
-                targetSetpoint = MID_SCORING_SETPOINT;
-                break;
-            case HIGH_SCORING:
-                targetSetpoint = HIGH_SCORING_SETPOINT;
-                break;
-            case STOWED:
-                targetSetpoint = STOWED_SETPOINT;
-                break;
-        }
     }
 
     public void zeroEncoder() {
