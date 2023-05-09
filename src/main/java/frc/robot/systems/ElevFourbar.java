@@ -103,6 +103,7 @@ public class ElevFourbar extends SmartPrintable {
             fourbar.manualControl(fourbarSpeed);
         }
 
+
         if (zeroElevEncoder) {
             elevator.zeroEncoder();
         }

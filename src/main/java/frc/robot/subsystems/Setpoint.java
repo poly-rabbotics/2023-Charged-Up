@@ -127,9 +127,6 @@ public class Setpoint {
         double maxAngle = Math.toDegrees(Math.atan2(BUMPER_X, BUMPER_Y - e));
         f = clamp(f, 0, maxAngle);
 
-        //TODO: LIMIT THE FOURBAR ANGLE SO IT DOESNT HIT THE BUMPER
-
-
         double[] res = { e, f };
         return res;
     }
