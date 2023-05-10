@@ -113,7 +113,9 @@ public class SwerveModule extends SmartPrintable {
         double calculation = rotationController.calculate(currentPosition, (state.angle.getDegrees() + 360.0) % 360.0);
         
         if (rockPos != rockPos) {
-            movementMotor.set(state.speedMetersPerSecond);
+            movementMotor.set(Math.abs(state.speedMetersPerSecond) > 0.3 ?
+                Math.signum(state.speedMetersPerSecond) * 0.3 :
+                state.speedMetersPerSecond);
         }
 
         rotationMotor.set(calculation * coefficient);
