@@ -39,6 +39,12 @@ public class Setpoint {
         this(x, y, false);
     }
 
+    public Setpoint(boolean uselessBooleanToMakeThisADifferentConstructor, double e, double f) {
+        this.elevPos = e;
+        this.fourbarPos = f;
+        this.coords = toCoords(e, f);
+    }
+
     /**
      * Ew dont use this one at least make use of my hard work :(
      */

@@ -8,6 +8,7 @@ import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import frc.robot.systems.Intake.SolenoidState;
+import frc.robot.subsystems.Setpoint;
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 
