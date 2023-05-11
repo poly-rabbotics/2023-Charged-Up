@@ -94,8 +94,8 @@ public class Setpoint {
         double x;
         double y;
 
-        x = Math.sin(fourbarPos) * HYPOTENUSE;
-        y = Math.cos(fourbarPos) * HYPOTENUSE + elevPos;
+        x = Math.sin(Math.toRadians(fourbarPos)) * HYPOTENUSE;
+        y = Math.cos(Math.toRadians(fourbarPos)) * HYPOTENUSE + elevPos;
 
         //I had to make a variable for the output because it didn't just let me return { x, y}
         double[] res = { x, y };

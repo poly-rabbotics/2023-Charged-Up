@@ -15,7 +15,7 @@ public class ElevFourbar extends SmartPrintable {
 
     //SETPOINTS FOR PID CONTROL
     public static final DoubleSetpoint STOWED_SETPOINT = new DoubleSetpoint(new Setpoint(0, Setpoint.HYPOTENUSE), new Setpoint(0, Setpoint.HYPOTENUSE));
-    public static final DoubleSetpoint MID_SCOORING_SETPOINT = new DoubleSetpoint(new Setpoint(15, 37), new Setpoint(15, 34));
+    public static final DoubleSetpoint MID_SCOORING_SETPOINT = new DoubleSetpoint(new Setpoint(15, 37), new Setpoint(15, 34.4));
     public static final DoubleSetpoint HIGH_SCORING_SETPOINT = new DoubleSetpoint(new Setpoint(26.6, 50), new Setpoint(33.2, 48.6));
 
     public static final Setpoint GROUND_INTAKE_DOWN_SETPOINT = new Setpoint(35.2, 11, true);
