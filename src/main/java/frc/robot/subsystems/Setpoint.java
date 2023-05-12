@@ -84,6 +84,14 @@ public class Setpoint {
         return isNegative;
     }
 
+    public void setElevPos(double e) {
+        elevPos = e;
+    }
+
+    public void setFourbarPos(double f) {
+        fourbarPos = f;
+    }
+
     /**
      * @param elevPos
      * @param fourbarPos

@@ -32,6 +32,7 @@ public class ElevFourbar extends SmartPrintable {
     private Setpoint setpoint;
     private ControlType controlType = ControlType.POSITION;
     private GamePiece gamePieceSelected = GamePiece.CUBE;
+    private boolean translateMode = false;
 
     //Elevator and Fourbar objects
     public static Fourbar fourbar;
@@ -68,6 +69,7 @@ public class ElevFourbar extends SmartPrintable {
         instance.controlType = ControlType.POSITION;
         elevator.init();
         fourbar.setPIDSpeed(0.45);
+        instance.translateMode = false;
 
         instance.setpoint = getGamePieceSelected() == GamePiece.CUBE ? STOWED_SETPOINT.cube : STOWED_SETPOINT.cone;
     }
@@ -99,8 +101,14 @@ public class ElevFourbar extends SmartPrintable {
             elevator.pidControl(instance.setpoint);
             fourbar.pidControl(instance.setpoint);
         } else { //Run manual control
-            elevator.manualControl(elevatorSpeed, dPadDirection);
-            fourbar.manualControl(fourbarSpeed);
+            if(instance.translateMode) {
+
+            } else {
+
+                elevator.manualControl(elevatorSpeed, dPadDirection);
+                fourbar.manualControl(fourbarSpeed);
+
+            }
         }
 
 
@@ -176,6 +184,10 @@ public class ElevFourbar extends SmartPrintable {
 
     public static void setFourbarBrake(boolean brake) {
         fourbar.setBrake(brake);
+    }
+
+    public static void toggleTranslateMode() {
+        instance.translateMode = !instance.translateMode;
     }
 
     public void print() {
