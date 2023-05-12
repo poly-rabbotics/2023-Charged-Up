@@ -120,12 +120,22 @@ public class Setpoint {
 
         //JESUS CHRIST WHY WAS THIS PART SO HARD
         double adj = Math.sqrt((Math.pow(HYPOTENUSE, 2) - Math.pow(x, 2)));
-        e = y < adj || !approx(y, adj, 0.0001) || isNegative 
-            ? y + adj 
-            : y - adj;
 
-        e = clamp(e, 0, ELEVATOR_MAX);
+        double uprightHeight = y - adj;
+        double downHeight = y + adj;
+        
+        if((approx(uprightHeight, 0, 0.000001) || uprightHeight > 0) && uprightHeight < ELEVATOR_MAX && !isNegative) {
+            e = clamp(uprightHeight, 0, ELEVATOR_MAX);
+        } else {
+            e = clamp(downHeight, 0, ELEVATOR_MAX);
+        }
 
+        /* e = (y >= adj || approx(y, adj, 0.0001)) && !isNegative 
+            ? y - adj 
+            : y + adj;
+
+        e = clamp(e, 0, ELEVATOR_MAX); */
+        
         //atan2 my beloved <3
         f = Math.toDegrees(Math.atan2(x, y - e));
 
