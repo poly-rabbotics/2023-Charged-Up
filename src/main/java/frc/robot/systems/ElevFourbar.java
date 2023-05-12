@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import frc.robot.systems.Intake.SolenoidState;
 import frc.robot.subsystems.DoubleSetpoint;
+import frc.robot.subsystems.Coordinate;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Setpoint;
 import frc.robot.subsystems.Fourbar;
@@ -30,6 +31,7 @@ public class ElevFourbar extends SmartPrintable {
 
     //Instance veriables
     private Setpoint setpoint;
+    private Setpoint currentSetpoint;
     private ControlType controlType = ControlType.POSITION;
     private GamePiece gamePieceSelected = GamePiece.CUBE;
     private boolean translateMode = false;
@@ -83,6 +85,7 @@ public class ElevFourbar extends SmartPrintable {
     }
 
     public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean toggleGamePieceMode, boolean groundIntake, boolean mid, boolean high, boolean zeroElevEncoder) {
+        instance.currentSetpoint = new Setpoint(false, elevator.getPosition(), fourbar.getPosition());
 
         //toggle between cone and cube mode
         toggleGamePiece(toggleGamePieceMode);
@@ -166,8 +169,8 @@ public class ElevFourbar extends SmartPrintable {
         instance.gamePieceSelected = (buttonReleased ? (instance.gamePieceSelected == GamePiece.CONE ? GamePiece.CUBE : GamePiece.CONE) : instance.gamePieceSelected);
     }
 
-    public static Setpoint getCurrentPos() {
-        return new Setpoint(false, elevator.getPosition(), fourbar.getPosition());
+    public static Coordinate getCurrentPos() {
+        return instance.currentSetpoint.getCoords();
     }
 
     public static Setpoint getSetpoint() {
@@ -194,8 +197,8 @@ public class ElevFourbar extends SmartPrintable {
         SmartDashboard.putString("Control Type", instance.controlType.toString());
 
         //fourbar and elevator coordinates
-        SmartDashboard.putString("Current coords", "(" + getCurrentPos().getCoords()[0] + ", " + getCurrentPos().getCoords()[1] + ")");
-        SmartDashboard.putString("Target Coords", "(" + instance.setpoint.getCoords()[0] + ", " + instance.setpoint.getCoords()[1] + ")");
+        SmartDashboard.putString("Current coords", "(" + getCurrentPos().x + ", " + getCurrentPos().y + ")");
+        SmartDashboard.putString("Target Coords", "(" + instance.setpoint.getCoords().x + ", " + instance.setpoint.getCoords().y + ")");
         SmartDashboard.putNumber("Bumper Intercept", fourbar.getBumperIntercept());
         SmartDashboard.putNumber("Fourbar Slope", fourbar.getSlope());
 

@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import frc.robot.subsystems.Coordinate;
+
 /**
  * Class to simplify the use of setpoints so I don't
  * have to deal with even more methods in ElevFourbar
@@ -13,7 +15,7 @@ public class Setpoint {
     public static final double BUMPER_Y = 6.5;
     
     //Instance variables
-    private double[] coords; //Formatted as [ x, y ]
+    private Coordinate coords; //Formatted as [ x, y ]
     private double elevPos;
     private double fourbarPos;
     private boolean isNegative;
@@ -23,8 +25,7 @@ public class Setpoint {
      * just to help with the occasional ambiguity of positions
      */
     public Setpoint(double x, double y, boolean isNegative) {
-        double[] coords = { x, y };
-        this.coords = coords;
+        this.coords = new Coordinate(x, y);
         this.isNegative = isNegative;
 
         double[] pos = toPositions(coords, isNegative);
@@ -59,7 +60,7 @@ public class Setpoint {
     /**
      * @return ( x, y ) coordinates of the setpoint
      */
-    public double[] getCoords() {
+    public Coordinate getCoords() {
         return coords;
     }
 
@@ -92,22 +93,24 @@ public class Setpoint {
         fourbarPos = f;
     }
 
+    public void translate(Coordinate c) {
+
+    }
+
     /**
      * @param elevPos
      * @param fourbarPos
      * @return Coordinates resulting from the inputted positions
      */
-    public static double[] toCoords(double elevPos, double fourbarPos) {
+    public static Coordinate toCoords(double elevPos, double fourbarPos) {
 
         double x;
         double y;
 
         x = Math.sin(Math.toRadians(fourbarPos)) * HYPOTENUSE;
         y = Math.cos(Math.toRadians(fourbarPos)) * HYPOTENUSE + elevPos;
-
-        //I had to make a variable for the output because it didn't just let me return { x, y}
-        double[] res = { x, y };
-        return res;
+        
+        return new Coordinate(x, y);
     }
 
     /**
@@ -118,10 +121,10 @@ public class Setpoint {
      * @param isNegative true if the fourbar needs to be forced to angle down
      * @return Positions in the format of { elevator, fourbar }
      */
-    public static double[] toPositions(double[] coord, boolean isNegative) {
+    public static double[] toPositions(Coordinate coord, boolean isNegative) {
 
-        double x = coord[0];
-        double y = coord[1];
+        double x = coord.x;
+        double y = coord.y;
         
         double e;
         double f;

@@ -8,7 +8,6 @@ import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import frc.robot.systems.Intake.SolenoidState;
-import frc.robot.subsystems.Setpoint;
 import frc.robot.systems.ElevFourbar;
 import frc.robot.systems.Intake;
 
@@ -106,9 +105,9 @@ public class Fourbar {
         encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
 
         //TODO: FIX THIS
-        double[] coords = ElevFourbar.getSetpoint().getCoords();
+        Coordinate coords = ElevFourbar.getCurrentPos();
         double b = ElevFourbar.elevator.getPosition();
-        slope = (coords[1] - b) / coords[0];
+        slope = (coords.y - b) / coords.x;
 
         bumperIntercept = (slope * Setpoint.BUMPER_X) + b;
 
@@ -116,11 +115,11 @@ public class Fourbar {
             if(speed < 0) {
                 speed = 0;
             }
-        } else if(coords[1] <= -3 && Intake.getPivotState() == SolenoidState.UP) {
+        } else if(coords.y <= -3 && Intake.getPivotState() == SolenoidState.UP) {
             if(speed < 0) {
                 speed = 0;
             }
-        } else if(coords[1] <= 21 && Intake.getPivotState() == SolenoidState.DOWN) {
+        } else if(coords.y <= 21 && Intake.getPivotState() == SolenoidState.DOWN) {
             if(speed < 0) {
                 speed = 0;
             }
