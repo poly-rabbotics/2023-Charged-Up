@@ -31,7 +31,6 @@ public class SwerveDrive extends SmartPrintable {
     private static final int MODULE_CANCODER_CAN_IDS[] = { 9,  10,  11,  12 };
     
     private static final double MODULE_CANCODER_OFFSETS[] = { -252.24607237 + 90.0, -224.033203125 + 270.0, -11.425719246268272 + 270.0, -179.56050113588573 + 90.0 };
-    //private static final double MODULE_CANCODER_OFFSETS[] = { -252.24607237 + 90.0, -405.26363752 + 90.0, -189.66795267 + 90.0, -175.16600078 + 90.0 };
     private static final double MODULE_ROCK_MODE_PSOITIONS[] = { -Math.PI / 4, Math.PI / 4, -Math.PI / 4, Math.PI / 4 };
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
     
@@ -40,16 +39,19 @@ public class SwerveDrive extends SmartPrintable {
     private static final double CHASSIS_SIDE_LENGTH = 0.6;
     private static final double RADIAN_DEGREE_RATIO = Math.PI / 180.0;
 
+    // Singleton instance.
     private static final SwerveDrive instance = new SwerveDrive();
 
-    private BiFunction<Double, Double, Double> directionCurve = Controls::defaultCurveTwoDimensional;
-    private Function<Double, Double> turnCurve = Controls::defaultCurve;
-
+    // These drive state objects modify themselves internally through methods,
+    // but require no setting and are therefore final.
     private final SwerveModule modules[] = new SwerveModule[MODULE_MOVEMENT_CAN_IDS.length];
     private final SwerveModulePosition positions[] = new SwerveModulePosition[MODULE_MOVEMENT_CAN_IDS.length];
     private final SwerveDriveKinematics kinematics;
     private final SwerveDriveOdometry odometry;
     
+    // Variable drive states objects.
+    private BiFunction<Double, Double, Double> directionCurve = Controls::defaultCurveTwoDimensional;
+    private Function<Double, Double> turnCurve = Controls::defaultCurve;
     private SwerveMode mode = SwerveMode.Headless;
 
     private SwerveDrive() {
