@@ -31,6 +31,10 @@ public class SwerveDrive extends SmartPrintable {
     private static final int MODULE_ROTATION_CAN_IDS[] = { 5,  6,   7,   8  };
     private static final int MODULE_CANCODER_CAN_IDS[] = { 9,  10,  11,  12 };
     
+    private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
+    private static final double LOW_SENSITIVITY_RATIO = 0.08;
+    private static final double CHASSIS_SIDE_LENGTH = 0.6;
+
     private static final Angle MODULE_CANCODER_OFFSETS[] = {
         new Angle().setDegrees(-252.24607237 + 90.0), 
         new Angle().setDegrees(-224.033203125 + 270.0), 
@@ -45,9 +49,12 @@ public class SwerveDrive extends SmartPrintable {
         new Angle().setRadians(  Math.PI / 4) 
     };
 
-    private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
-    private static final double LOW_SENSITIVITY_RATIO = 0.08;
-    private static final double CHASSIS_SIDE_LENGTH = 0.6;
+    private static final Translation2d MODULE_PHYSICAL_POSITIONS[] = {
+        new Translation2d(   CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
+        new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
+        new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2),
+        new Translation2d(   CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2)
+    };
 
     // Singleton instance.
     private static final SwerveDrive instance = new SwerveDrive();
@@ -73,7 +80,8 @@ public class SwerveDrive extends SmartPrintable {
                 MODULE_ROTATION_CAN_IDS[i], 
                 MODULE_CANCODER_CAN_IDS[i], 
                 MODULE_CANCODER_OFFSETS[i], 
-                MODULE_COEFFIENTS[i]
+                MODULE_COEFFIENTS[i],
+                MODULE_PHYSICAL_POSITIONS[i]
             );
         }
 
@@ -82,10 +90,10 @@ public class SwerveDrive extends SmartPrintable {
         }
 
         kinematics = new SwerveDriveKinematics(
-            new Translation2d(   CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
-            new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
-            new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2),
-            new Translation2d(   CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2)
+            MODULE_PHYSICAL_POSITIONS[0],
+            MODULE_PHYSICAL_POSITIONS[1],
+            MODULE_PHYSICAL_POSITIONS[2],
+            MODULE_PHYSICAL_POSITIONS[3]
         );
 
         odometry = new SwerveDriveOdometry(
@@ -188,7 +196,7 @@ public class SwerveDrive extends SmartPrintable {
      */
     public static void runRockMode() {
         for (int i = 0; i < instance.modules.length; i++) {
-            instance.modules[i].setDesiredState(new SwerveModuleState(0.0, new Rotation2d(MODULE_ROCK_MODE_POSITIONS[i])));
+            instance.modules[i].setDesiredState(new SwerveModuleState(0.0, new Rotation2d(MODULE_ROCK_MODE_POSITIONS[i].radians())));
         }
     }
 
@@ -212,6 +220,15 @@ public class SwerveDrive extends SmartPrintable {
         }
 
         return rockMode;
+    }
+
+    /**
+     * Sets the max speed of all modules, use NaN for no limit.
+     */
+    public static void setMaxSpeed(double maxSpeed) {
+        for (SwerveModule module : instance.modules) {
+            module.setMaxSpeed(maxSpeed);
+        }
     }
 
     /**
