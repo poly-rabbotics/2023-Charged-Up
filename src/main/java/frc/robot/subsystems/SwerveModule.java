@@ -24,9 +24,9 @@ import frc.robot.SmartPrintable;
  * Class for managing and manipulating a swerve module. 
  */
 public class SwerveModule extends SmartPrintable {
-    private static final double CONVERSION_FACTOR_ROTATION = 150 / 7;                                         // Rotations to degrees.
+    private static final double CONVERSION_FACTOR_ROTATION = (150 * Math.PI) / (7 * 180);                     // Rotations to radians.
     private static final double CONVERSION_FACTOR_MOVEMENT = 6.75;                                            // Rotations to meters.
-    private static final double CONVERSION_FACTOR_ROTATION_VELOCITY = CONVERSION_FACTOR_ROTATION * (1 / 60);  // RPM to degrees per second.
+    private static final double CONVERSION_FACTOR_ROTATION_VELOCITY = CONVERSION_FACTOR_ROTATION * (1 / 60);  // RPM to radians per second.
     private static final double CONVERSION_FACTOR_MOVEMENT_VELOCITY = CONVERSION_FACTOR_MOVEMENT * (1 / 60);  // RPM to meters per second.
 
     private static final double PID_P = 0.01;
@@ -88,7 +88,6 @@ public class SwerveModule extends SmartPrintable {
         );
 
         rotationEncoder = rotationMotor.getEncoder();
-        rotationEncoder.setPositionConversionFactor(180.0 / Math.PI);
         rotationEncoder.setPosition(angularEncoder.getPosition());
         rotationEncoder.setPositionConversionFactor(CONVERSION_FACTOR_ROTATION);
         rotationEncoder.setVelocityConversionFactor(CONVERSION_FACTOR_ROTATION_VELOCITY);
@@ -100,12 +99,15 @@ public class SwerveModule extends SmartPrintable {
         
         rotationController = new PIDController(PID_P, PID_I, PID_D);
         rotationController.enableContinuousInput(0.0, Math.TAU);
-        rotationController.setTolerance(0.005); // This is mroe precise than before, TODO: test.
+        rotationController.setTolerance(0.005); // This is more precise than before, TODO: test.
 
         rockController = new PIDController(ROCK_PID_P, ROCK_PID_I, ROCK_PID_D);
         rockController.setTolerance(0.5);
 
-        position = new SwerveModulePosition(movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT, new Rotation2d(angularEncoder.getPosition()));
+        position = new SwerveModulePosition(
+            movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT, 
+            new Rotation2d(angularEncoder.getPosition())
+        );
     }
 
     /**
@@ -114,7 +116,6 @@ public class SwerveModule extends SmartPrintable {
     public void setDesiredState(SwerveModuleState state) {
         double currentPosition = (angularEncoder.getPosition() + canCoderOffset) % Math.TAU;
         state = SwerveModuleState.optimize(state, new Rotation2d(currentPosition));
-        double calculation = rotationController.calculate(currentPosition, (state.angle.getRadians() + Math.TAU) % Math.TAU);
         
         if (rockPos != rockPos) {
             movementMotor.set(
@@ -124,6 +125,7 @@ public class SwerveModule extends SmartPrintable {
             );
         }
 
+        double calculation = rotationController.calculate(currentPosition, (state.angle.getRadians() + Math.TAU) % Math.TAU);
         rotationMotor.set(calculation * coefficient);
 
         position.angle = new Rotation2d(angularEncoder.getPosition());
