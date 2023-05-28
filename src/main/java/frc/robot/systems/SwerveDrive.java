@@ -30,14 +30,18 @@ public class SwerveDrive extends SmartPrintable {
     private static final int MODULE_ROTATION_CAN_IDS[] = { 5,  6,   7,   8  };
     private static final int MODULE_CANCODER_CAN_IDS[] = { 9,  10,  11,  12 };
     
-    private static final double MODULE_CANCODER_OFFSETS[] = { -252.24607237 + 90.0, -224.033203125 + 270.0, -11.425719246268272 + 270.0, -179.56050113588573 + 90.0 };
+    // TODO: Get radian values from start dashboard.
+    private static final double MODULE_CANCODER_OFFSETS[] = {
+        Math.toRadians(-252.24607237 + 90.0), 
+        Math.toRadians(-224.033203125 + 270.0), 
+        Math.toRadians(-11.425719246268272 + 270.0), 
+        Math.toRadians(-179.56050113588573 + 90.0) 
+    };
+
     private static final double MODULE_ROCK_MODE_PSOITIONS[] = { -Math.PI / 4, Math.PI / 4, -Math.PI / 4, Math.PI / 4 };
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
-    
     private static final double LOW_SENSITIVITY_RATIO = 0.08;
-
     private static final double CHASSIS_SIDE_LENGTH = 0.6;
-    private static final double RADIAN_DEGREE_RATIO = Math.PI / 180.0;
 
     // Singleton instance.
     private static final SwerveDrive instance = new SwerveDrive();
@@ -68,7 +72,7 @@ public class SwerveDrive extends SmartPrintable {
         }
 
         for (int i = 0; i < modules.length; i++) {
-            positions[i] = modules[i].getAngle();
+            positions[i] = modules[i].getPosition();
         }
 
         kinematics = new SwerveDriveKinematics(
@@ -78,7 +82,11 @@ public class SwerveDrive extends SmartPrintable {
             new Translation2d(   CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2)
         );
 
-        odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(Pigeon.getYaw() * RADIAN_DEGREE_RATIO), positions);
+        odometry = new SwerveDriveOdometry(
+            kinematics, 
+            new Rotation2d(Math.toRadians(Pigeon.getYaw())), 
+            positions
+        );
     }
 
     /**
@@ -111,10 +119,10 @@ public class SwerveDrive extends SmartPrintable {
             return;
         }
         
-        instance.odometry.update(new Rotation2d(Pigeon.getYaw() * RADIAN_DEGREE_RATIO), instance.positions);
+        instance.odometry.update(new Rotation2d(Math.toRadians(Pigeon.getYaw())), instance.positions);
         
         if (lowSense != -1) {
-            double angle = (2 * Math.PI) - ((double)lowSense * RADIAN_DEGREE_RATIO);
+            double angle = Math.TAU - (Math.toRadians((double)lowSense));
 
             // inverted since the drive is rotated to compensate for joystick stuff
             directionalX = -(Math.sin(angle) * LOW_SENSITIVITY_RATIO);
@@ -128,13 +136,12 @@ public class SwerveDrive extends SmartPrintable {
         directionalY = instance.directionCurve.apply(directionalY, directionalX);
         turn = instance.turnCurve.apply(turn);
 
-        ChassisSpeeds chassisSpeeds;
-
-        if (instance.mode == SwerveMode.Headless) {
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getYaw() * RADIAN_DEGREE_RATIO));
-        } else {
-            chassisSpeeds = new ChassisSpeeds(directionalX, -directionalY, turn);
-        }
+        ChassisSpeeds chassisSpeeds = instance.mode == SwerveMode.Headless
+            ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                directionalX, -directionalY, turn, 
+                new Rotation2d(Math.toRadians(Pigeon.getYaw()))
+            )
+            : new ChassisSpeeds(directionalX, -directionalY, turn);
 
         SwerveModuleState[] moduleStates = instance.kinematics.toSwerveModuleStates(chassisSpeeds);
 
@@ -156,13 +163,12 @@ public class SwerveDrive extends SmartPrintable {
             return;
         }
 
-        ChassisSpeeds chassisSpeeds;
-
-        if (instance.mode == SwerveMode.Headless) {
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getYaw() * RADIAN_DEGREE_RATIO));
-        } else {
-            chassisSpeeds = new ChassisSpeeds(directionalX, -directionalY, turn);
-        }
+        ChassisSpeeds chassisSpeeds = instance.mode == SwerveMode.Headless
+            ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                directionalX, -directionalY, turn, 
+                new Rotation2d(Math.toRadians(Pigeon.getYaw()))
+            )
+            : new ChassisSpeeds(directionalX, -directionalY, turn);
 
         SwerveModuleState[] moduleStates = instance.kinematics.toSwerveModuleStates(chassisSpeeds);
 
@@ -196,7 +202,7 @@ public class SwerveDrive extends SmartPrintable {
         boolean rockMode = false;
 
         for (SwerveModule module : instance.modules) {
-            rockMode |= module.getRockMode();
+            rockMode |= module.inRockMode();
         }
 
         return rockMode;
@@ -292,7 +298,7 @@ public class SwerveDrive extends SmartPrintable {
      * Gets the longest distance traveled by any modules.
      */
     public static double getDistance() {
-        return Math.max(Math.abs(instance.modules[0].getPosition()), Math.abs(instance.modules[1].getPosition()));
+        return Math.max(Math.abs(instance.modules[0].getDistanceTraveled()), Math.abs(instance.modules[1].getDistanceTraveled()));
     }
 
     /**
