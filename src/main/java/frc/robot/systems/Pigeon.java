@@ -48,7 +48,6 @@ public class Pigeon extends SmartPrintable {
      */
     public static void setFeildZero() {
         instance.pigeon.setYaw(0.0);
-        
     }
 
     /**
