@@ -13,7 +13,9 @@ import java.util.concurrent.TimeUnit;
 import com.ctre.phoenix.sensors.Pigeon2;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import frc.robot.SmartPrintable;
+import frc.robot.subsystems.Angle;
 
 /*
  * Manages the robot's pigeon.
@@ -60,31 +62,31 @@ public class Pigeon extends SmartPrintable {
     /**
      * Gets Yaw.
      */
-    public static double getYaw() {
-        return instance.pigeon.getYaw() % 360.0;
+    public static Angle getYaw() {
+        return new Angle().setDegrees(instance.pigeon.getYaw() % 360.0);
     }
 
     /**
      * Gets pitch.
      */
-    public static double getPitch() {
+    public static Angle getPitch() {
         // Pitch and roll are flipped due to mounting orientation.
-        return instance.pigeon.getRoll();
+        return new Angle().setDegrees(instance.pigeon.getRoll());
     }
 
     /**
      * Gets roll.
      */
-    public static double getRoll() {
+    public static Angle getRoll() {
         // Pitch and roll are flipped due to mounting orientation.
-        return instance.pigeon.getPitch();
+        return new Angle().setDegrees(instance.pigeon.getPitch());
     }
     
     @Override
     public void print() {
-        SmartDashboard.putNumber("Pigeon Yaw", getYaw());
-        SmartDashboard.putNumber("Pigeon Pitch", getPitch());
-        SmartDashboard.putNumber("Pigeon Roll", getRoll());
+        SmartDashboard.putNumber("Pigeon Yaw", getYaw().radians());
+        SmartDashboard.putNumber("Pigeon Pitch", getPitch().radians());
+        SmartDashboard.putNumber("Pigeon Roll", getRoll().radians());
 
         OrientationalChange change = getChangePerSecond();
 
