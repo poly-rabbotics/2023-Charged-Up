@@ -24,7 +24,7 @@ import frc.robot.SmartPrintable;
  * Class for managing and manipulating a swerve module. 
  */
 public class SwerveModule extends SmartPrintable {
-    private static final double CONVERSION_FACTOR_ROTATION = (150 * Math.PI) / (7 * 180);                     // Rotations to radians.
+    private static final double CONVERSION_FACTOR_ROTATION = Math.toRadians(150 / 7);                         // Rotations to radians.
     private static final double CONVERSION_FACTOR_MOVEMENT = 6.75;                                            // Rotations to meters.
     private static final double CONVERSION_FACTOR_ROTATION_VELOCITY = CONVERSION_FACTOR_ROTATION * (1 / 60);  // RPM to radians per second.
     private static final double CONVERSION_FACTOR_MOVEMENT_VELOCITY = CONVERSION_FACTOR_MOVEMENT * (1 / 60);  // RPM to meters per second.
@@ -49,7 +49,7 @@ public class SwerveModule extends SmartPrintable {
     private final PIDController rotationController;
     private final PIDController rockController;
 
-    private final double canCoderOffset;
+    private final Angle canCoderOffset;
     private final double coefficient;
 
     // Set to NaN if not in rock mode, NaN does not equal itself by definition
@@ -58,11 +58,11 @@ public class SwerveModule extends SmartPrintable {
     private double rockPos = Double.NaN;
     private double maxSpeed = Double.NaN;
 
-    public SwerveModule(int movementMotorID, int rotationalMotorID, int canCoderID, double canCoderOffset, double coefficient) {
+    public SwerveModule(int movementMotorID, int rotationalMotorID, int canCoderID, Angle canCoderOffset, double coefficient) {
         super();
         
-        this.canCoderOffset = canCoderOffset / 180.0 * Math.PI;
-        this.coefficient = coefficient / 180.0 * Math.PI;
+        this.canCoderOffset = canCoderOffset.clone();
+        this.coefficient = coefficient;
 
         rotationMotor = new CANSparkMax(rotationalMotorID, MotorType.kBrushless);
         rotationMotor.setInverted(false);
@@ -82,7 +82,7 @@ public class SwerveModule extends SmartPrintable {
             // Since the default coefficiant used for degrees is not 
             // particularly intuitive we just grab it and run a deg -> rad
             // conversion on it.
-            angularEncoder.configGetFeedbackCoefficient() / 180.0 * Math.PI, 
+            Math.toRadians(angularEncoder.configGetFeedbackCoefficient()), 
             "rad", 
             SensorTimeBase.PerSecond
         );
@@ -114,7 +114,7 @@ public class SwerveModule extends SmartPrintable {
      * Sets the desired module state for this module.
      */
     public void setDesiredState(SwerveModuleState state) {
-        double currentPosition = (angularEncoder.getPosition() + canCoderOffset) % Math.TAU;
+        double currentPosition = (angularEncoder.getPosition() + canCoderOffset.radians()) % Math.TAU;
         state = SwerveModuleState.optimize(state, new Rotation2d(currentPosition));
         
         if (rockPos != rockPos) {
@@ -184,8 +184,8 @@ public class SwerveModule extends SmartPrintable {
     public void print() {
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position", angularEncoder.getPosition());
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position mod tau", angularEncoder.getPosition() % Math.TAU);
-        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position + off", angularEncoder.getPosition() + canCoderOffset);
-        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position + off mod tau", (angularEncoder.getPosition() + canCoderOffset) % Math.TAU);
+        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position + off", angularEncoder.getPosition() + canCoderOffset.radians());
+        SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position + off mod tau", (angularEncoder.getPosition() + canCoderOffset.radians()) % Math.TAU);
         SmartDashboard.putNumber("Module " + angularEncoder.getDeviceID() + " Position (Distance) ", movementEncoder.getPosition());
     }
 

@@ -19,6 +19,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.SmartPrintable;
+import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.subsystems.SwerveModule;
 
@@ -30,15 +31,20 @@ public class SwerveDrive extends SmartPrintable {
     private static final int MODULE_ROTATION_CAN_IDS[] = { 5,  6,   7,   8  };
     private static final int MODULE_CANCODER_CAN_IDS[] = { 9,  10,  11,  12 };
     
-    // TODO: Get radian values from start dashboard.
-    private static final double MODULE_CANCODER_OFFSETS[] = {
-        Math.toRadians(-252.24607237 + 90.0), 
-        Math.toRadians(-224.033203125 + 270.0), 
-        Math.toRadians(-11.425719246268272 + 270.0), 
-        Math.toRadians(-179.56050113588573 + 90.0) 
+    private static final Angle MODULE_CANCODER_OFFSETS[] = {
+        new Angle().setDegrees(-252.24607237 + 90.0), 
+        new Angle().setDegrees(-224.033203125 + 270.0), 
+        new Angle().setDegrees(-11.425719246268272 + 270.0), 
+        new Angle().setDegrees(-179.56050113588573 + 90.0) 
     };
 
-    private static final double MODULE_ROCK_MODE_PSOITIONS[] = { -Math.PI / 4, Math.PI / 4, -Math.PI / 4, Math.PI / 4 };
+    private static final Angle MODULE_ROCK_MODE_POSITIONS[] = { 
+        new Angle().setRadians( -Math.PI / 4), 
+        new Angle().setRadians(  Math.PI / 4), 
+        new Angle().setRadians( -Math.PI / 4), 
+        new Angle().setRadians(  Math.PI / 4) 
+    };
+
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
     private static final double LOW_SENSITIVITY_RATIO = 0.08;
     private static final double CHASSIS_SIDE_LENGTH = 0.6;
@@ -84,7 +90,7 @@ public class SwerveDrive extends SmartPrintable {
 
         odometry = new SwerveDriveOdometry(
             kinematics, 
-            new Rotation2d(Math.toRadians(Pigeon.getYaw())), 
+            new Rotation2d(Pigeon.getYaw().radians()), 
             positions
         );
     }
@@ -119,10 +125,10 @@ public class SwerveDrive extends SmartPrintable {
             return;
         }
         
-        instance.odometry.update(new Rotation2d(Math.toRadians(Pigeon.getYaw())), instance.positions);
+        instance.odometry.update(new Rotation2d(Pigeon.getYaw().radians()), instance.positions);
         
         if (lowSense != -1) {
-            double angle = Math.TAU - (Math.toRadians((double)lowSense));
+            double angle = Math.TAU - Math.toRadians((double)lowSense);
 
             // inverted since the drive is rotated to compensate for joystick stuff
             directionalX = -(Math.sin(angle) * LOW_SENSITIVITY_RATIO);
@@ -139,7 +145,7 @@ public class SwerveDrive extends SmartPrintable {
         ChassisSpeeds chassisSpeeds = instance.mode == SwerveMode.Headless
             ? ChassisSpeeds.fromFieldRelativeSpeeds(
                 directionalX, -directionalY, turn, 
-                new Rotation2d(Math.toRadians(Pigeon.getYaw()))
+                new Rotation2d(Pigeon.getYaw().radians())
             )
             : new ChassisSpeeds(directionalX, -directionalY, turn);
 
@@ -166,7 +172,7 @@ public class SwerveDrive extends SmartPrintable {
         ChassisSpeeds chassisSpeeds = instance.mode == SwerveMode.Headless
             ? ChassisSpeeds.fromFieldRelativeSpeeds(
                 directionalX, -directionalY, turn, 
-                new Rotation2d(Math.toRadians(Pigeon.getYaw()))
+                new Rotation2d(Pigeon.getYaw().radians())
             )
             : new ChassisSpeeds(directionalX, -directionalY, turn);
 
@@ -182,7 +188,7 @@ public class SwerveDrive extends SmartPrintable {
      */
     public static void runRockMode() {
         for (int i = 0; i < instance.modules.length; i++) {
-            instance.modules[i].setDesiredState(new SwerveModuleState(0.0, new Rotation2d(MODULE_ROCK_MODE_PSOITIONS[i])));
+            instance.modules[i].setDesiredState(new SwerveModuleState(0.0, new Rotation2d(MODULE_ROCK_MODE_POSITIONS[i])));
         }
     }
 
