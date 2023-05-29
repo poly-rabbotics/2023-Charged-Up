@@ -144,7 +144,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         controlMode = ControlMode.TELEOPERATED;
-        SwerveDrive.setMode(SwerveMode.Headless);
+        SwerveDrive.setMode(SwerveMode.HEADLESS);
         ElevFourbar.init();
         Intake.init();
         ElevFourbar.enableSafetyMode(false);
@@ -174,10 +174,10 @@ public class Robot extends TimedRobot {
         
         // Left stick changes between headless and relative control modes.
         if (controllerOne.getLeftStickButtonReleased()) {
-            if (SwerveDrive.getMode() == SwerveMode.Headless) {
-                SwerveDrive.setMode(SwerveMode.Relative);
+            if (SwerveDrive.getMode() == SwerveMode.HEADLESS) {
+                SwerveDrive.setMode(SwerveMode.RELATIVE);
             } else {
-                SwerveDrive.setMode(SwerveMode.Headless);
+                SwerveDrive.setMode(SwerveMode.HEADLESS);
             }
         }
         
@@ -225,7 +225,7 @@ public class Robot extends TimedRobot {
     @Override
     public void testInit() {
         controlMode = ControlMode.SAFETY;
-        SwerveDrive.setMode(SwerveMode.Headless);
+        SwerveDrive.setMode(SwerveMode.HEADLESS);
         ElevFourbar.init();
         Intake.init();
         ElevFourbar.enableSafetyMode(true);
@@ -251,10 +251,10 @@ public class Robot extends TimedRobot {
         
         // Left stick changes between headless and relative control modes.
         if (controllerOne.getLeftStickButtonReleased()) {
-            if (SwerveDrive.getMode() == SwerveMode.Headless) {
-                SwerveDrive.setMode(SwerveMode.Relative);
+            if (SwerveDrive.getMode() == SwerveMode.HEADLESS) {
+                SwerveDrive.setMode(SwerveMode.RELATIVE);
             } else {
-                SwerveDrive.setMode(SwerveMode.Headless);
+                SwerveDrive.setMode(SwerveMode.HEADLESS);
             }
         }
         
