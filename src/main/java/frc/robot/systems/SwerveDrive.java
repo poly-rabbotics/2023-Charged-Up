@@ -69,7 +69,7 @@ public class SwerveDrive extends SmartPrintable {
     // Variable drive states objects.
     private BiFunction<Double, Double, Double> directionCurve = Controls::defaultCurveTwoDimensional;
     private Function<Double, Double> turnCurve = Controls::defaultCurve;
-    private SwerveMode mode = SwerveMode.Headless;
+    private SwerveMode mode = SwerveMode.HEADLESS;
 
     private SwerveDrive() {
         super();
@@ -150,7 +150,7 @@ public class SwerveDrive extends SmartPrintable {
         directionalY = instance.directionCurve.apply(directionalY, directionalX);
         turn = instance.turnCurve.apply(turn);
 
-        ChassisSpeeds chassisSpeeds = instance.mode == SwerveMode.Headless
+        ChassisSpeeds chassisSpeeds = instance.mode == SwerveMode.HEADLESS
             ? ChassisSpeeds.fromFieldRelativeSpeeds(
                 directionalX, -directionalY, turn, 
                 new Rotation2d(Pigeon.getYaw().radians())
@@ -177,7 +177,7 @@ public class SwerveDrive extends SmartPrintable {
             return;
         }
 
-        ChassisSpeeds chassisSpeeds = instance.mode == SwerveMode.Headless
+        ChassisSpeeds chassisSpeeds = instance.mode == SwerveMode.HEADLESS
             ? ChassisSpeeds.fromFieldRelativeSpeeds(
                 directionalX, -directionalY, turn, 
                 new Rotation2d(Pigeon.getYaw().radians())
