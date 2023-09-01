@@ -5,10 +5,12 @@
 package frc.robot.subsystems;
 
 public final class Angle {
+	public static final double TAU = Math.PI * 2;
+
 	private double dec = 0.0;
 
 	public double radians() {
-		return dec * Math.TAU;
+		return dec * TAU;
 	}
 
 	public double degrees() {
@@ -16,7 +18,7 @@ public final class Angle {
 	}
 
 	public Angle setRadians(double radians) {
-		dec = radians / Math.TAU;
+		dec = radians / TAU;
 		return this;
 	}
 
