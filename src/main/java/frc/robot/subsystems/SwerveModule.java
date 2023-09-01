@@ -156,7 +156,7 @@ public class SwerveModule extends SmartPrintable {
         movementEncoder.setVelocityConversionFactor(CONVERSION_FACTOR_MOVEMENT_VELOCITY);
         
         rotationController = new PIDController(PID_P, PID_I, PID_D);
-        rotationController.enableContinuousInput(0.0, Math.TAU);
+        rotationController.enableContinuousInput(0.0, Angle.TAU);
         rotationController.setTolerance(0.005); // This is more precise than before, TODO: test.
 
         rockController = new PIDController(ROCK_PID_P, ROCK_PID_I, ROCK_PID_D);
@@ -173,7 +173,7 @@ public class SwerveModule extends SmartPrintable {
      * repeatedly to continue PID calculations.
      */
     public void setDesiredState(SwerveModuleState state) {
-        double currentPosition = (angularEncoder.getPosition() + canCoderOffset.radians()) % Math.TAU;
+        double currentPosition = (angularEncoder.getPosition() + canCoderOffset.radians()) % Angle.TAU;
         state = SwerveModuleState.optimize(state, new Rotation2d(currentPosition));
         
         if (rockPos != rockPos) {
@@ -186,7 +186,7 @@ public class SwerveModule extends SmartPrintable {
             movementMotor.set(rockController.calculate(getDistanceTraveled(), rockPos));
         }
 
-        double calculation = rotationController.calculate(currentPosition, (state.angle.getRadians() + Math.TAU) % Math.TAU);
+        double calculation = rotationController.calculate(currentPosition, (state.angle.getRadians() + Angle.TAU) % Angle.TAU);
         rotationMotor.set(calculation * coefficient);
 
         position.angle = new Rotation2d(angularEncoder.getPosition());
@@ -239,9 +239,9 @@ public class SwerveModule extends SmartPrintable {
     @Override
     public void print() {
         SmartDashboard.putNumber("Module " + physicalPosition.asString() + " Position", angularEncoder.getPosition());
-        SmartDashboard.putNumber("Module " + physicalPosition.asString() + " Position mod tau", angularEncoder.getPosition() % Math.TAU);
+        SmartDashboard.putNumber("Module " + physicalPosition.asString() + " Position mod tau", angularEncoder.getPosition() % Angle.TAU);
         SmartDashboard.putNumber("Module " + physicalPosition.asString() + " Position + off", angularEncoder.getPosition() + canCoderOffset.radians());
-        SmartDashboard.putNumber("Module " + physicalPosition.asString() + " Position + off mod tau", (angularEncoder.getPosition() + canCoderOffset.radians()) % Math.TAU);
+        SmartDashboard.putNumber("Module " + physicalPosition.asString() + " Position + off mod tau", (angularEncoder.getPosition() + canCoderOffset.radians()) % Angle.TAU);
         SmartDashboard.putNumber("Module " + physicalPosition.asString() + " Position (Distance) ", movementEncoder.getPosition());
     }
 

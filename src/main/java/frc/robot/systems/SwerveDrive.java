@@ -136,7 +136,7 @@ public class SwerveDrive extends SmartPrintable {
         instance.odometry.update(new Rotation2d(Pigeon.getYaw().radians()), instance.positions);
         
         if (lowSense != -1) {
-            double angle = Math.TAU - Math.toRadians((double)lowSense);
+            double angle = Angle.TAU - Math.toRadians((double)lowSense);
 
             // inverted since the drive is rotated to compensate for joystick stuff
             directionalX = -(Math.sin(angle) * LOW_SENSITIVITY_RATIO);
