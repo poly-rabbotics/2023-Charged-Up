@@ -8,6 +8,7 @@ import frc.robot.patterns.FadeIn;
 import frc.robot.patterns.FadeIntoPattern;
 import frc.robot.subsystems.LightPattern;
 import frc.robot.subsystems.LightRenderer;
+import frc.robot.subsystems.SwerveMode;
 import frc.robot.systems.ElevFourbar.GamePiece;
 
 public class LEDLights {
@@ -42,7 +43,7 @@ public class LEDLights {
         } else if (Robot.getControlMode() == ControlMode.AUTONOMOUS) {
             setPattern = new FadeIn(new Color(0.0, 1.0, 0.0), 1.0);
         } else {
-            if (SwerveDrive.getRockMode()) {
+            if (SwerveDrive.getMode() == SwerveMode.ROCK) {
                 // If in rock mode make wyvern scary >:D
                 setPattern = new FadeIn(new Color(1.0, 0.0, 0.0), 1.0);
             } else {

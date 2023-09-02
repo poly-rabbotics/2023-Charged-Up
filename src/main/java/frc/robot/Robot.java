@@ -170,7 +170,7 @@ public class Robot extends TimedRobot {
         }
 
         SwerveDrive.run(x, y, controllerOne.getRightX(), controllerOne.getPOV());
-        SwerveDrive.setRockMode(controllerOne.getRightTriggerAxis() > 0.25);
+        SwerveDrive.conditionalTempMode(SwerveMode.ROCK, controllerOne.getRightTriggerAxis() > 0.25);
         
         // Left stick changes between headless and relative control modes.
         if (controllerOne.getLeftStickButtonReleased()) {
@@ -247,7 +247,7 @@ public class Robot extends TimedRobot {
 
         //SCALES DOWN DRIVE SPEED FOR 
         SwerveDrive.run(x, y, controllerOne.getRightX(), controllerOne.getPOV());
-        SwerveDrive.setRockMode(controllerOne.getRightTriggerAxis() > 0.25);
+        SwerveDrive.conditionalTempMode(SwerveMode.ROCK, controllerOne.getRightTriggerAxis() > 0.25);
         
         // Left stick changes between headless and relative control modes.
         if (controllerOne.getLeftStickButtonReleased()) {

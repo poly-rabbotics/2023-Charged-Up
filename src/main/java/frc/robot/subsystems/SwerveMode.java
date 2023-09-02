@@ -15,5 +15,10 @@ public enum SwerveMode {
      * Pressing the joystick forward moves the robot froward, regardless of 
      * position relative to driver.
      */
-    RELATIVE
+    RELATIVE,
+
+    /**
+     * Rock mode, resists movement and holds position.
+     */
+    ROCK
 }
