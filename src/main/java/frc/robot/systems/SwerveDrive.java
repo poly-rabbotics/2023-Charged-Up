@@ -229,8 +229,11 @@ public class SwerveDrive extends SmartPrintable {
         }
 
         instance.odometry.update(new Rotation2d(Pigeon.getYaw().radians()), instance.positions);
-        instance.mode = instance.inactiveMode;
-        instance.inactiveMode = null;
+
+        if (instance.inactiveMode != null) {
+            instance.mode = instance.inactiveMode;
+            instance.inactiveMode = null;
+        }
     }
 
     /**
