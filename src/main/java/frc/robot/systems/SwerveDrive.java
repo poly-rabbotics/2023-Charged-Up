@@ -132,7 +132,7 @@ public class SwerveDrive extends SmartPrintable {
      * running will not be effected
      */
     public static void tempMode(SwerveMode mode) {
-        if (instance.mode != null) {
+        if (instance.inactiveMode != null) {
             instance.mode = mode;
             return;
         }
@@ -215,7 +215,7 @@ public class SwerveDrive extends SmartPrintable {
                     moduleStates[i] = new SwerveModuleState(0.0, new Rotation2d(MODULE_ROCK_MODE_POSITIONS[i].radians()));
                 }
 
-                return;
+                break;
             } 
 
             // This branch should never be reached as the enum used should never
