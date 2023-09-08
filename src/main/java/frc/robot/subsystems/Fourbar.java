@@ -5,6 +5,9 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import frc.robot.systems.Intake.SolenoidState;
@@ -24,12 +27,12 @@ public class Fourbar {
     
     //constant variables
     private static final int MOTOR_ID = 61; //CORRECT ID
-    private static final double MANUAL_DEADZONE = 0.3;
+    private static final double MANUAL_DEADZONE = 0.2;
 
     //PID constants
-    private static final double P0 = 10;    
+    private static final double P0 = 15;    
     private static final double I0 = 0.0;
-    private static final double D0 = 1;
+    private static final double D0 = 0.1;
     private static final double F0 = 0.0;
 
     private static final double P1 = 10;
@@ -70,10 +73,10 @@ public class Fourbar {
         pidController.setD(D0, 0);
         pidController.setFF(F0, 0);
 
-        pidController.setP(P1, 1);
+        /* pidController.setP(P1, 1);
         pidController.setI(I1, 1);
         pidController.setD(D1, 1);
-        pidController.setFF(F1, 1);
+        pidController.setFF(F1, 1); */
         pidController.setOutputRange(FOURBAR_SPEED_UP, -FOURBAR_SPEED_UP);
 
         pidController.setFeedbackDevice(absoluteEncoder);
@@ -95,7 +98,7 @@ public class Fourbar {
         
         targetSetpoint = setpoint.getFourbarPos();
 
-        pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition);
+        pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 1);
     }
 
     /**
@@ -109,7 +112,7 @@ public class Fourbar {
         double b = ElevFourbar.elevator.getPosition();
         slope = (coords.y - b) / coords.x;
 
-        bumperIntercept = (slope * Setpoint.BUMPER_X) + b;
+        /* bumperIntercept = (slope * Setpoint.BUMPER_X) + b;
 
         if(bumperIntercept <= Setpoint.BUMPER_Y) {
             if(speed < 0) {
@@ -123,16 +126,19 @@ public class Fourbar {
             if(speed < 0) {
                 speed = 0;
             }
-        }
+        } */
 
         //Deadzone
         if(Math.abs(speed) < MANUAL_DEADZONE) {
             speed = 0;
         }
 
-        targetSetpoint -= speed * 0.9;
+        /* targetSetpoint -= speed * 0.9;
 
-        pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 1);
+        pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 1); */
+
+        fourbarMotor.set(-speed);
+        SmartDashboard.putNumber("AHHHH", fourbarMotor.get());
     }
 
     /**

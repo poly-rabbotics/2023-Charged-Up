@@ -62,6 +62,8 @@ public class ElevFourbar extends SmartPrintable {
         super();
         fourbar = new Fourbar();
         elevator = new Elevator();
+        currentSetpoint = new Setpoint(0, Setpoint.HYPOTENUSE);
+        setpoint = STOWED_SETPOINT.cone;
     }
 
     /**
@@ -98,7 +100,7 @@ public class ElevFourbar extends SmartPrintable {
             instance.controlType = ControlType.MANUAL;
         } else if(mid || groundIntake || high) {
             instance.controlType = ControlType.POSITION;
-        }
+        } 
 
         if(instance.controlType == ControlType.POSITION) { //Run PID control
             elevator.pidControl(instance.setpoint);
@@ -118,6 +120,10 @@ public class ElevFourbar extends SmartPrintable {
         if (zeroElevEncoder) {
             elevator.zeroEncoder();
         }
+
+        SmartDashboard.putNumber("Fourbar manual", fourbarSpeed);
+        SmartDashboard.putNumber("Elevator manual", elevatorSpeed);
+        SmartDashboard.putString("CT", instance.controlType.toString());
     }
 
     /**
@@ -208,7 +214,7 @@ public class ElevFourbar extends SmartPrintable {
 
         //Fourbar values
         SmartDashboard.putNumber("Fourbar Position", fourbar.getPosition());
-        SmartDashboard.putNumber("Fourbar Target", (fourbar.getTargetPosition() + fourbar.ENCODER_OFFSET)/360.0); //ADD THIS
+        SmartDashboard.putNumber("Fourbar Target", (fourbar.getTargetPosition() + fourbar.ENCODER_OFFSET)); //ADD THIS
         SmartDashboard.putNumber("Abs Encoder Position", fourbar.getAbsolutePosition());
 
         SmartDashboard.putBoolean("Cube Mode Selected?", getGamePieceSelected() == ElevFourbar.GamePiece.CUBE);
