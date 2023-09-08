@@ -30,7 +30,7 @@ public class SwerveModule extends SmartPrintable {
     private static final double CONVERSION_FACTOR_ROTATION_VELOCITY = CONVERSION_FACTOR_ROTATION * (1 / 60);  // RPM to radians per second.
     private static final double CONVERSION_FACTOR_MOVEMENT_VELOCITY = CONVERSION_FACTOR_MOVEMENT * (1 / 60);  // RPM to meters per second.
 
-    private static final double PID_P = 0.01;
+    private static final double PID_P = 0.5;
     private static final double PID_I = 0.0;
     private static final double PID_D = 0.0;
 
@@ -132,6 +132,7 @@ public class SwerveModule extends SmartPrintable {
         movementMotor.setSmartCurrentLimit(40);
 
         angularEncoder = new CANCoder(canCoderID);
+        angularEncoder.configFactoryDefault();
 
         // Magic and forbidden config from the code orange wizards. Makes the 
         // encoder initialize to absolute.
