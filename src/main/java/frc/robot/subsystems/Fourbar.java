@@ -23,16 +23,16 @@ public class Fourbar {
     private static final double FOURBAR_SPEED_UP = -0.45;
 
     //encoder offset
-    public final double ENCODER_OFFSET = 0.145 * 360;
+    public final double ENCODER_OFFSET = 0.331 * 360;
     
     //constant variables
     private static final int MOTOR_ID = 61; //CORRECT ID
     private static final double MANUAL_DEADZONE = 0.2;
 
     //PID constants
-    private static final double P0 = 15;    
+    private static final double P0 = 5;    
     private static final double I0 = 0.0;
-    private static final double D0 = 0.1;
+    private static final double D0 = 0.05;
     private static final double F0 = 0.0;
 
     private static final double P1 = 10;
@@ -64,6 +64,8 @@ public class Fourbar {
      */
     public Fourbar(){
         fourbarMotor = new CANSparkMax(MOTOR_ID, MotorType.kBrushless);
+        //fourbarMotor.restoreFactoryDefaults();
+        //fourbarMotor.setSmartCurrentLimit(30);
 
         absoluteEncoder = fourbarMotor.getAbsoluteEncoder(Type.kDutyCycle);
         pidController = fourbarMotor.getPIDController();
@@ -98,7 +100,7 @@ public class Fourbar {
         
         targetSetpoint = setpoint.getFourbarPos();
 
-        pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 1);
+        pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 0);
     }
 
     /**
@@ -137,6 +139,7 @@ public class Fourbar {
 
         pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 1); */
 
+        speed /= 2;
         fourbarMotor.set(-speed);
         SmartDashboard.putNumber("AHHHH", fourbarMotor.get());
     }
