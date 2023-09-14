@@ -66,8 +66,6 @@ public class AutonomousRunner extends SmartPrintable {
     }
     
     public static void run() {
-        SwerveDrive.setRockMode(false);
-
         SmartDashboard.putNumber("Auto Stage", instance.autoStage);
 
         //Run the auto mode
