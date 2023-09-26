@@ -3,10 +3,8 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.motorcontrol.PWMTalonSRX;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.SmartPrintable;
 
-public class Roller extends SmartPrintable {
+public class Roller {
     private static final int PDH_ID = 41;
     private static final double MAX_AMPS = 1000;
 
@@ -26,9 +24,11 @@ public class Roller extends SmartPrintable {
         rollerMotor.set(speed);
     }
 
-    @Override
-    public void print() {
-        SmartDashboard.putNumber("Roller Amps", pdh.getCurrent(17));
-        SmartDashboard.putNumber("Roller Speed", rollerMotor.get());
+    public void getAmps() {
+        return pdh.getCurrent(17);
+    }
+
+    public void get() {
+        return rollerMotor.get();
     }
 }

@@ -178,22 +178,21 @@ public class Robot extends TimedRobot {
         }
         
         Intake.run(
-            controlPanel.getRawButtonPressed(8), //controller one dpad to control pivot
-            controlPanel.getRawButton(9),
-            controlPanel.getRawButton(9),
-            controlPanel.getRawButton(6),
-            controlPanel.getRawButton(7)
+            controlPanel.getRawButtonPressed(8), //Pivot toggle
+            controlPanel.getRawButton(9), //Claw hold
+            controlPanel.getRawButton(6), //Intake hold
+            controlPanel.getRawButton(7) //Outtake hold
         );
 
         ElevFourbar.run(
-            controllerTwo.getRightY(),
-            Math.abs(controlPanel.getRawAxis(0) / 2) > Math.abs(controllerTwo.getLeftY()) ? controlPanel.getRawAxis(0) / 2 : -controllerTwo.getLeftY(),
-            controllerTwo.getPOV(),
-            controlPanel.getRawButtonPressed(5), //toggle game piece
-            controlPanel.getRawButton(1), //ground intake
-            controlPanel.getRawButton(3), //mid scoring
-            controlPanel.getRawButton(4), //high scoring
-            controllerTwo.getStartButtonPressed() || controlPanel.getRawButton(2) //zero elevator encoder
+            controllerTwo.getRightY(), //Manual elevator
+            Math.abs(controlPanel.getRawAxis(0) / 2) > Math.abs(controllerTwo.getLeftY()) ? controlPanel.getRawAxis(0) / 2 : -controllerTwo.getLeftY(), //Manual fourbar
+            controllerTwo.getPOV(), //DPad direction
+            controlPanel.getRawButtonPressed(5), //Toggle game piece
+            controlPanel.getRawButton(1), //Ground intake
+            controlPanel.getRawButton(3), //Mid scoring
+            controlPanel.getRawButton(4), //High scoring
+            controllerTwo.getStartButtonPressed() || controlPanel.getRawButton(2) //Zero elevator encoder
         );
     }
     

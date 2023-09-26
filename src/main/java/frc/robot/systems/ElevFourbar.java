@@ -120,11 +120,6 @@ public class ElevFourbar {
         if (zeroElevEncoder) {
             elevator.zeroEncoder();
         }
-
-        SmartDashboard.putNumber("Fourbar manual", fourbarSpeed);
-        SmartDashboard.putNumber("Elevator manual", elevatorSpeed);
-        SmartDashboard.putNumber("Elev Position", elevator.getPosition());
-        SmartDashboard.putString("CT", instance.controlType.toString());
     }
 
     /**
@@ -211,15 +206,14 @@ public class ElevFourbar {
 
         //Elevator values
         SmartDashboard.putNumber("Elevator Position", elevator.getPosition());
-        SmartDashboard.putNumber("Elevator Target", elevator.getTargetPosition()); //ADD THIS
+        SmartDashboard.putNumber("Elevator Target", elevator.getTargetPosition());
 
         //Fourbar values
         SmartDashboard.putNumber("Fourbar Position", fourbar.getPosition());
-        SmartDashboard.putNumber("Fourbar Target", (fourbar.getTargetPosition() + fourbar.ENCODER_OFFSET)); //ADD THIS
-        SmartDashboard.putNumber("Abs Encoder Position", fourbar.getAbsolutePosition());
+        SmartDashboard.putNumber("Fourbar Target", (fourbar.getTargetPosition() - fourbar.ENCODER_OFFSET));
         SmartDashboard.putNumber("Fourbar Power", fourbar.getPower());
+        SmartDashboard.putNumber("Abs Encoder Position", fourbar.getAbsolutePosition());
 
-        SmartDashboard.putBoolean("Cube Mode Selected?", getGamePieceSelected() == ElevFourbar.GamePiece.CUBE);
-        SmartDashboard.putBoolean("Cone Mode Selected?", getGamePieceSelected() == ElevFourbar.GamePiece.CONE);
+        SmartDashboard.putBoolean("Game Piece", getGamePieceSelected().toString());
     }
 }

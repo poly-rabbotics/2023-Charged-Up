@@ -62,7 +62,7 @@ public class Intake extends SmartPrintable {
      * @param intake
      * @param outtake
      */
-    public static void run(boolean pivotToggle, boolean clawHeld, boolean clawReleased, boolean intake, boolean outtake) {
+    public static void run(boolean pivotToggle, boolean clawHeld, boolean intake, boolean outtake) {
         double rollerSpeed;
 
         //IF CUBE IS SELECTED
@@ -94,7 +94,7 @@ public class Intake extends SmartPrintable {
         }
         
         //Run the mechanisms
-        runClaw(clawHeld, clawReleased);
+        runClaw(clawHeld);
         runPivot(pivotToggle);
         runRoller(rollerSpeed);
     }
@@ -104,7 +104,7 @@ public class Intake extends SmartPrintable {
      * @param held Opens claw if button is held
      * @param released Restarts auto intake timer
      */
-    private static void runClaw(boolean held, boolean released) {
+    private static void runClaw(boolean held) {
         if (held) {
             claw.open();
         } else {
@@ -188,7 +188,15 @@ public class Intake extends SmartPrintable {
      */
     @Override
     public void print() {
+        //Claw
         SmartDashboard.putString("Claw State", claw.getState().toString());
+
+        //Pivot
         SmartDashboard.putString("Pivot State", pivot.getState().toString());
+
+        //Roller
+        SmartDashboard.putNumber("Roller Speed", roller.get());
+        SmartDashboard.putNumber("Roller Amps", roller.getAmps());
+
     }
 }
