@@ -21,7 +21,7 @@ public class Roller extends SmartPrintable {
     public void setSpeed(double speed) {
         if (pdh.getCurrent(rollerMotor.getChannel()) > MAX_AMPS) {
             speed = 0.1;
-        }
+        } 
 
         rollerMotor.set(speed);
     }

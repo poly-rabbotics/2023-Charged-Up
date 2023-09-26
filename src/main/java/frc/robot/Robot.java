@@ -180,9 +180,9 @@ public class Robot extends TimedRobot {
         Intake.run(
             controlPanel.getRawButtonPressed(8), //controller one dpad to control pivot
             controlPanel.getRawButton(9),
-            controlPanel.getRawButton(7),
+            controlPanel.getRawButton(9),
             controlPanel.getRawButton(6),
-            controlPanel.getRawButtonReleased(6)
+            controlPanel.getRawButton(7)
         );
 
         ElevFourbar.run(
@@ -193,7 +193,7 @@ public class Robot extends TimedRobot {
             controlPanel.getRawButton(1), //ground intake
             controlPanel.getRawButton(3), //mid scoring
             controlPanel.getRawButton(4), //high scoring
-            controllerTwo.getStartButtonPressed() //zero elevator encoder
+            controllerTwo.getStartButtonPressed() || controlPanel.getRawButton(2) //zero elevator encoder
         );
     }
     

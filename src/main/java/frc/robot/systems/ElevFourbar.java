@@ -12,7 +12,7 @@ import frc.robot.subsystems.Setpoint;
 import frc.robot.subsystems.Fourbar;
 import frc.robot.SmartPrintable;
 
-public class ElevFourbar extends SmartPrintable {
+public class ElevFourbar {
 
     //SETPOINTS FOR PID CONTROL
     public static final DoubleSetpoint STOWED_SETPOINT = new DoubleSetpoint(new Setpoint(0, Setpoint.HYPOTENUSE), new Setpoint(0, Setpoint.HYPOTENUSE));
@@ -123,6 +123,7 @@ public class ElevFourbar extends SmartPrintable {
 
         SmartDashboard.putNumber("Fourbar manual", fourbarSpeed);
         SmartDashboard.putNumber("Elevator manual", elevatorSpeed);
+        SmartDashboard.putNumber("Elev Position", elevator.getPosition());
         SmartDashboard.putString("CT", instance.controlType.toString());
     }
 
@@ -216,6 +217,7 @@ public class ElevFourbar extends SmartPrintable {
         SmartDashboard.putNumber("Fourbar Position", fourbar.getPosition());
         SmartDashboard.putNumber("Fourbar Target", (fourbar.getTargetPosition() + fourbar.ENCODER_OFFSET)); //ADD THIS
         SmartDashboard.putNumber("Abs Encoder Position", fourbar.getAbsolutePosition());
+        SmartDashboard.putNumber("Fourbar Power", fourbar.getPower());
 
         SmartDashboard.putBoolean("Cube Mode Selected?", getGamePieceSelected() == ElevFourbar.GamePiece.CUBE);
         SmartDashboard.putBoolean("Cone Mode Selected?", getGamePieceSelected() == ElevFourbar.GamePiece.CONE);

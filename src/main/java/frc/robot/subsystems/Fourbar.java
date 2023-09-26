@@ -23,7 +23,7 @@ public class Fourbar {
     private static final double FOURBAR_SPEED_UP = -0.45;
 
     //encoder offset
-    public final double ENCODER_OFFSET = 0.331 * 360;
+    public final double ENCODER_OFFSET = 0.330 * 360;
     
     //constant variables
     private static final int MOTOR_ID = 61; //CORRECT ID
@@ -101,6 +101,7 @@ public class Fourbar {
         targetSetpoint = setpoint.getFourbarPos();
 
         pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 0);
+        
     }
 
     /**
@@ -176,5 +177,9 @@ public class Fourbar {
 
     public double getSlope() {
         return slope;
+    }
+
+    public double getPower() {
+        return fourbarMotor.get();
     }
 }
