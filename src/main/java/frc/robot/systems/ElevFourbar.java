@@ -214,6 +214,6 @@ public class ElevFourbar {
         SmartDashboard.putNumber("Fourbar Power", fourbar.getPower());
         SmartDashboard.putNumber("Abs Encoder Position", fourbar.getAbsolutePosition());
 
-        SmartDashboard.putBoolean("Game Piece", getGamePieceSelected().toString());
+        SmartDashboard.putString("Game Piece", getGamePieceSelected().toString());
     }
 }

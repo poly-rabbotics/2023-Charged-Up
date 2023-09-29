@@ -1,5 +1,8 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -12,10 +15,14 @@ import edu.wpi.first.wpilibj.DigitalInput;
 public class Elevator {
     //Ticks per inch constant, gear reduction is 12:1
     private static final double TICKS_PER_INCH = -6144.0; //FINAL VALUE DO NOT CHANGE
+    // THROUGH BORE = -455.156
     
     //constant variables
     private static final double MANUAL_DEADZONE = 0.3;
     private static final int ELEVATOR_MOTOR_ID = 62; //CORRECT ID
+
+    private static final int ENCODER_CHANNEL_A = 4;
+    private static final int ENCODER_CHANNEL_B = 5;
     
     //PID constants
     private static final double P = 1.0;
@@ -24,6 +31,10 @@ public class Elevator {
     
     //Motor and controller
     private final TalonFX elevatorMotor;
+
+    //Encoder and CAN Spark Max
+    private Encoder encoder;
+
 
     //variables
     private double encoderPosition;
@@ -35,6 +46,10 @@ public class Elevator {
      * Sets up elevator motor and Xbox controller, configures PID
      */
     public Elevator() {
+
+        //Encoder
+        encoder = new Encoder(ENCODER_CHANNEL_A, ENCODER_CHANNEL_B);
+        
         elevatorMotor = new TalonFX(ELEVATOR_MOTOR_ID);
 
         elevatorMotor.configFactoryDefault();
@@ -89,6 +104,8 @@ public class Elevator {
         }
 
         elevatorMotor.set(ControlMode.PercentOutput, speed * 0.6);
+    
+        SmartDashboard.putNumber("Elev Encoder", encoder.get());
     }
 
     /**
@@ -102,6 +119,13 @@ public class Elevator {
 
         //set elevator PID position to target setpoint
         elevatorMotor.set(ControlMode.Position, targetSetpoint * TICKS_PER_INCH);
+
+        if(encoder.get() >= 0) {
+            zeroEncoder();
+        }
+
+        SmartDashboard.putNumber("Elev Encoder", encoder.get());
+        SmartDashboard.putNumber("Elev Pos", getPosition());
     }
 
     /**
@@ -120,7 +144,9 @@ public class Elevator {
         return targetSetpoint;
     }
 
-    public void zeroEncoder() {
+    public void zeroEncoder(double inches) {
+        double ticks = inches * TICKS_PER_INCH;
+
         elevatorMotor.getSensorCollection().setIntegratedSensorPosition(2000, 30);
     }
 }

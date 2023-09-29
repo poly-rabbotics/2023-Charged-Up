@@ -24,11 +24,11 @@ public class Roller {
         rollerMotor.set(speed);
     }
 
-    public void getAmps() {
+    public double getAmps() {
         return pdh.getCurrent(17);
     }
 
-    public void get() {
+    public double get() {
         return rollerMotor.get();
     }
 }
