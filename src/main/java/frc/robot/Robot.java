@@ -47,10 +47,6 @@ public class Robot extends TimedRobot {
     private static final XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
     private static final Joystick controlPanel = (Joystick)Controls.getControllerByPort(2);
 
-    private static final AxisRateLimiter translationLimiter = new AxisRateLimiter(0.1, "Translation");
-    private static final BiFunction<Double, Double, Double> limitedTranslationCurve = 
-        (Double x, Double y) -> translationLimiter.apply(Controls.plateauingCurveTwoDimensional(x, y));
-
     private static final AnalogInput pressureSensor = new AnalogInput(0);
     private static final DigitalInput brakeSwitch = new DigitalInput(1);
 
@@ -78,7 +74,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit() {
         controlMode = ControlMode.DISABLED;
-        SwerveDrive.setTurnCurve(Controls::turnCurveRohan);
+        SwerveDrive.setTurnCurve(Controls::defaultCurve);
         SwerveDrive.setDirectionalCurve(Controls::defaultCurveTwoDimensional, true);
     }
     
@@ -153,33 +149,23 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {        
-        SmartDashboard.putNumber("controller Y", controllerOne.getLeftY());
-        SmartDashboard.putNumber("controller X", controllerOne.getLeftX());
-
-        // Toggle translation curve
-        if (controllerOne.getLeftBumperReleased()) {
-            translationLimiter.toggleEnabled();
-        }
-
-        double x = controllerOne.getLeftX();
-        double y = controllerOne.getLeftY();
-
-        if (controllerOne.getLeftTriggerAxis() > 0.25) {
-            x = Math.abs(x) > Math.abs(y) ? x : 0.0;
-            y = x == 0.0 ? y : 0.0;
-        }
-
-        SwerveDrive.run(x, y, controllerOne.getRightX(), controllerOne.getPOV());
-        SwerveDrive.conditionalTempMode(SwerveMode.ROCK, controllerOne.getRightTriggerAxis() > 0.25);
-        
         // Left stick changes between headless and relative control modes.
         if (controllerOne.getLeftStickButtonReleased()) {
-            if (SwerveDrive.getMode() == SwerveMode.HEADLESS) {
-                SwerveDrive.setMode(SwerveMode.RELATIVE);
-            } else {
-                SwerveDrive.setMode(SwerveMode.HEADLESS);
-            }
+            SwerveDrive.setMode(
+                SwerveDrive.getMode() == SwerveMode.HEADLESS 
+                 ? SwerveMode.RELATIVE 
+                 : SwerveMode.HEADLESS
+            );
         }
+        
+        SwerveDrive.conditionalTempMode(SwerveMode.ROCK, controllerOne.getBButton());
+        SwerveDrive.run(
+            controllerOne.getLeftX(),
+            controllerTwo.getLeftY(),
+            controllerOne.getRightTriggerAxis() - controllerOne.getLeftTriggerAxis(),
+            controllerOne.getRightX(),
+            controllerOne.getPOV()
+        );
         
         Intake.run(
             controlPanel.getRawButtonPressed(8), //controller one dpad to control pivot
@@ -236,11 +222,6 @@ public class Robot extends TimedRobot {
     public void testPeriodic() {
         SmartDashboard.putNumber("controller Y", controllerOne.getLeftY());
         SmartDashboard.putNumber("controller X", controllerOne.getLeftX());
-
-        // Toggle translation curve
-        if (controllerOne.getLeftBumperReleased()) {
-            translationLimiter.toggleEnabled();
-        }
 
         double x = controllerOne.getLeftX();
         double y = controllerOne.getLeftY();
