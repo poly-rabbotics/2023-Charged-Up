@@ -27,6 +27,18 @@ public final class Angle {
 		return this;
 	}
 
+	public Angle add(Angle other) {
+		var angle = new Angle();
+		angle.dec = this.dec + other.dec;
+		return angle;
+	}
+
+	public Angle sub(Angle other) {
+		var angle = new Angle();
+		angle.dec = this.dec - other.dec;
+		return angle;
+	}
+
 	/**
 	 * Creates a new identical angle so that modification of the original will not
 	 * effect the value returned from this function.
