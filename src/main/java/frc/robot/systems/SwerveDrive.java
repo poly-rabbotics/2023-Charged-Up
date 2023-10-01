@@ -59,14 +59,13 @@ public class SwerveDrive extends SmartPrintable {
     // Singleton instance.
     private static final SwerveDrive instance = new SwerveDrive();
 
-    // These drive state objects modify themselves internally through methods,
-    // but require no setting and are therefore final.
+    // Internally mutable state objects
     private final SwerveModule modules[] = new SwerveModule[MODULE_MOVEMENT_CAN_IDS.length];
     private final SwerveModulePosition positions[] = new SwerveModulePosition[MODULE_MOVEMENT_CAN_IDS.length];
     private final SwerveDriveKinematics kinematics;
     private final SwerveDriveOdometry odometry;
-    
-    // Variable drive states objects.
+
+    // Fully mutable state objects    
     private BiFunction<Double, Double, Double> directionCurve = Controls::defaultCurveTwoDimensional;
     private Function<Double, Double> turnCurve = Controls::defaultCurve;
     private SwerveMode mode = SwerveMode.HEADLESS;
@@ -154,6 +153,37 @@ public class SwerveDrive extends SmartPrintable {
     }
 
     /**
+     * Runs swerve, behavior changes based on the drive's mode. This will reset
+     * temporary modes on completion.
+     * @param directionalX The X axis of the directional control, between 1 and -1
+     * @param directionalY The Y axis of the directional control, between 1 and -1.
+     * @param speed The speed scalar for the drive.
+     * @param turn A value between 1 and -1 that determines the turning angle.
+     * @param lowSense The angle to move in low sensitivity in degrees, -1 for no movement.
+     */
+    public static void run(
+        double directionalX,
+        double directionalY,
+        double speed,
+        double turn,
+        int lowSense
+    ) {
+        // Despite not needing to curve the joysticks magnitude, which is the
+        // usual motivation for a control curve, we need it to apply a deadzone
+        // consistant with the user's preferences.
+        directionalX = instance.directionCurve.apply(directionalX, directionalY);
+        directionalY = instance.directionCurve.apply(directionalY, directionalX);
+        speed = directionalX == 0.0 && directionalY == 0.0 ? 0.0 : speed;
+        
+        // angle is in radians as per Java's trig methods.
+        var angle = Math.atan2(directionalY, directionalX);
+        directionalX = Math.cos(angle) * speed;
+        directionalY = Math.sin(angle) * speed;
+
+        run(directionalX, directionalY, turn, lowSense);
+    }
+
+    /**
      * Runs swerve, behavior changes based on the drive's mode. Derives speed
      * from directional inputs. This will reset temporary modes on completion.
      * @param directionalX The X axis of the directional control, between 1 and -1
@@ -163,6 +193,8 @@ public class SwerveDrive extends SmartPrintable {
      */
     public static void run(double directionalX, double directionalY, double turn, int lowSense) {
         if (lowSense != -1) {
+            // TODO: See if we can not invert this angle and then not negate
+            // dx and dy below.
             double angle = Angle.TAU - Math.toRadians((double)lowSense);
 
             // inverted since the drive is rotated to compensate for joystick stuff
