@@ -4,8 +4,6 @@
 
 package frc.robot.systems;
 
-import java.security.InvalidParameterException;
-
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -27,9 +25,9 @@ import frc.robot.subsystems.SwerveModule;
  * Manages the swerve drive train.
  */
 public class SwerveDrive extends SmartPrintable {
-    private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1,  2,   3,   4  };
-    private static final int MODULE_ROTATION_CAN_IDS[] = { 5,  6,   7,   8  };
-    private static final int MODULE_CANCODER_CAN_IDS[] = { 9,  10,  11,  12 };
+    private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1,   2,   3,   4  };
+    private static final int MODULE_ROTATION_CAN_IDS[] = { 5,   6,   7,   8  };
+    private static final int MODULE_CANCODER_CAN_IDS[] = { 9,   10,  11,  12 };
     
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
     private static final double LOW_SENSITIVITY_RATIO = 0.08;
@@ -43,17 +41,17 @@ public class SwerveDrive extends SmartPrintable {
     };
 
     private static final Angle MODULE_ROCK_MODE_POSITIONS[] = { 
-        new Angle().setRadians( -Math.PI / 4), 
-        new Angle().setRadians(  Math.PI / 4), 
-        new Angle().setRadians( -Math.PI / 4), 
-        new Angle().setRadians(  Math.PI / 4) 
+        new Angle().setRadians( -Math.PI / 4  ), 
+        new Angle().setRadians(  Math.PI / 4  ), 
+        new Angle().setRadians( -Math.PI / 4  ), 
+        new Angle().setRadians(  Math.PI / 4  ) 
     };
 
     private static final Translation2d MODULE_PHYSICAL_POSITIONS[] = {
-        new Translation2d(   CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
-        new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
-        new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2),
-        new Translation2d(   CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2)
+        new Translation2d(   CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2  ),
+        new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2  ),
+        new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2  ),
+        new Translation2d(   CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2  )
     };
 
     // Singleton instance.
@@ -67,9 +65,11 @@ public class SwerveDrive extends SmartPrintable {
 
     // Fully mutable state objects    
     private BiFunction<Double, Double, Double> directionCurve = Controls::defaultCurveTwoDimensional;
+    private BiFunction<Double, Double, Double> inactiveDirectionCurve = null;
     private Function<Double, Double> turnCurve = Controls::defaultCurve;
+    private Function<Double, Double> inactiveTurnCurve = null;
     private SwerveMode mode = SwerveMode.HEADLESS;
-    private SwerveMode inactiveMode = SwerveMode.HEADLESS;
+    private SwerveMode inactiveMode = null;
 
     private SwerveDrive() {
         super();
@@ -150,6 +150,74 @@ public class SwerveDrive extends SmartPrintable {
         }
 
         tempMode(mode);
+    }
+
+    /**
+     * Sets the curve function for directional inputs (translations).
+     * @param curve The BiFunction to use for proccessing the curve, the first 
+     * argument is what should be curved, the second is used for context. Return
+     * the curved direction.
+     */
+    public static void setDirectionalCurve(BiFunction<Double, Double, Double> curve) {
+        instance.directionCurve = curve;
+    }
+
+    public static BiFunction<Double, Double, Double> getDirectionalCurve() {
+        return instance.directionCurve;
+    }
+
+    public static void tempDirectionalCurve(BiFunction<Double, Double, Double> curve) {
+        if (instance.inactiveDirectionCurve != null) {
+            instance.directionCurve = curve;
+            return;
+        }
+
+        instance.inactiveDirectionCurve = instance.directionCurve;
+        instance.directionCurve = curve;
+    }
+
+    public static void conditionalTempDirectionalCurve(
+        BiFunction<Double, Double, Double> curve, 
+        boolean condition
+    ) {
+        if (!condition) {
+            return;
+        }
+
+        tempDirectionalCurve(curve);
+    }
+
+    /**
+     * Sets the curve function for turn inputs.
+     * @param curve The Function to use for proccessing the curve.
+     */
+    public static void setTurnCurve(Function<Double, Double> curve) {
+        instance.turnCurve = curve;
+    }
+
+    public static Function<Double, Double> getTurnCurve() {
+        return instance.turnCurve;
+    }
+
+    public static void tempTurnCurve(Function<Double, Double> curve) {
+        if (instance.inactiveTurnCurve != null) {
+            instance.turnCurve = curve;
+            return;
+        }
+
+        instance.inactiveTurnCurve = instance.turnCurve;
+        instance.turnCurve = curve;
+    }
+
+    public static void conditionalTempTurnCurve(
+        Function<Double, Double> curve, 
+        boolean condition
+    ) {
+        if (!condition) {
+            return;
+        }
+
+        tempTurnCurve(curve);
     }
 
     /**
@@ -262,9 +330,21 @@ public class SwerveDrive extends SmartPrintable {
 
         instance.odometry.update(new Rotation2d(Pigeon.getYaw().radians()), instance.positions);
 
+        // Reset temp state
+        
         if (instance.inactiveMode != null) {
             instance.mode = instance.inactiveMode;
             instance.inactiveMode = null;
+        }
+        
+        if (instance.inactiveDirectionCurve != null) {
+            instance.directionCurve = instance.inactiveDirectionCurve;
+            instance.inactiveDirectionCurve = null;
+        }
+
+        if (instance.inactiveTurnCurve != null) {
+            instance.turnCurve = instance.inactiveTurnCurve;
+            instance.inactiveTurnCurve = null;
         }
     }
 
@@ -275,83 +355,6 @@ public class SwerveDrive extends SmartPrintable {
         for (SwerveModule module : instance.modules) {
             module.setMaxSpeed(maxSpeed);
         }
-    }
-
-    /**
-     * Sets the curve function for directional inputs (translations).
-     * @param curve The BiFunction to use for proccessing the curve, the first 
-     * argument is what should be curved, the second is used for context. Return
-     * the curved direction.
-     */
-    public static void setDirectionalCurve(BiFunction<Double, Double, Double> curve) {
-        // Run some tests that should be valid of any curve function.
-        if (curve.apply(0.0, 0.0) != 0.0) {
-            throw new InvalidParameterException("All curves should return 0 on a 0 input.");
-        }
-
-        double previousOutput = 0.0;
-
-        // Here we just make sure all outputs either go up or stay the same as
-        // the inputs become greator.
-        for (double i = 0.0; i < 1.0; i += 0.1) {
-            double outI = curve.apply(i, i);
-
-            if (outI < previousOutput) {
-                throw new InvalidParameterException("No curve shall return a lesser value given a greator input.");
-            }
-
-            for (double j = 0.0; j < 1.0; j += 0.1) {
-                double outJ = curve.apply(i, j);
-
-                if (j < i && outJ > outI) {
-                    throw new InvalidParameterException("No curve shall return a greator value given a lesser input.");
-                } else if (j > i && outJ < outI) {
-                    throw new InvalidParameterException("No curve shall return a lesser value given a greator input.");
-                } else if (j == i && outJ != outI) {
-                    throw new InvalidParameterException("No curve shall return a different result given the same input (i mean, c'mon man, thats the deffinition of a function...).");
-                }
-            }
-
-            previousOutput = outI;
-        }
-
-        instance.directionCurve = curve;
-    }
-
-    public static void setDirectionalCurve(BiFunction<Double, Double, Double> curve, boolean overrideTests) {
-        if (overrideTests) {
-            instance.directionCurve = curve;
-            return;
-        }
-
-        setDirectionalCurve(curve);
-    }
-
-    /**
-     * Sets the curve function for turn inputs.
-     * @param curve The Function to use for proccessing the curve.
-     */
-    public static void setTurnCurve(Function<Double, Double> curve) {
-        // Run some tests that should be valid of any curve function.
-        if (curve.apply(0.0) != 0.0) {
-            throw new InvalidParameterException("All curves should return 0 on a 0 input.");
-        }
-
-        double previousOutput = 0.0;
-
-        // Here we just make sure all outputs either go up or stay the same as
-        // the inputs become greator.
-        for (double i = 0.0; i < 1.0; i += 0.1) {
-            double outI = curve.apply(i);
-
-            if (outI < previousOutput) {
-                throw new InvalidParameterException("No curve shall return a lesser value given a greator input.");
-            }
-
-            previousOutput = outI;
-        }
-
-        instance.turnCurve = curve;
     }
 
     /**
