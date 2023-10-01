@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import java.util.function.BiFunction;
-
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick;
@@ -26,7 +24,6 @@ import frc.robot.systems.ElevFourbar.ControlType;
 import frc.robot.systems.ElevFourbar.Setpoint;
 import frc.robot.systems.LEDLights;
 import frc.robot.systems.Bat;
-import frc.robot.subsystems.AxisRateLimiter;
 import frc.robot.subsystems.SwerveMode;
 
 /**
@@ -75,7 +72,7 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         controlMode = ControlMode.DISABLED;
         SwerveDrive.setTurnCurve(Controls::defaultCurve);
-        SwerveDrive.setDirectionalCurve(Controls::defaultCurveTwoDimensional, true);
+        SwerveDrive.setDirectionalCurve(Controls::defaultCurveTwoDimensional);
     }
     
     /**
@@ -158,6 +155,14 @@ public class Robot extends TimedRobot {
             );
         }
         
+        SwerveDrive.conditionalTempDirectionalCurve(
+            Controls.cardinalLock(SwerveDrive.getDirectionalCurve()), 
+            controllerOne.getXButton()
+        ); // Lock to cardinal directions.
+        SwerveDrive.conditionalTempDirectionalCurve(
+            (x, y) -> SwerveDrive.getDirectionalCurve().apply(x, y) / 2.0,
+            controllerOne.getRightBumper()
+        ); // Half translation speed.
         SwerveDrive.conditionalTempMode(SwerveMode.ROCK, controllerOne.getBButton());
         SwerveDrive.run(
             controllerOne.getLeftX(),
