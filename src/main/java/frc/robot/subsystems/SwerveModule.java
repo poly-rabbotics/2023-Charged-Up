@@ -60,6 +60,8 @@ public class SwerveModule extends SmartPrintable {
     private double rockPos = Double.NaN;
     private double maxSpeed = Double.NaN;
 
+    // Very important changes that fix everything!
+
     private enum RelativePosition {
         FRONT_RIGHT (  1.0,  1.0 ),
         FRONT_LEFT  ( -1.0,  1.0 ),
