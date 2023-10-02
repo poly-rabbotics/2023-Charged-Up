@@ -118,8 +118,10 @@ public class ElevFourbar {
 
 
         if (zeroElevEncoder) {
-            elevator.zeroEncoder();
+            elevator.zeroEncoder(0.5);
         }
+
+        SmartDashboard.putNumber("FB Power", fourbar.getPower());
     }
 
     /**

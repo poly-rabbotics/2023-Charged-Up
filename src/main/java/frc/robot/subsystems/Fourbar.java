@@ -33,9 +33,9 @@ public class Fourbar {
     private static final double D0 = 0.05;
     private static final double F0 = 0.0;
 
-    private static final double P1 = 10;
+    private static final double P1 = 2.5;
     private static final double I1 = 0.0;
-    private static final double D1 = 4;
+    private static final double D1 = 0.3;
     private static final double F1 = 0.0;
     
     //Motor and controller
@@ -93,6 +93,8 @@ public class Fourbar {
      * @param setpoint The setpoint to move to, as defined in the Setpoint enum
      */
     public void pidControl(Setpoint setpoint){
+        
+        pidController.setOutputRange(FOURBAR_SPEED_UP, -FOURBAR_SPEED_UP);
 
         encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
         
@@ -106,6 +108,9 @@ public class Fourbar {
      * Allows for manual control of motor output using the right joystick
      */
     public void manualControl(double speed){
+
+        pidController.setOutputRange(0.1, -0.6);
+
         encoderPosition = (absoluteEncoder.getPosition()*360) - ENCODER_OFFSET;
 
         //TODO: FIX THIS
@@ -134,12 +139,12 @@ public class Fourbar {
             speed = 0;
         }
 
-        /* targetSetpoint -= speed * 0.9;
+        targetSetpoint -= speed * 0.9;
 
-        pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 1); */
+        pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 1);
 
-        speed /= 2;
-        fourbarMotor.set(-speed);
+        /* speed /= 2;
+        fourbarMotor.set(-speed); */
     }
 
     /**

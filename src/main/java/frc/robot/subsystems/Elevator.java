@@ -121,7 +121,7 @@ public class Elevator {
         elevatorMotor.set(ControlMode.Position, targetSetpoint * TICKS_PER_INCH);
 
         if(encoder.get() >= 0) {
-            zeroEncoder();
+            zeroEncoder(0.25);
         }
 
         SmartDashboard.putNumber("Elev Encoder", encoder.get());
