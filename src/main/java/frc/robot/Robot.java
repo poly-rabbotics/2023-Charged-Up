@@ -169,8 +169,7 @@ public class Robot extends TimedRobot {
             controllerOne.getLeftX(),
             controllerTwo.getLeftY(),
             controllerOne.getRightTriggerAxis() - controllerOne.getLeftTriggerAxis(),
-            controllerOne.getRightX(),
-            controllerOne.getPOV()
+            controllerOne.getRightX()
         );
 
         double rumble = controllerOne.getLeftBumper() 
