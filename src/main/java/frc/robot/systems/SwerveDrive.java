@@ -41,10 +41,10 @@ public class SwerveDrive extends SmartPrintable {
     };
 
     private static final Angle MODULE_ROCK_MODE_POSITIONS[] = { 
-        new Angle().setRadians( -Math.PI / 4  ), 
-        new Angle().setRadians(  Math.PI / 4  ), 
-        new Angle().setRadians( -Math.PI / 4  ), 
-        new Angle().setRadians(  Math.PI / 4  ) 
+        new Angle().setRadians( -Angle.TAU / 8  ), 
+        new Angle().setRadians(  Angle.TAU / 8  ), 
+        new Angle().setRadians( -Angle.TAU / 8  ), 
+        new Angle().setRadians(  Angle.TAU / 8  ) 
     };
 
     private static final Translation2d MODULE_PHYSICAL_POSITIONS[] = {
