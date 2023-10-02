@@ -174,7 +174,7 @@ public class Robot extends TimedRobot {
         );
 
         double rumble = controllerOne.getLeftBumper() 
-            ? SwerveDrive.getAverageMotorTemp()
+            ? SwerveDrive.getAverageMotorTemp() / 80.0
             : SwerveDrive.getAveragePercentRatedCurrent();
         controllerOne.setRumble(RumbleType.kBothRumble, rumble);
         
