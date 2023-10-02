@@ -151,8 +151,8 @@ public class Robot extends TimedRobot {
         if (controllerOne.getLeftStickButtonReleased()) {
             SwerveDrive.setMode(
                 SwerveDrive.getMode() == SwerveMode.HEADLESS 
-                 ? SwerveMode.RELATIVE 
-                 : SwerveMode.HEADLESS
+                    ? SwerveMode.RELATIVE 
+                    : SwerveMode.HEADLESS
             );
         }
         
