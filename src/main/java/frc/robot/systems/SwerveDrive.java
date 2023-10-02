@@ -289,14 +289,13 @@ public class SwerveDrive extends SmartPrintable {
             // inverted since the drive is rotated to compensate for joystick stuff
             directionalX = -(Math.sin(angle) * LOW_SENSITIVITY_RATIO);
             directionalY = -(Math.cos(angle) * LOW_SENSITIVITY_RATIO);
-            
-            runUncurved(directionalX, directionalY, instance.turnCurve.apply(turn));
-            return;
+            turn = instance.turnCurve.apply(turn);
+        } else {
+            directionalX = instance.directionCurve.apply(directionalX, directionalY);
+            directionalY = instance.directionCurve.apply(directionalY, directionalX);
+            turn = instance.turnCurve.apply(turn);
         }
 
-        directionalX = instance.directionCurve.apply(directionalX, directionalY);
-        directionalY = instance.directionCurve.apply(directionalY, directionalX);
-        turn = instance.turnCurve.apply(turn);
         runUncurved(directionalX, directionalY, turn);
     }
     
