@@ -5,16 +5,18 @@
 package frc.robot.systems;
 
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.SmartPrintable;
 
 public class SmartPrinter {
-    private LinkedList<SmartPrintable> printables;
+    private ArrayList<SmartPrintable> printables;
     private static final SmartPrinter instance = new SmartPrinter();
 
     public SmartPrinter() {
-        printables = new LinkedList<SmartPrintable>();
+        printables = new ArrayList<SmartPrintable>();
     }
 
     public static void register(SmartPrintable printable) {
