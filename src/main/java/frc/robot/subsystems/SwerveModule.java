@@ -25,6 +25,7 @@ import frc.robot.SmartPrintable;
  * Class for managing and manipulating a swerve module. 
  */
 public class SwerveModule extends SmartPrintable {
+    private static final double CAN_SPARK_MAX_RATED_AMPS = 60.0;
     private static final double CONVERSION_FACTOR_ROTATION = Math.toRadians(150 / 7);                         // Rotations to radians.
     private static final double CONVERSION_FACTOR_MOVEMENT = 6.75;                                            // Rotations to meters.
     private static final double CONVERSION_FACTOR_ROTATION_VELOCITY = CONVERSION_FACTOR_ROTATION * (1 / 60);  // RPM to radians per second.
@@ -266,6 +267,14 @@ public class SwerveModule extends SmartPrintable {
      */
     public double getAppliedCurrent() {
         return getRotationMotorCurrent() + getMovementMotorCurrent();
+    }
+
+    /**
+     * Gets the percentage of the maximum rated amperage of the motor 
+     * controllers currently being hit by the module.
+     */
+    public double getPercentRatedCurrent() {
+        return getAppliedCurrent() / (2.0 * CAN_SPARK_MAX_RATED_AMPS);
     }
 
     @Override
