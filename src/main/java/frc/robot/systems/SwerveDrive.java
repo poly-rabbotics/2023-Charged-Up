@@ -254,8 +254,7 @@ public class SwerveDrive extends SmartPrintable {
         double directionalX,
         double directionalY,
         double speed,
-        double turn,
-        int lowSense
+        double turn
     ) {
         // Despite not needing to curve the joysticks magnitude, which is the
         // usual motivation for a control curve, we need it to apply a deadzone
@@ -269,7 +268,7 @@ public class SwerveDrive extends SmartPrintable {
         directionalX = Math.cos(angle) * speed;
         directionalY = Math.sin(angle) * speed;
 
-        run(directionalX, directionalY, turn, lowSense);
+        run(directionalX, directionalY, turn);
     }
 
     /**
@@ -280,22 +279,10 @@ public class SwerveDrive extends SmartPrintable {
      * @param turn A value between 1 and -1 that determines the turning angle.
      * @param lowSense The angle to move in low sensitivity in degrees, -1 for no movement.
      */
-    public static void run(double directionalX, double directionalY, double turn, int lowSense) {
-        if (lowSense != -1) {
-            // TODO: See if we can not invert this angle and then not negate
-            // dx and dy below.
-            double angle = Angle.TAU - Math.toRadians((double)lowSense);
-
-            // inverted since the drive is rotated to compensate for joystick stuff
-            directionalX = -(Math.sin(angle) * LOW_SENSITIVITY_RATIO);
-            directionalY = -(Math.cos(angle) * LOW_SENSITIVITY_RATIO);
-            turn = instance.turnCurve.apply(turn);
-        } else {
-            directionalX = instance.directionCurve.apply(directionalX, directionalY);
-            directionalY = instance.directionCurve.apply(directionalY, directionalX);
-            turn = instance.turnCurve.apply(turn);
-        }
-
+    public static void run(double directionalX, double directionalY, double turn) {
+        directionalX = instance.directionCurve.apply(directionalX, directionalY);
+        directionalY = instance.directionCurve.apply(directionalY, directionalX);
+        turn = instance.turnCurve.apply(turn);
         runUncurved(directionalX, directionalY, turn);
     }
     
