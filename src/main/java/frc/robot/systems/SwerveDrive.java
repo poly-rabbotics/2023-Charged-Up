@@ -29,7 +29,6 @@ public class SwerveDrive extends SmartPrintable {
     private static final int MODULE_ROTATION_CAN_IDS[] = { 5,   6,   7,   8  };
     private static final int MODULE_CANCODER_CAN_IDS[] = { 9,   10,  11,  12 };
     
-    private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
     private static final double LOW_SENSITIVITY_RATIO = 0.08;
     private static final double CHASSIS_SIDE_LENGTH = 0.6;
 
@@ -80,7 +79,6 @@ public class SwerveDrive extends SmartPrintable {
                 MODULE_ROTATION_CAN_IDS[i], 
                 MODULE_CANCODER_CAN_IDS[i], 
                 MODULE_CANCODER_OFFSETS[i], 
-                MODULE_COEFFIENTS[i],
                 MODULE_PHYSICAL_POSITIONS[i]
             );
         }

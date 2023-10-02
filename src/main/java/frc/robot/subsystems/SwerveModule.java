@@ -52,7 +52,6 @@ public class SwerveModule extends SmartPrintable {
 
     private final RelativePosition physicalPosition;
     private final Angle canCoderOffset;
-    private final double coefficient;
 
     // Set to NaN if not in rock mode, NaN does not equal itself by definition
     // (see some IEEE standard or something) and so this is how rock mode is 
@@ -113,17 +112,15 @@ public class SwerveModule extends SmartPrintable {
         int rotationalMotorID, 
         int canCoderID, 
         Angle canCoderOffset, 
-        double coefficient,
         Translation2d physicalPosition
     ) {
         super();
         
         this.physicalPosition = RelativePosition.fromTranslation(physicalPosition);
         this.canCoderOffset = canCoderOffset.clone();
-        this.coefficient = coefficient;
 
         rotationMotor = new CANSparkMax(rotationalMotorID, MotorType.kBrushless);
-        rotationMotor.setInverted(false);
+        rotationMotor.setInverted(true);
         rotationMotor.setSmartCurrentLimit(30);
         
         movementMotor = new CANSparkMax(movementMotorID, MotorType.kBrushless);
@@ -188,7 +185,7 @@ public class SwerveModule extends SmartPrintable {
         }
 
         double calculation = rotationController.calculate(currentPosition, (state.angle.getRadians() + Angle.TAU) % Angle.TAU);
-        rotationMotor.set(calculation * coefficient);
+        rotationMotor.set(calculation);
 
         position.angle = new Rotation2d(angularEncoder.getPosition());
         position.distanceMeters = movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT;
