@@ -160,10 +160,20 @@ public class SwerveDrive extends SmartPrintable {
         instance.directionCurve = curve;
     }
 
+    /**
+     * Gets the current curve used for directional inputs.
+     */
     public static BiFunction<Double, Double, Double> getDirectionalCurve() {
         return instance.directionCurve;
     }
 
+    /**
+     * Temporarily sets the curve function for directional inputs (translations).
+     * This action will atomatically be undone after calling a run method.
+     * @param curve The BiFunction to use for proccessing the curve, the first 
+     * argument is what should be curved, the second is used for context. Return
+     * the curved direction.
+     */
     public static void tempDirectionalCurve(BiFunction<Double, Double, Double> curve) {
         if (instance.inactiveDirectionCurve != null) {
             instance.directionCurve = curve;
@@ -174,6 +184,9 @@ public class SwerveDrive extends SmartPrintable {
         instance.directionCurve = curve;
     }
 
+    /**
+     * Exactly like `tempDirectionalCurve` but predicated on a boolean condition.
+     */
     public static void conditionalTempDirectionalCurve(
         BiFunction<Double, Double, Double> curve, 
         boolean condition
@@ -193,10 +206,17 @@ public class SwerveDrive extends SmartPrintable {
         instance.turnCurve = curve;
     }
 
+    /**
+     * Gets the Function currently used for turning.
+     */
     public static Function<Double, Double> getTurnCurve() {
         return instance.turnCurve;
     }
 
+    /**
+     * Temporarily sets the curve function for turn inputs. Undone after running.
+     * @param curve The Function to use for proccessing the curve.
+     */
     public static void tempTurnCurve(Function<Double, Double> curve) {
         if (instance.inactiveTurnCurve != null) {
             instance.turnCurve = curve;
@@ -207,6 +227,9 @@ public class SwerveDrive extends SmartPrintable {
         instance.turnCurve = curve;
     }
 
+    /**
+     * Exactly like `tempTurnCurve` but predicated on a boolean condition.
+     */
     public static void conditionalTempTurnCurve(
         Function<Double, Double> curve, 
         boolean condition
@@ -353,6 +376,47 @@ public class SwerveDrive extends SmartPrintable {
         for (SwerveModule module : instance.modules) {
             module.setMaxSpeed(maxSpeed);
         }
+    }
+
+    /**
+     * Gets the average tempurature of all motors on the drive.
+     */
+    public static double getAverageMotorTemp() {
+        double tempSum = 0.0;
+
+        for (SwerveModule module : instance.modules) {
+        	tempSum += module.getRotationMotorTemp();
+            tempSum += module.getMovementMotorTemp();
+        }
+
+        return tempSum / (instance.modules.length * 2.0);
+    }
+
+    /**
+     * Gets the sum of all applied currents in amps of all motors on the drive.
+     */
+    public static double getAppliedCurrent() {
+        double current = 0.0;
+
+        for (SwerveModule module : instance.modules) {
+        	current += module.getAppliedCurrent();
+        }
+
+        return current;
+    }
+
+    /**
+     * Gets the average percent usage of each module's motor controller 
+     * current pull.
+     */
+    public static double getAveragePercentRatedCurrent() {
+        double percentSum = 0.0;
+
+        for (SwerveModule module : instance.modules) {
+        	percentSum += module.getPercentRatedCurrent();
+        }
+
+        return percentSum / (double)instance.modules.length;
     }
 
     /**
