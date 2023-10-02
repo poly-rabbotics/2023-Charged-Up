@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import frc.robot.systems.AutoBalance;
@@ -171,6 +172,11 @@ public class Robot extends TimedRobot {
             controllerOne.getRightX(),
             controllerOne.getPOV()
         );
+
+        double rumble = controllerOne.getLeftBumper() 
+            ? SwerveDrive.getAverageMotorTemp()
+            : SwerveDrive.getAveragePercentRatedCurrent();
+        controllerOne.setRumble(RumbleType.kBothRumble, rumble);
         
         Intake.run(
             controlPanel.getRawButtonPressed(8), //controller one dpad to control pivot
