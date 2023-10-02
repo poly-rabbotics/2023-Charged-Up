@@ -197,7 +197,6 @@ public class SwerveModule extends SmartPrintable {
     public void setRockMode(boolean shouldHold) {
         if (!shouldHold) {
             rockPos = Double.NaN;
-            return;
         } else if (rockPos != rockPos) {
             rockPos = getDistanceTraveled();
         }
@@ -232,6 +231,41 @@ public class SwerveModule extends SmartPrintable {
      */
     public double getDistanceTraveled() {
         return movementEncoder.getPosition();
+    }
+
+    /**
+     * Gets the reported tempurature of the rotation motor in celsius.
+     */
+    public double getRotationMotorTemp() {
+        return rotationMotor.getMotorTemperature();
+    }
+
+    /**
+     * Gets the reported tempurature of the movement motor in celsius.
+     */
+    public double getMovementMotorTemp() {
+        return movementMotor.getMotorTemperature();
+    }
+
+    /**
+     * Gets the power being outputted by the rotation motor's controller in amps.
+     */
+    public double getRotationMotorCurrent() {
+        return rotationMotor.getAppliedOutput();
+    }
+
+    /**
+     * Gets the power being outputted by the movement motor's controller in amps.
+     */
+    public double getMovementMotorCurrent() {
+        return movementMotor.getAppliedOutput();
+    }
+
+    /**
+     * Gets the sum of all motor's current in amps.
+     */
+    public double getAppliedCurrent() {
+        return getRotationMotorCurrent() + getMovementMotorCurrent();
     }
 
     @Override
