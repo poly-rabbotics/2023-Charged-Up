@@ -145,7 +145,6 @@ public class Robot extends TimedRobot {
         SwerveDrive.setMode(SwerveMode.HEADLESS);
         ElevFourbar.init();
         Intake.init();
-        ElevFourbar.enableSafetyMode(false);
     }
     
     /** This function is called periodically during operator control. */
@@ -208,64 +207,6 @@ public class Robot extends TimedRobot {
     @Override
     public void disabledPeriodic() {
         ElevFourbar.toggleGamePiece(controlPanel.getRawButtonReleased(5)); 
-    }
-    
-    /** This  function is called once when test mode is enabled. */
-    @Override
-    public void testInit() {
-        controlMode = ControlMode.SAFETY;
-        SwerveDrive.setMode(SwerveMode.HEADLESS);
-        ElevFourbar.init();
-        Intake.init();
-        ElevFourbar.enableSafetyMode(true);
-    }
-    
-    /** This function is called periodically during test mode. */
-    @Override
-    public void testPeriodic() {
-        SmartDashboard.putNumber("controller Y", controllerOne.getLeftY());
-        SmartDashboard.putNumber("controller X", controllerOne.getLeftX());
-
-        // Toggle translation curve
-        if (controllerOne.getLeftBumperReleased()) {
-            translationLimiter.toggleEnabled();
-        }
-
-        double x = controllerOne.getLeftX();
-        double y = controllerOne.getLeftY();
-
-        //SCALES DOWN DRIVE SPEED FOR 
-        SwerveDrive.run(x, y, controllerOne.getRightX(), controllerOne.getPOV());
-        SwerveDrive.conditionalTempMode(SwerveMode.ROCK, controllerOne.getRightTriggerAxis() > 0.25);
-        
-        // Left stick changes between headless and relative control modes.
-        if (controllerOne.getLeftStickButtonReleased()) {
-            if (SwerveDrive.getMode() == SwerveMode.HEADLESS) {
-                SwerveDrive.setMode(SwerveMode.RELATIVE);
-            } else {
-                SwerveDrive.setMode(SwerveMode.HEADLESS);
-            }
-        }
-        
-        Intake.run(
-            controlPanel.getRawButtonPressed(8), //controller one dpad to control pivot
-            controlPanel.getRawButton(9),
-            controlPanel.getRawButton(7),
-            controlPanel.getRawButton(6),
-            controlPanel.getRawButtonReleased(6)
-        );
-        
-        ElevFourbar.run(
-            controllerTwo.getRightY(),
-            Math.abs(controlPanel.getRawAxis(0) / 2) > Math.abs(controllerTwo.getLeftY()) ? controlPanel.getRawAxis(0) / 2 : -controllerTwo.getLeftY(),
-            controllerTwo.getPOV(),
-            controlPanel.getRawButtonPressed(5), //toggle game piece
-            controlPanel.getRawButtonReleased(1), //ground
-            controlPanel.getRawButtonReleased(3), //mid
-            controlPanel.getRawButtonReleased(4), //high
-            controlPanel.getRawButtonReleased(2),  //stowed
-            controllerTwo.getStartButtonPressed() //zero elevator encoder
-        );
     }
     
     /** This function is called once when the robot is first started up. */

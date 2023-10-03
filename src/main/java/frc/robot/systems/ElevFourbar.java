@@ -85,11 +85,6 @@ public class ElevFourbar {
         elevator.autonomousInit();
         fourbar.setPIDSpeed(0.3);
     }
-    /** Halves the speed of fourbar and elevator  */
-    public static void enableSafetyMode(boolean enable) {
-        elevator.enableSafetyMode(enable);
-        fourbar.enableSafetyMode(enable);
-    }
 
     public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean toggleGamePieceMode, boolean groundIntake, boolean mid, boolean high, boolean zeroElevEncoder) {
         instance.currentSetpoint = new Setpoint(false, elevator.getPosition(), fourbar.getPosition());
