@@ -252,14 +252,14 @@ public class SwerveModule extends SmartPrintable {
      * Gets the power being outputted by the rotation motor's controller in amps.
      */
     public double getRotationMotorCurrent() {
-        return rotationMotor.getAppliedOutput();
+        return rotationMotor.getOutputCurrent();
     }
 
     /**
      * Gets the power being outputted by the movement motor's controller in amps.
      */
     public double getMovementMotorCurrent() {
-        return movementMotor.getAppliedOutput();
+        return movementMotor.getOutputCurrent();
     }
 
     /**

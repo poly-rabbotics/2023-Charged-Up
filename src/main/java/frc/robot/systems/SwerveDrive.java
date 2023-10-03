@@ -29,7 +29,6 @@ public class SwerveDrive extends SmartPrintable {
     private static final int MODULE_ROTATION_CAN_IDS[] = { 5,   6,   7,   8  };
     private static final int MODULE_CANCODER_CAN_IDS[] = { 9,   10,  11,  12 };
     
-    private static final double LOW_SENSITIVITY_RATIO = 0.08;
     private static final double CHASSIS_SIDE_LENGTH = 0.6;
 
     private static final Angle MODULE_CANCODER_OFFSETS[] = {
@@ -256,17 +255,18 @@ public class SwerveDrive extends SmartPrintable {
         double speed,
         double turn
     ) {
-        // Despite not needing to curve the joysticks magnitude, which is the
-        // usual motivation for a control curve, we need it to apply a deadzone
-        // consistant with the user's preferences.
-        directionalX = instance.directionCurve.apply(directionalX, directionalY);
-        directionalY = instance.directionCurve.apply(directionalY, directionalX);
-        speed = directionalX == 0.0 && directionalY == 0.0 ? 0.0 : speed;
+        speed = Math.abs(directionalX) <= 0.05 && Math.abs(directionalY) <= 0.05 ? 0.0 : speed;
         
+        SmartDashboard.putNumber("direction x - run 0", directionalX);
+        SmartDashboard.putNumber("direction y - run 0", directionalY);
+
         // angle is in radians as per Java's trig methods.
         var angle = Math.atan2(directionalY, directionalX);
         directionalX = Math.cos(angle) * speed;
         directionalY = Math.sin(angle) * speed;
+
+        SmartDashboard.putNumber("direction x - run 1", directionalX);
+        SmartDashboard.putNumber("direction y - run 1", directionalY);
 
         run(directionalX, directionalY, turn);
     }
@@ -280,10 +280,12 @@ public class SwerveDrive extends SmartPrintable {
      * @param lowSense The angle to move in low sensitivity in degrees, -1 for no movement.
      */
     public static void run(double directionalX, double directionalY, double turn) {
-        directionalX = instance.directionCurve.apply(directionalX, directionalY);
-        directionalY = instance.directionCurve.apply(directionalY, directionalX);
+        var x = instance.directionCurve.apply(directionalX, directionalY);
+        var y = instance.directionCurve.apply(directionalY, directionalX);
+        SmartDashboard.putNumber("direction x - run 2", x);
+        SmartDashboard.putNumber("direction y - run 2", y);
         turn = instance.turnCurve.apply(turn);
-        runUncurved(directionalX, directionalY, turn);
+        runUncurved(x, y, turn);
     }
     
     /**

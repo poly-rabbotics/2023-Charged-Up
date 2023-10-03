@@ -157,18 +157,22 @@ public class Robot extends TimedRobot {
         }
         
         SwerveDrive.conditionalTempDirectionalCurve(
-            Controls.cardinalLock(SwerveDrive.getDirectionalCurve()), 
+            Controls.cardinalLock(Controls::defaultCurveTwoDimensional), 
             controllerOne.getXButton()
         ); // Lock to cardinal directions.
         SwerveDrive.conditionalTempDirectionalCurve(
-            (x, y) -> SwerveDrive.getDirectionalCurve().apply(x, y) / 2.0,
+            (x, y) -> Controls.defaultCurveTwoDimensional(x, y) / 2.0,
             controllerOne.getRightBumper()
+        ); // Half translation speed.
+        SwerveDrive.conditionalTempDirectionalCurve(
+            Controls.cardinalLock((x, y) -> Controls.defaultCurveTwoDimensional(x, y) / 2.0),
+            controllerOne.getRightBumper() && controllerOne.getXButton()
         ); // Half translation speed.
         SwerveDrive.conditionalTempMode(SwerveMode.ROCK, controllerOne.getBButton());
         SwerveDrive.run(
             controllerOne.getLeftX(),
-            controllerTwo.getLeftY(),
-            controllerOne.getRightTriggerAxis() - controllerOne.getLeftTriggerAxis(),
+            controllerOne.getLeftY(),
+            //controllerOne.getRightTriggerAxis() - controllerOne.getLeftTriggerAxis(),
             controllerOne.getRightX()
         );
 
