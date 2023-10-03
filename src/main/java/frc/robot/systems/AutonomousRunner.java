@@ -4,9 +4,11 @@ import java.security.InvalidParameterException;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.*;
+
 import frc.robot.systems.AutoBalance.BalanceType;
-import frc.robot.systems.ElevFourbar.Setpoint;
+import frc.robot.systems.ElevFourbar.GamePiece;
 import frc.robot.systems.Intake.SolenoidState;
+import frc.robot.subsystems.DoubleSetpoint;
 import frc.robot.SmartPrintable;
 
 public class AutonomousRunner extends SmartPrintable {
@@ -77,7 +79,7 @@ public class AutonomousRunner extends SmartPrintable {
      */
     private static void modeOne() {
 
-        score(Setpoint.MID_SCORING);
+        score(ElevFourbar.MID_SCOORING_SETPOINT);
         
         /*******************
          * EXIT THE COMUNITY
@@ -94,7 +96,7 @@ public class AutonomousRunner extends SmartPrintable {
      * Score only mid
      */
     private static void modeTwo() {
-        score(Setpoint.MID_SCORING);
+        score(ElevFourbar.MID_SCOORING_SETPOINT);
     }
 
     /**
@@ -102,7 +104,7 @@ public class AutonomousRunner extends SmartPrintable {
      */
     private static void modeThree() {
 
-        score(Setpoint.MID_SCORING);
+        score(ElevFourbar.MID_SCOORING_SETPOINT);
         
         if (instance.autoStage > 1 || instance.timer.get() > 6) {
             AutoBalance.run();
@@ -114,7 +116,7 @@ public class AutonomousRunner extends SmartPrintable {
      */
     private static void modeFour() {
 
-        score(Setpoint.HIGH_SCORING);
+        score(ElevFourbar.HIGH_SCORING_SETPOINT);
 
         
         /*******************
@@ -132,14 +134,14 @@ public class AutonomousRunner extends SmartPrintable {
      * Only score high
      */
     private static void modeFive() {
-        score(Setpoint.HIGH_SCORING);
+        score(ElevFourbar.HIGH_SCORING_SETPOINT);
     }
 
     /**
      * Score high and auto balance
      */
     private static void modeSix() {
-        score(Setpoint.HIGH_SCORING);
+        score(ElevFourbar.HIGH_SCORING_SETPOINT);
         
         if (instance.autoStage > 1 || instance.timer.get() > 6) {
             AutoBalance.run();
@@ -147,10 +149,10 @@ public class AutonomousRunner extends SmartPrintable {
     }
 
     /**
-     * Only drop game piece and move out of the community
+     * Only score high and move out of the community
      */
     private static void modeSeven() {
-        score(Setpoint.HIGH_SCORING);
+        score(ElevFourbar.HIGH_SCORING_SETPOINT);
         
         if (instance.autoStage > 1 || instance.timer.get() > 6) {
             AutoBalance.setType(BalanceType.OVER_AND_BACK);
@@ -158,18 +160,12 @@ public class AutonomousRunner extends SmartPrintable {
         }
     }
 
-    private static void score(Setpoint setpoint) {
+    private static void score(DoubleSetpoint setpoint) {
         if(instance.autoStage == 0){
             //Move the pivot up
             Intake.autoPivot(SolenoidState.UP);
-            if(setpoint == Setpoint.HIGH_SCORING) 
-                ElevFourbar.autoRun((ElevFourbar.getGamePieceSelected() == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.HIGH_SCORING_COORDS_CUBE : ElevFourbar.HIGH_SCORING_COORDS_CONE);
-
-            else if(setpoint == Setpoint.MID_SCORING)
-                ElevFourbar.autoRun((ElevFourbar.getGamePieceSelected() == ElevFourbar.GamePiece.CUBE) ? ElevFourbar.MID_SCORING_COORDS_CUBE : ElevFourbar.MID_SCORING_COORDS_CONE);
-
-            else
-                ElevFourbar.autoRun(setpoint);
+            
+            ElevFourbar.autoRun(ElevFourbar.getGamePieceSelected() == GamePiece.CUBE ? setpoint.cube : setpoint.cone);
             
             //Move the elevator to the high scoring position
             if(instance.timer.get() > 1.0) {
@@ -183,7 +179,7 @@ public class AutonomousRunner extends SmartPrintable {
             //1 second delay to prevent closing on the cube again >:(
             if(instance.secondaryTimer.get() > 1) {
                 //Move to stowed setpoint
-                if(ElevFourbar.autoRun(ElevFourbar.STOWED_COORDS_CUBES)) {
+                if(ElevFourbar.autoRun(ElevFourbar.STOWED_SETPOINT)) {
                     //Close the claw and put the pivot down
                     instance.autoStage++;
                 }

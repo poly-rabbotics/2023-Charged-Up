@@ -12,19 +12,20 @@ public class Claw {
         clawSolenoid = new DoubleSolenoid(moduleType, forwardChannel, reverseChannel);
     }
 
+    //Open the claw
     public void open() {
         clawSolenoid.set(Value.kForward);
     }
 
+    //Close the claw
     public void close() {
         clawSolenoid.set(Value.kReverse);
     }
 
+    //Returns the SolenoidState of the claw piston
     public SolenoidState getState() {
         if(clawSolenoid.get() == Value.kForward) {
             return SolenoidState.OPEN;
-        } else if(clawSolenoid.get() == Value.kReverse) {
-            return SolenoidState.CLOSED;
         } else {
             return SolenoidState.CLOSED;
         }
