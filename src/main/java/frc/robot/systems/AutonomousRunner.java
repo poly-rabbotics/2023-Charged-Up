@@ -17,13 +17,13 @@ public class AutonomousRunner extends SmartPrintable {
 
     private static final Runnable[] MODES = {
         //() -> {},
-        AutonomousRunner::modeSeven,
         AutonomousRunner::modeOne,
         AutonomousRunner::modeTwo,
         AutonomousRunner::modeThree,
         AutonomousRunner::modeFour,
         AutonomousRunner::modeFive,
         AutonomousRunner::modeSix,
+        AutonomousRunner::modeSeven,
         () -> {},
     };
 
@@ -75,12 +75,9 @@ public class AutonomousRunner extends SmartPrintable {
     }
 
     /**
-     * Scores mid then moves out of community
+     * Only move out of the community
      */
     private static void modeOne() {
-
-        score(ElevFourbar.MID_SCOORING_SETPOINT);
-        
         /*******************
          * EXIT THE COMUNITY
          * *****************    
@@ -100,9 +97,27 @@ public class AutonomousRunner extends SmartPrintable {
     }
 
     /**
-     * Score mid then auto balance
+     * Scores mid then moves out of community
      */
     private static void modeThree() {
+
+        score(ElevFourbar.MID_SCOORING_SETPOINT);
+        
+        /*******************
+         * EXIT THE COMUNITY
+         * *****************    
+         */
+        if (SwerveDrive.getDistance() < 670 && (instance.autoStage == 2 || instance.timer.get() > 10)) {
+            SwerveDrive.runUncurved(0.0, -0.6, 0.0);
+        } else {
+            SwerveDrive.runUncurved(0.0, 0.0, 0.0);
+        }
+    }
+
+    /**
+     * Score mid then auto balance
+     */
+    private static void modeFour() {
 
         score(ElevFourbar.MID_SCOORING_SETPOINT);
         
@@ -112,9 +127,16 @@ public class AutonomousRunner extends SmartPrintable {
     }
 
     /**
+     * Only score high
+     */
+    private static void modeFive() {
+        score(ElevFourbar.HIGH_SCORING_SETPOINT);
+    }
+
+    /**
      * Score high then move out of the community
      */
-    private static void modeFour() {
+    private static void modeSix() {
 
         score(ElevFourbar.HIGH_SCORING_SETPOINT);
 
@@ -131,31 +153,12 @@ public class AutonomousRunner extends SmartPrintable {
     }
 
     /**
-     * Only score high
-     */
-    private static void modeFive() {
-        score(ElevFourbar.HIGH_SCORING_SETPOINT);
-    }
-
-    /**
      * Score high and auto balance
-     */
-    private static void modeSix() {
-        score(ElevFourbar.HIGH_SCORING_SETPOINT);
-        
-        if (instance.autoStage > 1 || instance.timer.get() > 6) {
-            AutoBalance.run();
-        }
-    }
-
-    /**
-     * Only score high and move out of the community
      */
     private static void modeSeven() {
         score(ElevFourbar.HIGH_SCORING_SETPOINT);
         
         if (instance.autoStage > 1 || instance.timer.get() > 6) {
-            AutoBalance.setType(BalanceType.OVER_AND_BACK);
             AutoBalance.run();
         }
     }
