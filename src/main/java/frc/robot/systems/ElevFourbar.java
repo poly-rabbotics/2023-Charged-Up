@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import frc.robot.SmartPrintable;
 import frc.robot.systems.Intake.SolenoidState;
 import frc.robot.subsystems.DoubleSetpoint;
 import frc.robot.subsystems.Coordinate;
@@ -12,7 +13,7 @@ import frc.robot.subsystems.Setpoint;
 import frc.robot.subsystems.Fourbar;
 import frc.robot.SmartPrintable;
 
-public class ElevFourbar {
+public class ElevFourbar extends SmartPrintable {
 
     //SETPOINTS FOR PID CONTROL
     public static final DoubleSetpoint STOWED_SETPOINT = new DoubleSetpoint(new Setpoint(0, Setpoint.HYPOTENUSE), new Setpoint(0, Setpoint.HYPOTENUSE));
