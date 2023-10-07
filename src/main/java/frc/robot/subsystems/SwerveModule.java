@@ -25,6 +25,7 @@ import frc.robot.SmartPrintable;
  * Class for managing and manipulating a swerve module. 
  */
 public class SwerveModule extends SmartPrintable {
+    private static final double CAN_SPARK_MAX_RATED_AMPS = 60.0;
     private static final double CONVERSION_FACTOR_ROTATION = Math.toRadians(150 / 7);                         // Rotations to radians.
     private static final double CONVERSION_FACTOR_MOVEMENT = 6.75;                                            // Rotations to meters.
     private static final double CONVERSION_FACTOR_ROTATION_VELOCITY = CONVERSION_FACTOR_ROTATION * (1 / 60);  // RPM to radians per second.
@@ -52,7 +53,6 @@ public class SwerveModule extends SmartPrintable {
 
     private final RelativePosition physicalPosition;
     private final Angle canCoderOffset;
-    private final double coefficient;
 
     // Set to NaN if not in rock mode, NaN does not equal itself by definition
     // (see some IEEE standard or something) and so this is how rock mode is 
@@ -113,17 +113,15 @@ public class SwerveModule extends SmartPrintable {
         int rotationalMotorID, 
         int canCoderID, 
         Angle canCoderOffset, 
-        double coefficient,
         Translation2d physicalPosition
     ) {
         super();
         
         this.physicalPosition = RelativePosition.fromTranslation(physicalPosition);
         this.canCoderOffset = canCoderOffset.clone();
-        this.coefficient = coefficient;
 
         rotationMotor = new CANSparkMax(rotationalMotorID, MotorType.kBrushless);
-        rotationMotor.setInverted(false);
+        rotationMotor.setInverted(true);
         rotationMotor.setSmartCurrentLimit(30);
         
         movementMotor = new CANSparkMax(movementMotorID, MotorType.kBrushless);
@@ -188,7 +186,7 @@ public class SwerveModule extends SmartPrintable {
         }
 
         double calculation = rotationController.calculate(currentPosition, (state.angle.getRadians() + Angle.TAU) % Angle.TAU);
-        rotationMotor.set(calculation * coefficient);
+        rotationMotor.set(calculation);
 
         position.angle = new Rotation2d(angularEncoder.getPosition());
         position.distanceMeters = movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT;
@@ -200,7 +198,6 @@ public class SwerveModule extends SmartPrintable {
     public void setRockMode(boolean shouldHold) {
         if (!shouldHold) {
             rockPos = Double.NaN;
-            return;
         } else if (rockPos != rockPos) {
             rockPos = getDistanceTraveled();
         }
@@ -235,6 +232,49 @@ public class SwerveModule extends SmartPrintable {
      */
     public double getDistanceTraveled() {
         return movementEncoder.getPosition();
+    }
+
+    /**
+     * Gets the reported tempurature of the rotation motor in celsius.
+     */
+    public double getRotationMotorTemp() {
+        return rotationMotor.getMotorTemperature();
+    }
+
+    /**
+     * Gets the reported tempurature of the movement motor in celsius.
+     */
+    public double getMovementMotorTemp() {
+        return movementMotor.getMotorTemperature();
+    }
+
+    /**
+     * Gets the power being outputted by the rotation motor's controller in amps.
+     */
+    public double getRotationMotorCurrent() {
+        return rotationMotor.getOutputCurrent();
+    }
+
+    /**
+     * Gets the power being outputted by the movement motor's controller in amps.
+     */
+    public double getMovementMotorCurrent() {
+        return movementMotor.getOutputCurrent();
+    }
+
+    /**
+     * Gets the sum of all motor's current in amps.
+     */
+    public double getAppliedCurrent() {
+        return getRotationMotorCurrent() + getMovementMotorCurrent();
+    }
+
+    /**
+     * Gets the percentage of the maximum rated amperage of the motor 
+     * controllers currently being hit by the module.
+     */
+    public double getPercentRatedCurrent() {
+        return getAppliedCurrent() / (2.0 * CAN_SPARK_MAX_RATED_AMPS);
     }
 
     @Override

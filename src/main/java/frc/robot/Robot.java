@@ -4,13 +4,12 @@
 
 package frc.robot;
 
-import java.util.function.BiFunction;
-
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import frc.robot.systems.AutoBalance;
@@ -24,7 +23,6 @@ import frc.robot.systems.SwerveDrive;
 import frc.robot.systems.AutoBalance.Stage;
 import frc.robot.systems.LEDLights;
 import frc.robot.systems.Bat;
-import frc.robot.subsystems.AxisRateLimiter;
 import frc.robot.subsystems.SwerveMode;
 
 /**
@@ -44,10 +42,6 @@ public class Robot extends TimedRobot {
     private static final XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
     private static final XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
     private static final Joystick controlPanel = (Joystick)Controls.getControllerByPort(2);
-
-    private static final AxisRateLimiter translationLimiter = new AxisRateLimiter(0.1, "Translation");
-    private static final BiFunction<Double, Double, Double> limitedTranslationCurve = 
-        (Double x, Double y) -> translationLimiter.apply(Controls.plateauingCurveTwoDimensional(x, y));
 
     private static final AnalogInput pressureSensor = new AnalogInput(0);
     private static final DigitalInput brakeSwitch = new DigitalInput(1);
@@ -76,8 +70,8 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit() {
         controlMode = ControlMode.DISABLED;
-        SwerveDrive.setTurnCurve(Controls::turnCurveRohan);
-        SwerveDrive.setDirectionalCurve(Controls::defaultCurveTwoDimensional, true);
+        SwerveDrive.setTurnCurve(Controls::defaultCurve);
+        SwerveDrive.setDirectionalCurve(Controls::defaultCurveTwoDimensional);
     }
     
     /**
@@ -150,33 +144,39 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {        
-        SmartDashboard.putNumber("controller Y", controllerOne.getLeftY());
-        SmartDashboard.putNumber("controller X", controllerOne.getLeftX());
-
-        // Toggle translation curve
-        if (controllerOne.getLeftBumperReleased()) {
-            translationLimiter.toggleEnabled();
-        }
-
-        double x = controllerOne.getLeftX();
-        double y = controllerOne.getLeftY();
-
-        if (controllerOne.getLeftTriggerAxis() > 0.25) {
-            x = Math.abs(x) > Math.abs(y) ? x : 0.0;
-            y = x == 0.0 ? y : 0.0;
-        }
-
-        SwerveDrive.run(x, y, controllerOne.getRightX(), controllerOne.getPOV());
-        SwerveDrive.conditionalTempMode(SwerveMode.ROCK, controllerOne.getRightTriggerAxis() > 0.25);
-        
         // Left stick changes between headless and relative control modes.
         if (controllerOne.getLeftStickButtonReleased()) {
-            if (SwerveDrive.getMode() == SwerveMode.HEADLESS) {
-                SwerveDrive.setMode(SwerveMode.RELATIVE);
-            } else {
-                SwerveDrive.setMode(SwerveMode.HEADLESS);
-            }
+            SwerveDrive.setMode(
+                SwerveDrive.getMode() == SwerveMode.HEADLESS 
+                    ? SwerveMode.RELATIVE 
+                    : SwerveMode.HEADLESS
+            );
         }
+        
+        SwerveDrive.conditionalTempDirectionalCurve(
+            Controls.cardinalLock(Controls::defaultCurveTwoDimensional), 
+            controllerOne.getXButton()
+        ); // Lock to cardinal directions.
+        SwerveDrive.conditionalTempDirectionalCurve(
+            (x, y) -> Controls.defaultCurveTwoDimensional(x, y) / 2.0,
+            controllerOne.getRightBumper()
+        ); // Half translation speed.
+        SwerveDrive.conditionalTempDirectionalCurve(
+            Controls.cardinalLock((x, y) -> Controls.defaultCurveTwoDimensional(x, y) / 2.0),
+            controllerOne.getRightBumper() && controllerOne.getXButton()
+        ); // Half translation speed.
+        SwerveDrive.conditionalTempMode(SwerveMode.ROCK, controllerOne.getBButton());
+        SwerveDrive.run(
+            controllerOne.getLeftX(),
+            controllerOne.getLeftY(),
+            //controllerOne.getRightTriggerAxis() - controllerOne.getLeftTriggerAxis(),
+            controllerOne.getRightX()
+        );
+
+        double rumble = controllerOne.getLeftBumper() 
+            ? SwerveDrive.getAverageMotorTemp() / 80.0
+            : SwerveDrive.getAveragePercentRatedCurrent();
+        controllerOne.setRumble(RumbleType.kBothRumble, rumble);
         
         Intake.run(
             controlPanel.getRawButtonPressed(8), //Pivot toggle
@@ -209,6 +209,14 @@ public class Robot extends TimedRobot {
         ElevFourbar.toggleGamePiece(controlPanel.getRawButtonReleased(5)); 
     }
     
+    /** This  function is called once when test mode is enabled. */
+    @Override
+    public void testInit() {}
+    
+    /** This function is called periodically during test mode. */
+    @Override
+    public void testPeriodic() {}
+  
     /** This function is called once when the robot is first started up. */
     @Override
     public void simulationInit() {}

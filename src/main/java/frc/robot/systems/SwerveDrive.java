@@ -4,8 +4,6 @@
 
 package frc.robot.systems;
 
-import java.security.InvalidParameterException;
-
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -27,12 +25,10 @@ import frc.robot.subsystems.SwerveModule;
  * Manages the swerve drive train.
  */
 public class SwerveDrive extends SmartPrintable {
-    private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1,  2,   3,   4  };
-    private static final int MODULE_ROTATION_CAN_IDS[] = { 5,  6,   7,   8  };
-    private static final int MODULE_CANCODER_CAN_IDS[] = { 9,  10,  11,  12 };
+    private static final int MODULE_MOVEMENT_CAN_IDS[] = { 1,   2,   3,   4  };
+    private static final int MODULE_ROTATION_CAN_IDS[] = { 5,   6,   7,   8  };
+    private static final int MODULE_CANCODER_CAN_IDS[] = { 9,   10,  11,  12 };
     
-    private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
-    private static final double LOW_SENSITIVITY_RATIO = 0.08;
     private static final double CHASSIS_SIDE_LENGTH = 0.6;
 
     private static final Angle MODULE_CANCODER_OFFSETS[] = {
@@ -43,34 +39,35 @@ public class SwerveDrive extends SmartPrintable {
     };
 
     private static final Angle MODULE_ROCK_MODE_POSITIONS[] = { 
-        new Angle().setRadians( -Math.PI / 4), 
-        new Angle().setRadians(  Math.PI / 4), 
-        new Angle().setRadians( -Math.PI / 4), 
-        new Angle().setRadians(  Math.PI / 4) 
+        new Angle().setRadians( -Angle.TAU / 8  ), 
+        new Angle().setRadians(  Angle.TAU / 8  ), 
+        new Angle().setRadians( -Angle.TAU / 8  ), 
+        new Angle().setRadians(  Angle.TAU / 8  ) 
     };
 
     private static final Translation2d MODULE_PHYSICAL_POSITIONS[] = {
-        new Translation2d(   CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
-        new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
-        new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2),
-        new Translation2d(   CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2)
+        new Translation2d(   CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2  ),
+        new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2  ),
+        new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2  ),
+        new Translation2d(   CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2  )
     };
 
     // Singleton instance.
     private static final SwerveDrive instance = new SwerveDrive();
 
-    // These drive state objects modify themselves internally through methods,
-    // but require no setting and are therefore final.
+    // Internally mutable state objects
     private final SwerveModule modules[] = new SwerveModule[MODULE_MOVEMENT_CAN_IDS.length];
     private final SwerveModulePosition positions[] = new SwerveModulePosition[MODULE_MOVEMENT_CAN_IDS.length];
     private final SwerveDriveKinematics kinematics;
     private final SwerveDriveOdometry odometry;
-    
-    // Variable drive states objects.
+
+    // Fully mutable state objects    
     private BiFunction<Double, Double, Double> directionCurve = Controls::defaultCurveTwoDimensional;
+    private BiFunction<Double, Double, Double> inactiveDirectionCurve = null;
     private Function<Double, Double> turnCurve = Controls::defaultCurve;
+    private Function<Double, Double> inactiveTurnCurve = null;
     private SwerveMode mode = SwerveMode.HEADLESS;
-    private SwerveMode inactiveMode = SwerveMode.HEADLESS;
+    private SwerveMode inactiveMode = null;
 
     private SwerveDrive() {
         super();
@@ -81,7 +78,6 @@ public class SwerveDrive extends SmartPrintable {
                 MODULE_ROTATION_CAN_IDS[i], 
                 MODULE_CANCODER_CAN_IDS[i], 
                 MODULE_CANCODER_OFFSETS[i], 
-                MODULE_COEFFIENTS[i],
                 MODULE_PHYSICAL_POSITIONS[i]
             );
         }
@@ -154,6 +150,128 @@ public class SwerveDrive extends SmartPrintable {
     }
 
     /**
+     * Sets the curve function for directional inputs (translations).
+     * @param curve The BiFunction to use for proccessing the curve, the first 
+     * argument is what should be curved, the second is used for context. Return
+     * the curved direction.
+     */
+    public static void setDirectionalCurve(BiFunction<Double, Double, Double> curve) {
+        instance.directionCurve = curve;
+    }
+
+    /**
+     * Gets the current curve used for directional inputs.
+     */
+    public static BiFunction<Double, Double, Double> getDirectionalCurve() {
+        return instance.directionCurve;
+    }
+
+    /**
+     * Temporarily sets the curve function for directional inputs (translations).
+     * This action will atomatically be undone after calling a run method.
+     * @param curve The BiFunction to use for proccessing the curve, the first 
+     * argument is what should be curved, the second is used for context. Return
+     * the curved direction.
+     */
+    public static void tempDirectionalCurve(BiFunction<Double, Double, Double> curve) {
+        if (instance.inactiveDirectionCurve != null) {
+            instance.directionCurve = curve;
+            return;
+        }
+
+        instance.inactiveDirectionCurve = instance.directionCurve;
+        instance.directionCurve = curve;
+    }
+
+    /**
+     * Exactly like `tempDirectionalCurve` but predicated on a boolean condition.
+     */
+    public static void conditionalTempDirectionalCurve(
+        BiFunction<Double, Double, Double> curve, 
+        boolean condition
+    ) {
+        if (!condition) {
+            return;
+        }
+
+        tempDirectionalCurve(curve);
+    }
+
+    /**
+     * Sets the curve function for turn inputs.
+     * @param curve The Function to use for proccessing the curve.
+     */
+    public static void setTurnCurve(Function<Double, Double> curve) {
+        instance.turnCurve = curve;
+    }
+
+    /**
+     * Gets the Function currently used for turning.
+     */
+    public static Function<Double, Double> getTurnCurve() {
+        return instance.turnCurve;
+    }
+
+    /**
+     * Temporarily sets the curve function for turn inputs. Undone after running.
+     * @param curve The Function to use for proccessing the curve.
+     */
+    public static void tempTurnCurve(Function<Double, Double> curve) {
+        if (instance.inactiveTurnCurve != null) {
+            instance.turnCurve = curve;
+            return;
+        }
+
+        instance.inactiveTurnCurve = instance.turnCurve;
+        instance.turnCurve = curve;
+    }
+
+    /**
+     * Exactly like `tempTurnCurve` but predicated on a boolean condition.
+     */
+    public static void conditionalTempTurnCurve(
+        Function<Double, Double> curve, 
+        boolean condition
+    ) {
+        if (!condition) {
+            return;
+        }
+
+        tempTurnCurve(curve);
+    }
+
+    /**
+     * Runs swerve, behavior changes based on the drive's mode. This will reset
+     * temporary modes on completion.
+     * @param directionalX The X axis of the directional control, between 1 and -1
+     * @param directionalY The Y axis of the directional control, between 1 and -1.
+     * @param speed The speed scalar for the drive.
+     * @param turn A value between 1 and -1 that determines the turning angle.
+     * @param lowSense The angle to move in low sensitivity in degrees, -1 for no movement.
+     */
+    public static void run(
+        double directionalX,
+        double directionalY,
+        double speed,
+        double turn
+    ) {
+        speed = Math.abs(directionalX) <= 0.05 && Math.abs(directionalY) <= 0.05 ? 0.0 : speed;
+        
+        SmartDashboard.putNumber("direction x - run 0", directionalX);
+        SmartDashboard.putNumber("direction y - run 0", directionalY);
+
+        // angle is in radians as per Java's trig methods.
+        var angle = Math.atan2(directionalY, directionalX);
+        directionalX = Math.cos(angle) * speed;
+        directionalY = Math.sin(angle) * speed;
+
+        SmartDashboard.putNumber("direction x - run 1", directionalX);
+        SmartDashboard.putNumber("direction y - run 1", directionalY);
+
+        run(directionalX, directionalY, turn);
+    }
+
+    /**
      * Runs swerve, behavior changes based on the drive's mode. Derives speed
      * from directional inputs. This will reset temporary modes on completion.
      * @param directionalX The X axis of the directional control, between 1 and -1
@@ -161,22 +279,13 @@ public class SwerveDrive extends SmartPrintable {
      * @param turn A value between 1 and -1 that determines the turning angle.
      * @param lowSense The angle to move in low sensitivity in degrees, -1 for no movement.
      */
-    public static void run(double directionalX, double directionalY, double turn, int lowSense) {
-        if (lowSense != -1) {
-            double angle = Angle.TAU - Math.toRadians((double)lowSense);
-
-            // inverted since the drive is rotated to compensate for joystick stuff
-            directionalX = -(Math.sin(angle) * LOW_SENSITIVITY_RATIO);
-            directionalY = -(Math.cos(angle) * LOW_SENSITIVITY_RATIO);
-            
-            runUncurved(directionalX, directionalY, instance.turnCurve.apply(turn));
-            return;
-        }
-
-        directionalX = instance.directionCurve.apply(directionalX, directionalY);
-        directionalY = instance.directionCurve.apply(directionalY, directionalX);
+    public static void run(double directionalX, double directionalY, double turn) {
+        var x = instance.directionCurve.apply(directionalX, directionalY);
+        var y = instance.directionCurve.apply(directionalY, directionalX);
+        SmartDashboard.putNumber("direction x - run 2", x);
+        SmartDashboard.putNumber("direction y - run 2", y);
         turn = instance.turnCurve.apply(turn);
-        runUncurved(directionalX, directionalY, turn);
+        runUncurved(x, y, turn);
     }
     
     /**
@@ -230,9 +339,21 @@ public class SwerveDrive extends SmartPrintable {
 
         instance.odometry.update(new Rotation2d(Pigeon.getYaw().radians()), instance.positions);
 
+        // Reset temp state
+        
         if (instance.inactiveMode != null) {
             instance.mode = instance.inactiveMode;
             instance.inactiveMode = null;
+        }
+        
+        if (instance.inactiveDirectionCurve != null) {
+            instance.directionCurve = instance.inactiveDirectionCurve;
+            instance.inactiveDirectionCurve = null;
+        }
+
+        if (instance.inactiveTurnCurve != null) {
+            instance.turnCurve = instance.inactiveTurnCurve;
+            instance.inactiveTurnCurve = null;
         }
     }
 
@@ -246,80 +367,44 @@ public class SwerveDrive extends SmartPrintable {
     }
 
     /**
-     * Sets the curve function for directional inputs (translations).
-     * @param curve The BiFunction to use for proccessing the curve, the first 
-     * argument is what should be curved, the second is used for context. Return
-     * the curved direction.
+     * Gets the average tempurature of all motors on the drive.
      */
-    public static void setDirectionalCurve(BiFunction<Double, Double, Double> curve) {
-        // Run some tests that should be valid of any curve function.
-        if (curve.apply(0.0, 0.0) != 0.0) {
-            throw new InvalidParameterException("All curves should return 0 on a 0 input.");
+    public static double getAverageMotorTemp() {
+        double tempSum = 0.0;
+
+        for (SwerveModule module : instance.modules) {
+        	tempSum += module.getRotationMotorTemp();
+            tempSum += module.getMovementMotorTemp();
         }
 
-        double previousOutput = 0.0;
-
-        // Here we just make sure all outputs either go up or stay the same as
-        // the inputs become greator.
-        for (double i = 0.0; i < 1.0; i += 0.1) {
-            double outI = curve.apply(i, i);
-
-            if (outI < previousOutput) {
-                throw new InvalidParameterException("No curve shall return a lesser value given a greator input.");
-            }
-
-            for (double j = 0.0; j < 1.0; j += 0.1) {
-                double outJ = curve.apply(i, j);
-
-                if (j < i && outJ > outI) {
-                    throw new InvalidParameterException("No curve shall return a greator value given a lesser input.");
-                } else if (j > i && outJ < outI) {
-                    throw new InvalidParameterException("No curve shall return a lesser value given a greator input.");
-                } else if (j == i && outJ != outI) {
-                    throw new InvalidParameterException("No curve shall return a different result given the same input (i mean, c'mon man, thats the deffinition of a function...).");
-                }
-            }
-
-            previousOutput = outI;
-        }
-
-        instance.directionCurve = curve;
-    }
-
-    public static void setDirectionalCurve(BiFunction<Double, Double, Double> curve, boolean overrideTests) {
-        if (overrideTests) {
-            instance.directionCurve = curve;
-            return;
-        }
-
-        setDirectionalCurve(curve);
+        return tempSum / (instance.modules.length * 2.0);
     }
 
     /**
-     * Sets the curve function for turn inputs.
-     * @param curve The Function to use for proccessing the curve.
+     * Gets the sum of all applied currents in amps of all motors on the drive.
      */
-    public static void setTurnCurve(Function<Double, Double> curve) {
-        // Run some tests that should be valid of any curve function.
-        if (curve.apply(0.0) != 0.0) {
-            throw new InvalidParameterException("All curves should return 0 on a 0 input.");
+    public static double getAppliedCurrent() {
+        double current = 0.0;
+
+        for (SwerveModule module : instance.modules) {
+        	current += module.getAppliedCurrent();
         }
 
-        double previousOutput = 0.0;
+        return current;
+    }
 
-        // Here we just make sure all outputs either go up or stay the same as
-        // the inputs become greator.
-        for (double i = 0.0; i < 1.0; i += 0.1) {
-            double outI = curve.apply(i);
+    /**
+     * Gets the average percent usage of each module's motor controller 
+     * current pull.
+     */
+    public static double getAveragePercentRatedCurrent() {
+        double percentSum = 0.0;
 
-            if (outI < previousOutput) {
-                throw new InvalidParameterException("No curve shall return a lesser value given a greator input.");
-            }
-
-            previousOutput = outI;
+        for (SwerveModule module : instance.modules) {
+        	percentSum += module.getPercentRatedCurrent();
         }
 
-        instance.turnCurve = curve;
+        return percentSum / (double)instance.modules.length;
     }
 
     /**

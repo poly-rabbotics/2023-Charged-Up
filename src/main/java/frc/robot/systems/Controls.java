@@ -90,6 +90,28 @@ public class Controls {
     }
 
     /**
+     * Returns `x` if `x` is greater than `y`, otherwise returning `0.0`.
+     */
+    public static double cardinalLock(double x, double y) {
+        return Math.abs(x) > Math.abs(y) 
+            ? x
+            : 0.0;
+    }
+
+    /**
+     * Applies a cardinal lock to inputs of the given curve.
+     */
+    public static BiFunction<Double, Double, Double> cardinalLock(
+        BiFunction<Double, Double, Double> curve
+    ) {
+        return (x, y) -> {
+            x = cardinalLock(x, y);
+            y = cardinalLock(y, x);
+            return curve.apply(x, y);
+        };
+    }
+
+    /**
      * Runs th default curve with a plateau.
      */
     public static double plateauingCurve(double x) {
