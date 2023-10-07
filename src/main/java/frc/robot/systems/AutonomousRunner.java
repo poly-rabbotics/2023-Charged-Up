@@ -5,7 +5,6 @@ import java.security.InvalidParameterException;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 
-import frc.robot.systems.AutoBalance.BalanceType;
 import frc.robot.systems.ElevFourbar.GamePiece;
 import frc.robot.systems.Intake.SolenoidState;
 import frc.robot.subsystems.DoubleSetpoint;
