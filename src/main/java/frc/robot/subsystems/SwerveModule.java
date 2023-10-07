@@ -75,6 +75,7 @@ public class SwerveModule extends SmartPrintable {
         movementMotor.setSmartCurrentLimit(40);
 
         angularEncoder = new CANCoder(canCoderID);
+        angularEncoder.configFactoryDefault();
         angularEncoder.configSensorInitializationStrategy(SensorInitializationStrategy.BootToAbsolutePosition, 1000);
 
         rotationEncoder = rotationMotor.getEncoder();
