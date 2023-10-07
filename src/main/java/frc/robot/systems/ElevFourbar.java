@@ -1,36 +1,28 @@
 package frc.robot.systems;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.SmartPrintable;
-import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.Fourbar;
-import frc.robot.systems.Intake.SolenoidState;
-
 import java.text.DecimalFormat;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import frc.robot.SmartPrintable;
+import frc.robot.systems.Intake.SolenoidState;
+import frc.robot.subsystems.DoubleSetpoint;
+import frc.robot.subsystems.Coordinate;
+import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Setpoint;
+import frc.robot.subsystems.Fourbar;
+import frc.robot.SmartPrintable;
 
 public class ElevFourbar extends SmartPrintable {
 
-    //Constants for trig functions
-    private static final double FOURBAR_HYPOTENUSE = 37.5;
-    private static final double ELEVATOR_MAX_POS = 32.0;
-    public static final double BUMPER_X = 14;
-    public static final double BUMPER_Y = 8;
+    //SETPOINTS FOR PID CONTROL
+    public static final DoubleSetpoint STOWED_SETPOINT = new DoubleSetpoint(new Setpoint(0, Setpoint.HYPOTENUSE), new Setpoint(0, Setpoint.HYPOTENUSE));
+    public static final DoubleSetpoint MID_SCOORING_SETPOINT = new DoubleSetpoint(new Setpoint(15, 37), new Setpoint(15, 34.4));
+    public static final DoubleSetpoint HIGH_SCORING_SETPOINT = new DoubleSetpoint(new Setpoint(26.6, 50), new Setpoint(33.2, 48.6));
 
-    //COORDINATE CONSTANTS FOR PID CONTROL
-    public static double[] STOWED_COORDS_CUBES = { 0, FOURBAR_HYPOTENUSE};
-    public static double[] STOWED_COORDS_CONE = STOWED_COORDS_CUBES;
-    public static double[] GROUND_INTAKE_DOWN_COORDS = { 35.2, 15 -4};
-    public static double[] GROUND_INTAKE_UP_COORDS = { 30, 1 };
-    public static double[] MID_SCORING_COORDS_CONE = { 15, 34 };
-    public static double[] MID_SCORING_COORDS_CUBE = { 15, 37 };
-    public static double[] SUBSTATION_INTAKE_COORDS = { 20.4, 40.5 };
-    public static double[] HIGH_SCORING_COORDS_CONE = { 33.194, 48.581 };
-    public static double[] HIGH_SCORING_COORDS_CUBE = { 26.6, 50 };
-
-    //enums
-    private Setpoint setpoint = Setpoint.STOWED;
-    private ControlType controlType = ControlType.POSITION;
-    public static GamePiece gamePieceSelected = GamePiece.CUBE;
+    public static final Setpoint GROUND_INTAKE_DOWN_SETPOINT = new Setpoint(35.2, 11, true);
+    public static final Setpoint GROUND_INTAKE_UP_SETPOINT = new Setpoint(30, 1, true);
+    public static final Setpoint SUBSTATION_INTAKE_SETPOINT = new Setpoint(20.4, 40.5);
 
     //deadzone to determine when manual control is enabled
     static final double DEADZONE = 0.3;
@@ -38,22 +30,21 @@ public class ElevFourbar extends SmartPrintable {
     //make a decimal format object to improve readability of coordinates
     private static DecimalFormat df = new DecimalFormat("#.###");
 
-    //instantiate coordinates
-    private double[] coords = {0, 0};
-    private double[] targetCoords = { 0, FOURBAR_HYPOTENUSE };
+    //Instance veriables
+    private Setpoint setpoint;
+    private Setpoint currentSetpoint;
+    private ControlType controlType = ControlType.POSITION;
+    private GamePiece gamePieceSelected = GamePiece.CUBE;
+    private boolean translateMode = false;
 
-    private static ElevFourbar instance = new ElevFourbar();
-
+    //Elevator and Fourbar objects
     public static Fourbar fourbar;
     public static Elevator elevator;
 
-    public ElevFourbar() {
-        super();
-        fourbar = new Fourbar();
-        elevator = new Elevator();
-    }
+    //Instance of this class
+    private static ElevFourbar instance = new ElevFourbar();
 
-    public static enum Setpoint {
+    public static enum SetpointEnum {
         SUBSTATION_INTAKE, GROUND_INTAKE, MID_SCORING, HIGH_SCORING, STOWED
     }
 
@@ -65,136 +56,100 @@ public class ElevFourbar extends SmartPrintable {
         CONE, CUBE
     }
 
+    /**
+     * Literally just a constructor
+     */
+    public ElevFourbar() {
+        super();
+        fourbar = new Fourbar();
+        elevator = new Elevator();
+        currentSetpoint = new Setpoint(0, Setpoint.HYPOTENUSE);
+        setpoint = STOWED_SETPOINT.cone;
+    }
+
+    /**
+     * Initialize teleop
+     */
     public static void init() {
         instance.controlType = ControlType.POSITION;
         elevator.init();
         fourbar.setPIDSpeed(0.45);
+        instance.translateMode = false;
+
+        instance.setpoint = getGamePieceSelected() == GamePiece.CUBE ? STOWED_SETPOINT.cube : STOWED_SETPOINT.cone;
+    }
+    
+    /**
+     * Initialize autonomous
+     */
+    public static void autonomousInit() {
+        elevator.autonomousInit();
+        fourbar.setPIDSpeed(0.3);
     }
 
-    public static void setSetPoint(Setpoint set) {
-        instance.controlType = ControlType.POSITION;
-        instance.setpoint = set;
-
-        if (set == Setpoint.STOWED) {
-            instance.targetCoords = (gamePieceSelected == GamePiece.CONE) ? STOWED_COORDS_CONE : STOWED_COORDS_CUBES;
-        } else if (set == Setpoint.GROUND_INTAKE) {
-            instance.setpoint = Setpoint.GROUND_INTAKE;
-            if (Intake.getPivotState() == SolenoidState.UP) {
-                instance.targetCoords = GROUND_INTAKE_UP_COORDS;
-            } else {
-                instance.targetCoords = GROUND_INTAKE_DOWN_COORDS;
-            }
-        } else if (set == Setpoint.MID_SCORING) {
-            instance.targetCoords = (gamePieceSelected == GamePiece.CONE ? MID_SCORING_COORDS_CONE : MID_SCORING_COORDS_CUBE);
-        } else if(set == Setpoint.HIGH_SCORING) {
-            instance.targetCoords = (gamePieceSelected == GamePiece.CONE ? HIGH_SCORING_COORDS_CONE : HIGH_SCORING_COORDS_CUBE);
-        } 
-    }
-
-    public static ControlType getControlType() {
-        return instance.controlType;
-    }
-
-    public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean toggleGamePieceMode, boolean zeroElevEncoder) {
-        
-        instance.coords = posToCoords(elevator.getPosition(), fourbar.getPosition());
+    public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean toggleGamePieceMode, boolean groundIntake, boolean mid, boolean high, boolean zeroElevEncoder) {
+        instance.currentSetpoint = new Setpoint(false, elevator.getPosition(), fourbar.getPosition());
 
         //toggle between cone and cube mode
         toggleGamePiece(toggleGamePieceMode);
 
-        if(instance.setpoint == Setpoint.GROUND_INTAKE) {
-            if(Intake.getPivotState() == SolenoidState.UP) {
-                instance.targetCoords = GROUND_INTAKE_UP_COORDS;
-            } else {
-                instance.targetCoords = GROUND_INTAKE_DOWN_COORDS;
-            }
-        }
+        //set the target setpoint based on which button is pressed
+        setSetPoint(groundIntake, mid, high);
 
         //switches between control modes when button is pressed or manual control detects input
         if(Math.abs(elevatorSpeed) > DEADZONE || Math.abs(fourbarSpeed) > DEADZONE) {
             instance.controlType = ControlType.MANUAL;
-        }
-
-        if(instance.controlType == ControlType.POSITION) {
-            /* elevator.pidControl(instance.setpoint);
-            fourbar.pidControl(instance.setpoint); */
-
-            elevator.pidControl(instance.targetCoords);
-            fourbar.pidControl(instance.targetCoords);
-        } else {
-            elevator.manualControl(elevatorSpeed, dPadDirection);
-            fourbar.manualControl(fourbarSpeed);
-        }
-
-        if (zeroElevEncoder) {
-            elevator.zeroEncoder();
-        }
-    }
-
-    /**
-     * 
-     * @param toggleGamePieceMode
-     * @param groundIntake
-     * @param mid
-     * @param high
-     * @param stowed
-     */
-    public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean toggleGamePieceMode, boolean groundIntake, boolean mid, boolean high, boolean stowed, boolean zeroElevEncoder) {
-        
-        instance.coords = posToCoords(elevator.getPosition(), fourbar.getPosition());
-
-        //toggle between cone and cube mode
-        toggleGamePiece(toggleGamePieceMode);
-
-        //set the setpoint depending on which button is pressed
-        if(stowed) {
-            instance.setpoint = Setpoint.STOWED;
-            instance.targetCoords = (gamePieceSelected == GamePiece.CONE) ? STOWED_COORDS_CONE : STOWED_COORDS_CUBES;
-        } else if(groundIntake) {
-            instance.setpoint = Setpoint.GROUND_INTAKE;
-        } else if(mid) {
-            instance.setpoint = Setpoint.MID_SCORING;
-            instance.targetCoords = (gamePieceSelected == GamePiece.CONE ? MID_SCORING_COORDS_CONE : MID_SCORING_COORDS_CUBE);
-        } else if(high) {
-            instance.setpoint = Setpoint.HIGH_SCORING;
-            instance.targetCoords = (gamePieceSelected == GamePiece.CONE ? HIGH_SCORING_COORDS_CONE : HIGH_SCORING_COORDS_CUBE);
+        } else if(mid || groundIntake || high) {
+            instance.controlType = ControlType.POSITION;
         } 
 
-        if(instance.setpoint == Setpoint.GROUND_INTAKE) {
-            if(Intake.getPivotState() == SolenoidState.UP) {
-                instance.targetCoords = GROUND_INTAKE_UP_COORDS;
+        if(instance.controlType == ControlType.POSITION) { //Run PID control
+            elevator.pidControl(instance.setpoint);
+            fourbar.pidControl(instance.setpoint);
+        } else { //Run manual control
+            if(instance.translateMode) {
+
             } else {
-                instance.targetCoords = GROUND_INTAKE_DOWN_COORDS;
+
+                elevator.manualControl(elevatorSpeed, dPadDirection);
+                fourbar.manualControl(fourbarSpeed);
+
             }
         }
 
-        //switches between control modes when button is pressed or manual control detects input
-        if(groundIntake || mid || high || stowed) {
-            instance.controlType = ControlType.POSITION;
-        } else if(Math.abs(elevatorSpeed) > DEADZONE || Math.abs(fourbarSpeed) > DEADZONE) {
-            instance.controlType = ControlType.MANUAL;
-        } 
-
-        if(instance.controlType == ControlType.POSITION) {
-            /* elevator.pidControl(instance.setpoint);
-            fourbar.pidControl(instance.setpoint); */
-
-            elevator.pidControl(instance.targetCoords);
-            fourbar.pidControl(instance.targetCoords);
-        } else {
-            elevator.manualControl(elevatorSpeed, dPadDirection);
-            fourbar.manualControl(fourbarSpeed);
-        }
 
         if (zeroElevEncoder) {
-            elevator.zeroEncoder();
+            elevator.zeroEncoder(0.5);
         }
+
+        SmartDashboard.putNumber("FB Power", fourbar.getPower());
     }
-    /**Toggles between cube and cone mode when button pressed
-     * @param buttonReleased The button to toggle the game piece with (use a get button released method)
+
+    /**
+     * Set the current setpoint based on which button is held
+     * @param ground
+     * @param mid
+     * @param high
      */
-    public static void toggleGamePiece(boolean buttonReleased) {
-        gamePieceSelected = (buttonReleased ? (gamePieceSelected == GamePiece.CONE ? GamePiece.CUBE : GamePiece.CONE) : gamePieceSelected);
+    public static void setSetPoint(boolean ground, boolean mid, boolean high) {
+
+        if(ground) {
+            instance.setpoint = Intake.getPivotState() == SolenoidState.DOWN 
+                ? GROUND_INTAKE_DOWN_SETPOINT 
+                : GROUND_INTAKE_UP_SETPOINT;
+        } else if(mid) {
+            instance.setpoint = getGamePieceSelected() == GamePiece.CUBE 
+                ? MID_SCOORING_SETPOINT.cube 
+                : MID_SCOORING_SETPOINT.cone;
+        } else if(high) {
+            instance.setpoint = getGamePieceSelected() == GamePiece.CUBE 
+                ? HIGH_SCORING_SETPOINT.cube 
+                : HIGH_SCORING_SETPOINT.cone;
+        } else {
+            instance.setpoint = getGamePieceSelected() == GamePiece.CUBE
+                ? STOWED_SETPOINT.cube 
+                : STOWED_SETPOINT.cone;
+        }
     }
 
     /**
@@ -210,128 +165,58 @@ public class ElevFourbar extends SmartPrintable {
         //return true if the fourbar reached it's destination
         return (Math.abs(fourbar.getPosition() - fourbar.getTargetPosition()) < 1) && (Math.abs(elevator.getPosition() - elevator.getTargetPosition()) < 0.2);
     }
+
     
-    /**
-     * Sets elevator and fourbar to desired setpoint
-     * @param setpoint The setpoint to run to from the Setpoint enum
+    /**Toggles between cube and cone mode when button pressed
+     * @param buttonReleased The button to toggle the game piece with (use a get button released method)
      */
-    public static boolean autoRun(double[] coords) {
-
-        //Run the fourbar and elevator to inputted setpoint
-        elevator.pidControl(coords);
-        fourbar.pidControl(coords);
-
-        //return true if the fourbar reached it's destination
-        return (Math.abs(fourbar.getPosition() - fourbar.getTargetPosition()) < 1) && (Math.abs(elevator.getPosition() - elevator.getTargetPosition()) < 0.2);
-    }
-    
-    public static void autonomousInit() {
-        elevator.autonomousInit();
-        fourbar.setPIDSpeed(0.3);
+    public static void toggleGamePiece(boolean buttonReleased) {
+        instance.gamePieceSelected = (buttonReleased ? (instance.gamePieceSelected == GamePiece.CONE ? GamePiece.CUBE : GamePiece.CONE) : instance.gamePieceSelected);
     }
 
-
-    /**
-     * Converts position of the elevator and fourbar to x and y coordinates on a 2d plane
-     * @param elevPos The encoder position of the elevator in inches
-     * @param fourbarDeg The encoder position of the fourbar in degrees
-     * @return [x, y]
-     */
-    public static double[] posToCoords(double elevPos, double fourbarDeg) {
-
-        double angle = Math.toRadians(90 - fourbarDeg);
-        double x;
-        double y;
-
-        //funni math stuff my brain hurts
-        x = Math.cos(angle) * FOURBAR_HYPOTENUSE;
-        y = (Math.sin(angle) * FOURBAR_HYPOTENUSE) + elevPos;
-
-        //return coordinates
-        double[] output = { x, y };
-        return output;
-    }
-    
-    /**
-     * Converts x and y coordinates into encoder positions for the elevator and fourbar
-     * @param x
-     * @param y
-     * @return [elevator position (in), fourbar position (deg), is coord altered (0 if no, 1 if yes)]
-     */
-    public static double[] coordsToPos(double x, double y) {
-
-        double elevPos;
-        double fourbarDeg;
-        boolean isAltered = false;
-
-        //calculate elevator position
-        elevPos = y >= Math.sqrt((Math.pow(FOURBAR_HYPOTENUSE, 2) - Math.pow(x, 2)))
-            ? y - Math.sqrt((Math.pow(FOURBAR_HYPOTENUSE, 2) - Math.pow(x, 2)))
-            : y + Math.sqrt((Math.pow(FOURBAR_HYPOTENUSE, 2) - Math.pow(x, 2)));
-
-        //correct position if the calculation returns a position that is out of range
-        if(elevPos > ELEVATOR_MAX_POS || elevPos < 0) {
-            elevPos = 0;
-            isAltered = true;
-        }
-
-        //calculate fourbar position
-        fourbarDeg = Math.toDegrees(Math.atan2(x, y-elevPos));
-        
-        //old method of finding foubrar position, delete after testing new method
-        /* fourbarDeg = y > elevPos
-            ? -Math.toDegrees(Math.atan(x / (elevPos - y)))
-            : 180 - Math.toDegrees(Math.atan(x / (elevPos - y))); */
-
-        //Correct fourbar pos if out of bounds
-        double maxAngle = Math.toDegrees(Math.atan2(BUMPER_X, BUMPER_Y - elevPos));
-
-        if(fourbarDeg > maxAngle) {
-            fourbarDeg = maxAngle;
-            isAltered = true;
-        } else if(fourbarDeg < 0) {
-            fourbarDeg = 0;
-            isAltered = true;
-        }
-
-        //return positions
-        double[] output = { elevPos, fourbarDeg, isAltered ? 1 : 0 };
-        return output;
+    public static Coordinate getCurrentPos() {
+        return instance.currentSetpoint.getCoords();
     }
 
-    public static double[] getCoords() {
-        return instance.coords;
+    public static Setpoint getSetpoint() {
+        return instance.setpoint;
     }
 
     public static GamePiece getGamePieceSelected() {
-        return gamePieceSelected;
+        return instance.gamePieceSelected;
+    }
+
+    public static ControlType getControlType() {
+        return instance.controlType;
+    }
+
+    public static void setFourbarBrake(boolean brake) {
+        fourbar.setBrake(brake);
+    }
+
+    public static void toggleTranslateMode() {
+        instance.translateMode = !instance.translateMode;
     }
 
     public void print() {
-        SmartDashboard.putString("Setpoint", instance.setpoint.toString());
         SmartDashboard.putString("Control Type", instance.controlType.toString());
 
         //fourbar and elevator coordinates
-        SmartDashboard.putString("X", df.format(instance.coords[0]));
-        SmartDashboard.putString("Y", df.format(instance.coords[1]));
-        SmartDashboard.putString("Target Coords", "(" + instance.targetCoords[0] + ", " + instance.targetCoords[1] + ")");
+        SmartDashboard.putString("Current coords", "(" + getCurrentPos().x + ", " + getCurrentPos().y + ")");
+        SmartDashboard.putString("Target Coords", "(" + instance.setpoint.getCoords().x + ", " + instance.setpoint.getCoords().y + ")");
         SmartDashboard.putNumber("Bumper Intercept", fourbar.getBumperIntercept());
         SmartDashboard.putNumber("Fourbar Slope", fourbar.getSlope());
 
         //Elevator values
         SmartDashboard.putNumber("Elevator Position", elevator.getPosition());
-        SmartDashboard.putNumber("Elevator Target", elevator.getTargetPosition()); //ADD THIS
+        SmartDashboard.putNumber("Elevator Target", elevator.getTargetPosition());
 
         //Fourbar values
         SmartDashboard.putNumber("Fourbar Position", fourbar.getPosition());
-        SmartDashboard.putNumber("Fourbar Target", (fourbar.getTargetPosition() + fourbar.ENCODER_OFFSET)/360.0); //ADD THIS
+        SmartDashboard.putNumber("Fourbar Target", (fourbar.getTargetPosition() - fourbar.ENCODER_OFFSET));
+        SmartDashboard.putNumber("Fourbar Power", fourbar.getPower());
         SmartDashboard.putNumber("Abs Encoder Position", fourbar.getAbsolutePosition());
 
-        SmartDashboard.putBoolean("Cube Mode Selected?", ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CUBE);
-        SmartDashboard.putBoolean("Cone Mode Selected?", ElevFourbar.gamePieceSelected == ElevFourbar.GamePiece.CONE);
-    }
-
-    public static void setFourbarBrake(boolean brake) {
-        fourbar.setBrake(brake);
+        SmartDashboard.putString("Game Piece", getGamePieceSelected().toString());
     }
 }

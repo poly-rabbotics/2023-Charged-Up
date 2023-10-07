@@ -19,6 +19,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.SmartPrintable;
+import frc.robot.subsystems.Angle;
 import frc.robot.subsystems.SwerveMode;
 import frc.robot.subsystems.SwerveModule;
 
@@ -30,27 +31,46 @@ public class SwerveDrive extends SmartPrintable {
     private static final int MODULE_ROTATION_CAN_IDS[] = { 5,  6,   7,   8  };
     private static final int MODULE_CANCODER_CAN_IDS[] = { 9,  10,  11,  12 };
     
-    private static final double MODULE_CANCODER_OFFSETS[] = { -252.24607237 + 90.0, -224.033203125 + 270.0, -11.425719246268272 + 270.0, -179.56050113588573 + 90.0 };
-    //private static final double MODULE_CANCODER_OFFSETS[] = { -252.24607237 + 90.0, -405.26363752 + 90.0, -189.66795267 + 90.0, -175.16600078 + 90.0 };
-    private static final double MODULE_ROCK_MODE_PSOITIONS[] = { -Math.PI / 4, Math.PI / 4, -Math.PI / 4, Math.PI / 4 };
     private static final double MODULE_COEFFIENTS[] = { -1.0, -1.0, -1.0, -1.0 };
-    
     private static final double LOW_SENSITIVITY_RATIO = 0.08;
-
     private static final double CHASSIS_SIDE_LENGTH = 0.6;
-    private static final double RADIAN_DEGREE_RATIO = Math.PI / 180.0;
 
+    private static final Angle MODULE_CANCODER_OFFSETS[] = {
+        new Angle().setDegrees(-252.24607237 + 90.0), 
+        new Angle().setDegrees(-224.033203125 + 270.0), 
+        new Angle().setDegrees(-11.425719246268272 + 270.0), 
+        new Angle().setDegrees(-179.56050113588573 + 90.0) 
+    };
+
+    private static final Angle MODULE_ROCK_MODE_POSITIONS[] = { 
+        new Angle().setRadians( -Math.PI / 4), 
+        new Angle().setRadians(  Math.PI / 4), 
+        new Angle().setRadians( -Math.PI / 4), 
+        new Angle().setRadians(  Math.PI / 4) 
+    };
+
+    private static final Translation2d MODULE_PHYSICAL_POSITIONS[] = {
+        new Translation2d(   CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
+        new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
+        new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2),
+        new Translation2d(   CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2)
+    };
+
+    // Singleton instance.
     private static final SwerveDrive instance = new SwerveDrive();
 
-    private BiFunction<Double, Double, Double> directionCurve = Controls::defaultCurveTwoDimensional;
-    private Function<Double, Double> turnCurve = Controls::defaultCurve;
-
+    // These drive state objects modify themselves internally through methods,
+    // but require no setting and are therefore final.
     private final SwerveModule modules[] = new SwerveModule[MODULE_MOVEMENT_CAN_IDS.length];
     private final SwerveModulePosition positions[] = new SwerveModulePosition[MODULE_MOVEMENT_CAN_IDS.length];
     private final SwerveDriveKinematics kinematics;
     private final SwerveDriveOdometry odometry;
     
-    private SwerveMode mode = SwerveMode.Headless;
+    // Variable drive states objects.
+    private BiFunction<Double, Double, Double> directionCurve = Controls::defaultCurveTwoDimensional;
+    private Function<Double, Double> turnCurve = Controls::defaultCurve;
+    private SwerveMode mode = SwerveMode.HEADLESS;
+    private SwerveMode inactiveMode = SwerveMode.HEADLESS;
 
     private SwerveDrive() {
         super();
@@ -61,22 +81,27 @@ public class SwerveDrive extends SmartPrintable {
                 MODULE_ROTATION_CAN_IDS[i], 
                 MODULE_CANCODER_CAN_IDS[i], 
                 MODULE_CANCODER_OFFSETS[i], 
-                MODULE_COEFFIENTS[i]
+                MODULE_COEFFIENTS[i],
+                MODULE_PHYSICAL_POSITIONS[i]
             );
         }
 
         for (int i = 0; i < modules.length; i++) {
-            positions[i] = modules[i].getAngle();
+            positions[i] = modules[i].getPosition();
         }
 
         kinematics = new SwerveDriveKinematics(
-            new Translation2d(   CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
-            new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,   CHASSIS_SIDE_LENGTH / 2),
-            new Translation2d(  -CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2),
-            new Translation2d(   CHASSIS_SIDE_LENGTH / 2,  -CHASSIS_SIDE_LENGTH / 2)
+            MODULE_PHYSICAL_POSITIONS[0],
+            MODULE_PHYSICAL_POSITIONS[1],
+            MODULE_PHYSICAL_POSITIONS[2],
+            MODULE_PHYSICAL_POSITIONS[3]
         );
 
-        odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(Pigeon.getYaw() * RADIAN_DEGREE_RATIO), positions);
+        odometry = new SwerveDriveOdometry(
+            kinematics, 
+            new Rotation2d(Pigeon.getYaw().radians()), 
+            positions
+        );
     }
 
     /**
@@ -96,23 +121,49 @@ public class SwerveDrive extends SmartPrintable {
     }
 
     /**
+     * May be called before running the swerve drive to temporarily set a mode
+     * for that call of a run method.
+     * 
+     * Each time a run method completes it will change the mode back to what it
+     * was when this method was called.
+     * 
+     * If this method is called more than once before running then the latest
+     * given temporary mode will be used, the inactive mode to be reset to after
+     * running will not be effected
+     */
+    public static void tempMode(SwerveMode mode) {
+        if (instance.inactiveMode != null) {
+            instance.mode = mode;
+            return;
+        }
+
+        instance.inactiveMode = instance.mode;
+        instance.mode = mode;
+    }
+
+    /**
+     * Exactly like `tempMode` but predicates the temporary mode on the given 
+     * boolean condition.
+     */
+    public static void conditionalTempMode(SwerveMode mode, boolean condition) {
+        if (!condition) {
+            return;
+        }
+
+        tempMode(mode);
+    }
+
+    /**
      * Runs swerve, behavior changes based on the drive's mode. Derives speed
-     * from directional inputs.
+     * from directional inputs. This will reset temporary modes on completion.
      * @param directionalX The X axis of the directional control, between 1 and -1
      * @param directionalY The Y axis of the directional control, between 1 and -1.
      * @param turn A value between 1 and -1 that determines the turning angle.
      * @param lowSense The angle to move in low sensitivity in degrees, -1 for no movement.
      */
     public static void run(double directionalX, double directionalY, double turn, int lowSense) {
-        if (getRockMode()) {
-            runRockMode();
-            return;
-        }
-        
-        instance.odometry.update(new Rotation2d(Pigeon.getYaw() * RADIAN_DEGREE_RATIO), instance.positions);
-        
         if (lowSense != -1) {
-            double angle = (2 * Math.PI) - ((double)lowSense * RADIAN_DEGREE_RATIO);
+            double angle = Angle.TAU - Math.toRadians((double)lowSense);
 
             // inverted since the drive is rotated to compensate for joystick stuff
             directionalX = -(Math.sin(angle) * LOW_SENSITIVITY_RATIO);
@@ -125,79 +176,73 @@ public class SwerveDrive extends SmartPrintable {
         directionalX = instance.directionCurve.apply(directionalX, directionalY);
         directionalY = instance.directionCurve.apply(directionalY, directionalX);
         turn = instance.turnCurve.apply(turn);
-
-        ChassisSpeeds chassisSpeeds;
-
-        if (instance.mode == SwerveMode.Headless) {
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getYaw() * RADIAN_DEGREE_RATIO));
-        } else {
-            chassisSpeeds = new ChassisSpeeds(directionalX, -directionalY, turn);
-        }
-
-        SwerveModuleState[] moduleStates = instance.kinematics.toSwerveModuleStates(chassisSpeeds);
-
-        for (int i = 0; i < instance.modules.length; i++) {
-            instance.modules[i].setDesiredState(moduleStates[i]);
-        }
+        runUncurved(directionalX, directionalY, turn);
     }
-
+    
     /**
-     * Run the swerve drive exactly by the arguments passed, no cuving will 
-     * occure on the given inputs, nor will the be deadbanded.
+     * Run the swerve drive exactly by the arguments passed, no curving will 
+     * occure on the given inputs, nor will they be deadbanded. This will reset
+     * temporary modes on completion.
      * @param directionalX Speed along the x axis. -1.0 - 1.0
      * @param directionalY Speed along the y axis. -1.0 - 1.0
      * @param turn Rate of turn. -1.0 - 1.0
      */
     public static void runUncurved(double directionalX, double directionalY, double turn) {
-        if (getRockMode()) {
-            runRockMode();
-            return;
-        }
+        SwerveModuleState[] moduleStates = new SwerveModuleState[instance.modules.length];
+        boolean holdPos = false;
 
-        ChassisSpeeds chassisSpeeds;
+        switch (instance.mode) {
+            case HEADLESS:
+                moduleStates = instance.kinematics.toSwerveModuleStates(
+                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                        directionalX, -directionalY, turn, 
+                        new Rotation2d(Pigeon.getYaw().radians())
+                    )
+                );
+                break;
 
-        if (instance.mode == SwerveMode.Headless) {
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(directionalX, -directionalY, turn, new Rotation2d(Pigeon.getYaw() * RADIAN_DEGREE_RATIO));
-        } else {
-            chassisSpeeds = new ChassisSpeeds(directionalX, -directionalY, turn);
-        }
+            case RELATIVE: 
+                moduleStates = instance.kinematics.toSwerveModuleStates(
+                    new ChassisSpeeds(directionalX, -directionalY, turn)
+                ); 
+                break;
 
-        SwerveModuleState[] moduleStates = instance.kinematics.toSwerveModuleStates(chassisSpeeds);
+            case ROCK: {
+                assert moduleStates.length == instance.modules.length;
+                holdPos = true;
+
+                for (int i = 0; i < instance.modules.length; i++) {
+                    moduleStates[i] = new SwerveModuleState(0.0, new Rotation2d(MODULE_ROCK_MODE_POSITIONS[i].radians()));
+                }
+
+                break;
+            } 
+
+            // This branch should never be reached as the enum used should never
+            // have more than the above possible values.
+            default: assert false;
+        } 
 
         for (int i = 0; i < instance.modules.length; i++) {
             instance.modules[i].setDesiredState(moduleStates[i]);
+            instance.modules[i].setRockMode(holdPos);
+        }
+
+        instance.odometry.update(new Rotation2d(Pigeon.getYaw().radians()), instance.positions);
+
+        if (instance.inactiveMode != null) {
+            instance.mode = instance.inactiveMode;
+            instance.inactiveMode = null;
         }
     }
 
     /**
-     * Wyvern becomes rock, rock do not move, Wyvern do not move...
+     * Sets the max speed of all modules, use NaN for no limit.
      */
-    public static void runRockMode() {
-        for (int i = 0; i < instance.modules.length; i++) {
-            instance.modules[i].setDesiredState(new SwerveModuleState(0.0, new Rotation2d(MODULE_ROCK_MODE_PSOITIONS[i])));
-        }
-    }
-
-    /**
-     * True if rock mode should be active.
-     */
-    public static void setRockMode(boolean shouldHold) {
+    public static void setMaxSpeed(double maxSpeed) {
         for (SwerveModule module : instance.modules) {
-            module.setRockMode(shouldHold);
+            module.setMaxSpeed(maxSpeed);
         }
-    }
-
-    /**
-     * Returns true if in rock mode.
-     */
-    public static boolean getRockMode() {
-        boolean rockMode = false;
-
-        for (SwerveModule module : instance.modules) {
-            rockMode |= module.getRockMode();
-        }
-
-        return rockMode;
     }
 
     /**
@@ -282,15 +327,14 @@ public class SwerveDrive extends SmartPrintable {
      */
     @Override
     public void print() {
-        SmartDashboard.putString("Orientation", getMode().toString());
-        SmartDashboard.putBoolean("In Rock Mode", getRockMode());
+        SmartDashboard.putString("Swerve Mode", getMode().toString());
     }
 
     /**
      * Gets the longest distance traveled by any modules.
      */
     public static double getDistance() {
-        return Math.max(Math.abs(instance.modules[0].getPosition()), Math.abs(instance.modules[1].getPosition()));
+        return Math.max(Math.abs(instance.modules[0].getDistanceTraveled()), Math.abs(instance.modules[1].getDistanceTraveled()));
     }
 
     /**

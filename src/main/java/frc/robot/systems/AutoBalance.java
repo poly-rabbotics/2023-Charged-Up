@@ -33,7 +33,6 @@ public class AutoBalance extends SmartPrintable {
         /** 
          * auto balance is ramming, meant to dock the charge station. 
          */
-
         RAMMING,
 
         /** 
@@ -141,7 +140,7 @@ public class AutoBalance extends SmartPrintable {
             return Stage.PAUSED;
         }
 
-        SwerveDrive.runUncurved(0.0, Math.signum(Pigeon.getPitch()) * HALTING_SPEED, 0.0);
+        SwerveDrive.runUncurved(0.0, Math.signum(Pigeon.getPitch().degrees()) * HALTING_SPEED, 0.0);
         return Stage.ADJUSTING;
     }
 
@@ -160,7 +159,7 @@ public class AutoBalance extends SmartPrintable {
      * Returns true if auto balance beleives it is balanced, not 100% accurate.
      */
     private boolean level() {
-        return Math.abs(Pigeon.getPitch()) < 10.0 && Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) < 10.0;
+        return Math.abs(Pigeon.getPitch().degrees()) < 10.0 && Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) < 10.0;
     }
 
     /**

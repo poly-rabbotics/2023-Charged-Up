@@ -9,11 +9,16 @@ public enum SwerveMode {
      * Moves relative to the driver station, pressing the joystick away from
      * you should always move the robot away from you.
      */
-    Headless,
+    HEADLESS,
 
     /**
      * Pressing the joystick forward moves the robot froward, regardless of 
      * position relative to driver.
      */
-    Relative
+    RELATIVE,
+
+    /**
+     * Rock mode, resists movement and holds position.
+     */
+    ROCK
 }
