@@ -63,7 +63,7 @@ public class Intake extends SmartPrintable {
      * @param outtake
      */
     public static void run(boolean pivotToggle, boolean clawHeld, boolean intake, boolean outtake) {
-        double rollerSpeed;
+        double rollerSpeed = 0;
 
         //IF CUBE IS SELECTED
         if(ElevFourbar.getGamePieceSelected() == GamePiece.CUBE) {
@@ -77,8 +77,8 @@ public class Intake extends SmartPrintable {
             else if(outtake) //Shoot cubes at full power
                 rollerSpeed = 1.0;
 
-            else //Idly run at very low power to keep in game pieces
-                rollerSpeed = -0.06;
+            else 
+                rollerSpeed = -0.1;
         } 
 
         //IF CONE IS SELECTED
@@ -96,7 +96,7 @@ public class Intake extends SmartPrintable {
         //Run the mechanisms
         runClaw(clawHeld);
         runPivot(pivotToggle);
-        runRoller(rollerSpeed);
+        roller.setSpeed(Math.abs(rollerSpeed) < 0.0 ? Math.signum(rollerSpeed) * 0.1 : rollerSpeed);
     }
 
     /**
@@ -129,6 +129,7 @@ public class Intake extends SmartPrintable {
      * @param speed speed of the roller
      */
     public static void runRoller(double speed) {
+        speed = Math.abs(speed) > 0.3 ? Math.signum(speed) * 0.3 : speed;
         roller.setSpeed(speed);
     }
 

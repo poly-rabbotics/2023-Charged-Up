@@ -13,6 +13,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -35,7 +36,7 @@ public class SwerveModule extends SmartPrintable {
     private static final double PID_I = 0.0;
     private static final double PID_D = 0.0;
 
-    private static final double ROCK_PID_P = 0.1;
+    private static final double ROCK_PID_P = 0.05;
     private static final double ROCK_PID_I = 0.0;
     private static final double ROCK_PID_D = 0.0;
 
@@ -54,11 +55,14 @@ public class SwerveModule extends SmartPrintable {
     private final RelativePosition physicalPosition;
     private final Angle canCoderOffset;
 
+    private SlewRateLimiter accelerationLimit;
+
     // Set to NaN if not in rock mode, NaN does not equal itself by definition
     // (see some IEEE standard or something) and so this is how rock mode is 
     // checked. Max speed works the same way.
     private double rockPos = Double.NaN;
     private double maxSpeed = Double.NaN;
+    private double accelerationRate = Double.NaN;
 
     private enum RelativePosition {
         FRONT_RIGHT (  1.0,  1.0 ),
@@ -120,6 +124,8 @@ public class SwerveModule extends SmartPrintable {
         this.physicalPosition = RelativePosition.fromTranslation(physicalPosition);
         this.canCoderOffset = canCoderOffset.clone();
 
+        accelerationLimit = new SlewRateLimiter(1.5);
+
         rotationMotor = new CANSparkMax(rotationalMotorID, MotorType.kBrushless);
         rotationMotor.setInverted(true);
         rotationMotor.setSmartCurrentLimit(30);
@@ -156,10 +162,10 @@ public class SwerveModule extends SmartPrintable {
         
         rotationController = new PIDController(PID_P, PID_I, PID_D);
         rotationController.enableContinuousInput(0.0, Angle.TAU);
-        rotationController.setTolerance(0.005); // This is more precise than before, TODO: test.
+        rotationController.setTolerance(0.01);
 
         rockController = new PIDController(ROCK_PID_P, ROCK_PID_I, ROCK_PID_D);
-        rockController.setTolerance(0.5);
+        rockController.setTolerance(1);
 
         position = new SwerveModulePosition(
             movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT, 
@@ -176,16 +182,20 @@ public class SwerveModule extends SmartPrintable {
         state = SwerveModuleState.optimize(state, new Rotation2d(currentPosition));
         
         if (rockPos != rockPos) {
+            var desiredSpeed = Math.abs(state.speedMetersPerSecond) > maxSpeed 
+                ? Math.signum(state.speedMetersPerSecond) * maxSpeed 
+                : state.speedMetersPerSecond;
             movementMotor.set(
-                Math.abs(state.speedMetersPerSecond) > maxSpeed 
-                    ? Math.signum(state.speedMetersPerSecond) * maxSpeed 
-                    : state.speedMetersPerSecond
+                accelerationRate == accelerationRate
+                    ? accelerationLimit.calculate(desiredSpeed)
+                    : desiredSpeed
             );
         } else {
             movementMotor.set(rockController.calculate(getDistanceTraveled(), rockPos));
         }
 
         double calculation = rotationController.calculate(currentPosition, (state.angle.getRadians() + Angle.TAU) % Angle.TAU);
+        SmartDashboard.putNumber("Module " + physicalPosition.asString() + " Rotation Calculation", calculation);
         rotationMotor.set(calculation);
 
         position.angle = new Rotation2d(angularEncoder.getPosition());
@@ -222,6 +232,24 @@ public class SwerveModule extends SmartPrintable {
      */
     public double getMaxSpeed() {
         return maxSpeed;
+    }
+
+    /**
+     * Sets whether or not to limit the acceleration of the module.
+     */
+    public void setAccelerationRate(double accelerationRate) {
+        if (accelerationRate != this.accelerationRate && accelerationRate == accelerationRate) {
+            accelerationLimit = new SlewRateLimiter(accelerationRate);
+        }
+
+        this.accelerationRate = accelerationRate;
+    }
+
+    /**
+     * Gets whether or not the drive is limiting its acceleration.
+     */
+    public double getAccelerationRate() {
+        return accelerationRate;
     }
 
     /**
@@ -279,11 +307,12 @@ public class SwerveModule extends SmartPrintable {
 
     @Override
     public void print() {
-        SmartDashboard.putNumber("Module " + physicalPosition.asString() + " Position", angularEncoder.getPosition());
-        SmartDashboard.putNumber("Module " + physicalPosition.asString() + " Position mod tau", angularEncoder.getPosition() % Angle.TAU);
-        SmartDashboard.putNumber("Module " + physicalPosition.asString() + " Position + off", angularEncoder.getPosition() + canCoderOffset.radians());
-        SmartDashboard.putNumber("Module " + physicalPosition.asString() + " Position + off mod tau", (angularEncoder.getPosition() + canCoderOffset.radians()) % Angle.TAU);
-        SmartDashboard.putNumber("Module " + physicalPosition.asString() + " Position (Distance) ", movementEncoder.getPosition());
+        SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Position", Math.toDegrees(angularEncoder.getPosition()));
+        SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Position mod 360", Math.toDegrees(angularEncoder.getPosition() % Angle.TAU));
+        SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Position + off", Math.toDegrees(angularEncoder.getPosition() + canCoderOffset.radians()));
+        SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Position + off mod 360", Math.toDegrees((angularEncoder.getPosition() + canCoderOffset.radians()) % Angle.TAU));
+        SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Position (Distance) ", movementEncoder.getPosition());
+        SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Movement Speed", movementMotor.get());
     }
 
     /**

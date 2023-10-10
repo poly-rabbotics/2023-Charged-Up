@@ -68,6 +68,7 @@ public class SwerveDrive extends SmartPrintable {
     private Function<Double, Double> inactiveTurnCurve = null;
     private SwerveMode mode = SwerveMode.HEADLESS;
     private SwerveMode inactiveMode = null;
+    private SwerveMode displayMode = SwerveMode.HEADLESS;
 
     private SwerveDrive() {
         super();
@@ -114,6 +115,10 @@ public class SwerveDrive extends SmartPrintable {
      */
     public static SwerveMode getMode() {
         return instance.mode;
+    }
+
+    public static SwerveMode getDisplayMode() {
+        return instance.displayMode;
     }
 
     /**
@@ -241,6 +246,25 @@ public class SwerveDrive extends SmartPrintable {
     }
 
     /**
+     * Sets whether or not to limit the acceleration of the module.
+     */
+    public static void setAccelerationRate(double accelerationRate) {
+        for (SwerveModule module : instance.modules) {
+            module.setAccelerationRate(accelerationRate);
+        }
+    }
+
+    public static double getAccelerationRate() {
+        double rate = 0.0;
+
+        for (SwerveModule module : instance.modules) {
+            rate += module.getAccelerationRate();
+        }
+
+        return rate / (double)instance.modules.length;
+    }
+
+    /**
      * Runs swerve, behavior changes based on the drive's mode. This will reset
      * temporary modes on completion.
      * @param directionalX The X axis of the directional control, between 1 and -1
@@ -340,6 +364,8 @@ public class SwerveDrive extends SmartPrintable {
         instance.odometry.update(new Rotation2d(Pigeon.getYaw().radians()), instance.positions);
 
         // Reset temp state
+
+        instance.displayMode = instance.mode;
         
         if (instance.inactiveMode != null) {
             instance.mode = instance.inactiveMode;
@@ -367,7 +393,7 @@ public class SwerveDrive extends SmartPrintable {
     }
 
     /**
-     * Gets the average tempurature of all motors on the drive.
+     * Gets the average tempurature of all motors on the drive in celsius.
      */
     public static double getAverageMotorTemp() {
         double tempSum = 0.0;
@@ -412,7 +438,18 @@ public class SwerveDrive extends SmartPrintable {
      */
     @Override
     public void print() {
-        SmartDashboard.putString("Swerve Mode", getMode().toString());
+        SmartDashboard.putString("Swerve Drive Mode", getMode().toString());
+        SmartDashboard.putString("Swerve Drive Odometry", 
+            "(" 
+            + ((double)(long)(odometry.getPoseMeters().getX() * 100)) / 100
+            + ", "
+            + ((double)(long)(odometry.getPoseMeters().getY() * 100)) / 100
+            + ") "
+            + ((double)(long)(odometry.getPoseMeters().getRotation().getDegrees() * 100)) / 100
+            + " degrees"
+        );
+        SmartDashboard.putNumber("Swerve Drive Average Motor Tempurature (Celsius)", getAverageMotorTemp());
+        SmartDashboard.putNumber("Swerve Drive Total Current Pull (Amps)", getAppliedCurrent());
     }
 
     /**

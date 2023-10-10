@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.smartdashboard.*;
 import frc.robot.systems.ElevFourbar.GamePiece;
 import frc.robot.systems.Intake.SolenoidState;
 import frc.robot.subsystems.DoubleSetpoint;
+import frc.robot.subsystems.Setpoint;
 import frc.robot.SmartPrintable;
 
 public class AutonomousRunner extends SmartPrintable {
@@ -15,15 +16,14 @@ public class AutonomousRunner extends SmartPrintable {
     private static final double OUTTAKE_SPEED_CONE = 0.4;
 
     private static final Runnable[] MODES = {
-        //() -> {},
+        () -> {},
         AutonomousRunner::modeOne,
         AutonomousRunner::modeTwo,
         AutonomousRunner::modeThree,
         AutonomousRunner::modeFour,
         AutonomousRunner::modeFive,
         AutonomousRunner::modeSix,
-        AutonomousRunner::modeSeven,
-        () -> {},
+        AutonomousRunner::modeSeven
     };
 
     private static final AutonomousRunner instance = new AutonomousRunner();
@@ -167,26 +167,32 @@ public class AutonomousRunner extends SmartPrintable {
             //Move the pivot up
             Intake.autoPivot(SolenoidState.UP);
             
-            ElevFourbar.autoRun(ElevFourbar.getGamePieceSelected() == GamePiece.CUBE ? setpoint.cube : setpoint.cone);
-            
+            ElevFourbar.setSetpointAuto((ElevFourbar.getGamePieceSelected() == GamePiece.CUBE ? setpoint.cube : setpoint.cone));
+            ElevFourbar.autoRun();
+
             //Move the elevator to the high scoring position
-            if(instance.timer.get() > 1.0) {
+            if(instance.timer.get() > 1.5) {
                 //Open claw when the position has been reached
-                instance.secondaryTimer.reset();
+                Intake.autoClaw(SolenoidState.OPEN);
                 Intake.runRoller((ElevFourbar.getGamePieceSelected() == ElevFourbar.GamePiece.CUBE) ? OUTTAKE_SPEED_CUBE : OUTTAKE_SPEED_CONE); //run intake out
+            }
+            
+            if(instance.timer.get() > 2.5) {
                 instance.autoStage++;
             }
-            if(instance.timer.get() > 1.1) Intake.autoClaw(SolenoidState.OPEN);
         } else if(instance.autoStage == 1) {
             //1 second delay to prevent closing on the cube again >:(
             if(instance.secondaryTimer.get() > 1) {
+                ElevFourbar.setSetpointAuto(new Setpoint(0, Setpoint.HYPOTENUSE));
+                ElevFourbar.autoRun();
+
                 //Move to stowed setpoint
-                if(ElevFourbar.autoRun(ElevFourbar.STOWED_SETPOINT)) {
+                if(instance.secondaryTimer.get() > 2) {
                     //Close the claw and put the pivot down
                     instance.autoStage++;
                 }
 
-                if(instance.secondaryTimer.get() > 1.5) {
+                if(instance.secondaryTimer.get() > 2.5) {
                     Intake.autoPivot(SolenoidState.DOWN);
                     Intake.runRoller(0); //stop intake
                 }

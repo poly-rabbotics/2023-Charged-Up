@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj.motorcontrol.PWMTalonSRX;
 
 public class Roller {
     private static final int PDH_ID = 41;
-    private static final double MAX_AMPS = 1000;
 
     private final PWMTalonSRX rollerMotor;
     private final PowerDistribution pdh;
@@ -17,10 +16,6 @@ public class Roller {
     }
 
     public void setSpeed(double speed) {
-        if (pdh.getCurrent(rollerMotor.getChannel()) > MAX_AMPS) {
-            speed = 0.1;
-        } 
-
         rollerMotor.set(speed);
     }
 

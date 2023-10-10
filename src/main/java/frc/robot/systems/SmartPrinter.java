@@ -7,7 +7,6 @@ package frc.robot.systems;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.SmartPrintable;
 
 public class SmartPrinter {

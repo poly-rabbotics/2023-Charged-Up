@@ -11,7 +11,6 @@ import frc.robot.subsystems.Coordinate;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Setpoint;
 import frc.robot.subsystems.Fourbar;
-import frc.robot.SmartPrintable;
 
 public class ElevFourbar extends SmartPrintable {
 
@@ -84,6 +83,7 @@ public class ElevFourbar extends SmartPrintable {
      */
     public static void autonomousInit() {
         elevator.autonomousInit();
+        setSetpointAuto(STOWED_SETPOINT.cube);
         fourbar.setPIDSpeed(0.3);
     }
 
@@ -153,17 +153,27 @@ public class ElevFourbar extends SmartPrintable {
     }
 
     /**
+     * Set the setpoint during autonomous
+     * @param setpoint
+     * @return
+     */
+    public static void setSetpointAuto(Setpoint setpoint) {
+        instance.setpoint = setpoint;
+    }
+
+    /**
      * Sets elevator and fourbar to desired setpoint
      * @param setpoint The setpoint to run to from the Setpoint enum
      */
-    public static boolean autoRun(Setpoint setpoint) {
+    public static boolean autoRun() {
+        instance.print();
 
         //Run the fourbar and elevator to inputted setpoint
-        elevator.pidControl(setpoint);
-        fourbar.pidControl(setpoint);
+        elevator.pidControl(instance.setpoint);
+        fourbar.pidControl(instance.setpoint);
 
         //return true if the fourbar reached it's destination
-        return (Math.abs(fourbar.getPosition() - fourbar.getTargetPosition()) < 1) && (Math.abs(elevator.getPosition() - elevator.getTargetPosition()) < 0.2);
+        return (Math.abs(fourbar.getPosition() - instance.setpoint.getFourbarPos()) < 1) && (Math.abs(elevator.getPosition() - instance.setpoint.getElevPos()) < 0.2);
     }
 
     

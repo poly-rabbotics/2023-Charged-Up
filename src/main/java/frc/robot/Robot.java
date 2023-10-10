@@ -39,6 +39,8 @@ public class Robot extends TimedRobot {
         SAFETY
     }
 
+    private static final double DRIVE_ACCELERATION_LIMIT = 1.5;
+
     private static final XboxController controllerOne = (XboxController)Controls.getControllerByPort(0);
     private static final XboxController controllerTwo = (XboxController)Controls.getControllerByPort(1);
     private static final Joystick controlPanel = (Joystick)Controls.getControllerByPort(2);
@@ -118,7 +120,9 @@ public class Robot extends TimedRobot {
 
         Pigeon.setFeildZero();
         SwerveDrive.zeroPositions();
-        ElevFourbar.autonomousInit();
+        SwerveDrive.setAccelerationRate(Double.NaN);
+        //ElevFourbar.autonomousInit();
+        ElevFourbar.init();
         Intake.init();
 
         // Reset Auto Balance to the idling stage in case autonomous has been 
@@ -137,6 +141,7 @@ public class Robot extends TimedRobot {
     public void teleopInit() {
         controlMode = ControlMode.TELEOPERATED;
         SwerveDrive.setMode(SwerveMode.HEADLESS);
+        SwerveDrive.setAccelerationRate(Double.NaN);
         ElevFourbar.init();
         Intake.init();
     }
@@ -152,13 +157,22 @@ public class Robot extends TimedRobot {
                     : SwerveMode.HEADLESS
             );
         }
+
+        if (controllerOne.getRightStickButtonReleased()) {
+            var accelerationRate = SwerveDrive.getAccelerationRate();
+            SwerveDrive.setAccelerationRate(
+                accelerationRate == accelerationRate
+                    ? Double.NaN
+                    : DRIVE_ACCELERATION_LIMIT
+            );
+        }
         
         SwerveDrive.conditionalTempDirectionalCurve(
             Controls.cardinalLock(Controls::defaultCurveTwoDimensional), 
             controllerOne.getXButton()
         ); // Lock to cardinal directions.
         SwerveDrive.conditionalTempDirectionalCurve(
-            (x, y) -> Controls.defaultCurveTwoDimensional(x, y) / 2.0,
+            (x, y) -> Controls.defaultCurveTwoDimensional(x, y) / 3.0,
             controllerOne.getRightBumper()
         ); // Half translation speed.
         SwerveDrive.conditionalTempDirectionalCurve(

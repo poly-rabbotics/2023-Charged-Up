@@ -9,7 +9,7 @@ import frc.robot.SmartPrintable;
  * SwerveDrive was becoming a bit large to handle.
  */
 public class AutoBalance extends SmartPrintable {
-    private static final double RAMMING_SPEED = -0.65;
+    private static final double RAMMING_SPEED = -0.75;
     private static final double HALTING_SPEED = 0.1;
     
     private static final AutoBalance instance = new AutoBalance();
@@ -113,14 +113,14 @@ public class AutoBalance extends SmartPrintable {
     }
 
     private Stage ram() {
-        if (Math.abs(SwerveDrive.getDistance()) > 330 && type == BalanceType.DOCK) {
+        if (Math.abs(SwerveDrive.getDistance()) > 365 && type == BalanceType.DOCK) {
             return Stage.ADJUSTING;
-        } else if (Math.abs(SwerveDrive.getDistance()) > 330 + 330 + 30 && !rammingSubStageTwo) {
+        } else if (Math.abs(SwerveDrive.getDistance()) > 365 + 330 + 30 && !rammingSubStageTwo) {
             rammingSubStageTwo = true;
             timer.reset();
             timer.start();
             SwerveDrive.zeroPositions();
-        } else if (Math.abs(SwerveDrive.getDistance()) > 330 + 60 + 90 && rammingSubStageTwo && timer.get() > 1.0) {
+        } else if (Math.abs(SwerveDrive.getDistance()) > 365 + 60 + 90 && rammingSubStageTwo && timer.get() > 1.0) {
             return Stage.ADJUSTING;
         }
 

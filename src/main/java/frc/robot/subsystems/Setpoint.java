@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import frc.robot.subsystems.Coordinate;
-
 /**
  * Class to simplify the use of setpoints so I don't
  * have to deal with even more methods in ElevFourbar
