@@ -39,6 +39,16 @@ public final class Angle {
 		return angle;
 	}
 
+	public Angle mul(double scalar) {
+		var angle = new Angle();
+		angle.dec = this.dec * scalar;
+		return angle;
+	}
+
+	public Angle div(double scalar) {
+		return this.mul(1 / scalar);
+	}
+
 	/**
 	 * Creates a new identical angle so that modification of the original will not
 	 * effect the value returned from this function.
@@ -47,5 +57,10 @@ public final class Angle {
 		var ang = new Angle();
 		ang.dec = this.dec;
 		return ang;
+	}
+
+	@Override
+	public String toString() {
+		return this.degrees() + "°";
 	}
 }

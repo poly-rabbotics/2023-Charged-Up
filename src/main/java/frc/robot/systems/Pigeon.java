@@ -84,15 +84,15 @@ public class Pigeon extends SmartPrintable {
     
     @Override
     public void print() {
-        SmartDashboard.putNumber("Pigeon Yaw", getYaw().radians());
-        SmartDashboard.putNumber("Pigeon Pitch", getPitch().radians());
-        SmartDashboard.putNumber("Pigeon Roll", getRoll().radians());
+        SmartDashboard.putString("Pigeon Yaw", getYaw().toString());
+        SmartDashboard.putString("Pigeon Pitch", getPitch().toString());
+        SmartDashboard.putString("Pigeon Roll", getRoll().toString());
 
         OrientationalChange change = getChangePerSecond();
 
-        SmartDashboard.putNumber("Pigeon Yaw/Sec", change.yawPerSecond);
-        SmartDashboard.putNumber("Pigeon Pitch/Sec", change.pitchPerSecond);
-        SmartDashboard.putNumber("Pigeon Roll/Sec", change.rollPerSecond);
+        SmartDashboard.putString("Pigeon Yaw/Sec", change.yawPerSecond.toString());
+        SmartDashboard.putString("Pigeon Pitch/Sec", change.pitchPerSecond.toString());
+        SmartDashboard.putString("Pigeon Roll/Sec", change.rollPerSecond.toString());
     }
 
     /**
@@ -100,14 +100,18 @@ public class Pigeon extends SmartPrintable {
      * calculated from the Pigeon.
      */
     public static class OrientationalChange {
-        public final double yawPerSecond;
-        public final double rollPerSecond;
-        public final double pitchPerSecond;
+        public final Angle yawPerSecond;
+        public final Angle rollPerSecond;
+        public final Angle pitchPerSecond;
 
-        private OrientationalChange(double yaw, double roll, double pitch) {
-            this.yawPerSecond = yaw;
-            this.rollPerSecond = roll;
-            this.pitchPerSecond = pitch;
+        /**
+         * Clones all given angles allowing the caller to mutate the passed in
+         * references freely, withoutr modifying this class' state.
+         */
+        private OrientationalChange(Angle yaw, Angle roll, Angle pitch) {
+            this.yawPerSecond = yaw.clone();
+            this.rollPerSecond = roll.clone();
+            this.pitchPerSecond = pitch.clone();
         }
     }
 
@@ -121,35 +125,35 @@ public class Pigeon extends SmartPrintable {
 
         private Instant recordedInstant;
         
-        private double previousYaw;
-        private double previousRoll;
-        private double previousPitch;
+        private Angle previousYaw;
+        private Angle previousRoll;
+        private Angle previousPitch;
 
         private OrientationalChangeCalculator(Pigeon pigeon) {
             this.pigeon = pigeon;
             clock = Clock.systemDefaultZone();
             recordedInstant = clock.instant();
             
-            previousYaw = pigeon.pigeon.getYaw();
-            previousRoll = pigeon.pigeon.getPitch(); // Roll and Pitch are swapped cause of the way its mounted.
-            previousPitch = pigeon.pigeon.getRoll();
+            previousYaw = new Angle().setDegrees(pigeon.pigeon.getYaw());
+            previousRoll = new Angle().setDegrees(pigeon.pigeon.getPitch()); // Roll and Pitch are swapped cause of the way its mounted.
+            previousPitch = new Angle().setDegrees(pigeon.pigeon.getRoll());
         }
 
         @Override
         public void run() {
             Instant previousInstant = recordedInstant;
 
-            double yaw = pigeon.pigeon.getYaw();
-            double roll = pigeon.pigeon.getPitch(); // Roll and Pitch are swapped cause of the way its mounted.
-            double pitch = -pigeon.pigeon.getRoll(); // Negative since it should be positive going up.
-            
+            Angle yaw = new Angle().setDegrees(pigeon.pigeon.getYaw());
+            Angle roll = new Angle().setDegrees(pigeon.pigeon.getPitch()); // Roll and Pitch are swapped cause of the way its mounted.
+            Angle pitch = new Angle().setDegrees(pigeon.pigeon.getRoll());             
+
             recordedInstant = clock.instant();
             
             double differenceSeconds = (double)(recordedInstant.toEpochMilli() - previousInstant.toEpochMilli()) / 1000.0;
 
-            double changeYaw = (yaw - previousYaw) / differenceSeconds;
-            double changeRoll = (roll - previousRoll) / differenceSeconds;
-            double changePitch = -((pitch - previousPitch) / differenceSeconds);
+            Angle changeYaw = yaw.sub(previousYaw).div(differenceSeconds);
+            Angle changeRoll = roll.sub(previousRoll).div(differenceSeconds);
+            Angle changePitch = pitch.sub(previousPitch).div(differenceSeconds);
 
             pigeon.changePerSecond = new OrientationalChange(changeYaw, changeRoll, changePitch);
 

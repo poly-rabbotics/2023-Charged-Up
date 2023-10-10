@@ -159,14 +159,15 @@ public class AutoBalance extends SmartPrintable {
      * Returns true if auto balance beleives it is balanced, not 100% accurate.
      */
     private boolean level() {
-        return Math.abs(Pigeon.getPitch().degrees()) < 10.0 && Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) < 10.0;
+        return Math.abs(Pigeon.getPitch().degrees()) < 10.0 
+            && Math.abs(Pigeon.getChangePerSecond().pitchPerSecond.degrees()) < 10.0;
     }
 
     /**
      * Returns true if auto balance beleives it is spiking in angle.
      */
     private boolean spiking() {
-        return Math.abs(Pigeon.getChangePerSecond().pitchPerSecond) > 10.0;
+        return Math.abs(Pigeon.getChangePerSecond().pitchPerSecond.degrees()) > 10.0;
     }
 
     /**
@@ -174,8 +175,8 @@ public class AutoBalance extends SmartPrintable {
      */
     @Override
     public void print() {
-        SmartDashboard.putString("Auto Balance Stage: ", instance.stage.toString());
-        SmartDashboard.putBoolean("Auto Balance Spiking ", spiking());
-        SmartDashboard.putBoolean("Auto Balance Balanced ", level());
+        SmartDashboard.putString("Auto Balance Stage", instance.stage.toString());
+        SmartDashboard.putBoolean("Auto Balance Spiking", spiking());
+        SmartDashboard.putBoolean("Auto Balance Balanced", level());
     }
 }
