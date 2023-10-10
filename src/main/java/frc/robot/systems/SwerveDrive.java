@@ -70,6 +70,10 @@ public class SwerveDrive extends SmartPrintable {
     private SwerveMode inactiveMode = null;
     private SwerveMode displayMode = SwerveMode.HEADLESS;
 
+    private double translationSpeedX = 0.0;
+    private double translationSpeedY = 0.0;
+    private double rotationSpeed = 0.0;
+
     private SwerveDrive() {
         super();
         
@@ -117,6 +121,12 @@ public class SwerveDrive extends SmartPrintable {
         return instance.mode;
     }
 
+    /**
+     * Gets the current display mode of the drive. The display mode is the
+     * either the current set mode or a temporary set mode but is not cleared
+     * at the end of a run loop, rather it is cleared once the next loop 
+     * finishes, making it ideal for display purposes (e.i. LED lights).
+     */
     public static SwerveMode getDisplayMode() {
         return instance.displayMode;
     }
@@ -152,6 +162,31 @@ public class SwerveDrive extends SmartPrintable {
         }
 
         tempMode(mode);
+    }
+
+    /**
+     * Gets the translation speed along the X axis. In headless mode this gives
+     * a speed along the field's x-axis, otheriwse it is the forward speed of 
+     * the robot.
+     */
+    public static double getTranslationSpeedX() {
+        return instance.translationSpeedX;
+    }
+
+    /**
+     * Gets the translation speed along the Y axis. In headless mode this gives
+     * a speed along the field's y-axis, otheriwse it is the sideways speed of 
+     * the robot.
+     */
+    public static double getTranslationSpeedY() {
+        return instance.translationSpeedY;
+    }
+
+    /**
+     * Gets the rotation speed of the robot.
+     */
+    public static double getRotationSpeed() {
+        return instance.rotationSpeed;
     }
 
     /**
@@ -246,7 +281,7 @@ public class SwerveDrive extends SmartPrintable {
     }
 
     /**
-     * Sets whether or not to limit the acceleration of the module.
+     * Sets whether or not to limit the acceleration of the drive.
      */
     public static void setAccelerationRate(double accelerationRate) {
         for (SwerveModule module : instance.modules) {
@@ -254,73 +289,70 @@ public class SwerveDrive extends SmartPrintable {
         }
     }
 
+    /**
+     * Gets the acceleration rate limit of the drive.
+     */
     public static double getAccelerationRate() {
-        double rate = 0.0;
-
-        for (SwerveModule module : instance.modules) {
-            rate += module.getAccelerationRate();
-        }
-
-        return rate / (double)instance.modules.length;
+        return instance.modules[0].getAccelerationRate();
     }
 
     /**
      * Runs swerve, behavior changes based on the drive's mode. This will reset
      * temporary modes on completion.
-     * @param directionalX The X axis of the directional control, between 1 and -1
-     * @param directionalY The Y axis of the directional control, between 1 and -1.
+     * @param translationX The X axis of the directional control, between 1 and -1
+     * @param translationY The Y axis of the directional control, between 1 and -1.
      * @param speed The speed scalar for the drive.
-     * @param turn A value between 1 and -1 that determines the turning angle.
+     * @param rotation A value between 1 and -1 that determines the turning speed.
      * @param lowSense The angle to move in low sensitivity in degrees, -1 for no movement.
      */
     public static void run(
-        double directionalX,
-        double directionalY,
+        double translationX,
+        double translationY,
         double speed,
-        double turn
+        double rotation
     ) {
-        speed = Math.abs(directionalX) <= 0.05 && Math.abs(directionalY) <= 0.05 ? 0.0 : speed;
+        speed = Math.abs(translationX) <= 0.05 && Math.abs(translationY) <= 0.05 ? 0.0 : speed;
         
-        SmartDashboard.putNumber("direction x - run 0", directionalX);
-        SmartDashboard.putNumber("direction y - run 0", directionalY);
+        SmartDashboard.putNumber("direction x - run 0", translationX);
+        SmartDashboard.putNumber("direction y - run 0", translationY);
 
         // angle is in radians as per Java's trig methods.
-        var angle = Math.atan2(directionalY, directionalX);
-        directionalX = Math.cos(angle) * speed;
-        directionalY = Math.sin(angle) * speed;
+        var angle = Math.atan2(translationY, translationX);
+        translationX = Math.cos(angle) * speed;
+        translationY = Math.sin(angle) * speed;
 
-        SmartDashboard.putNumber("direction x - run 1", directionalX);
-        SmartDashboard.putNumber("direction y - run 1", directionalY);
+        SmartDashboard.putNumber("direction x - run 1", translationX);
+        SmartDashboard.putNumber("direction y - run 1", translationY);
 
-        run(directionalX, directionalY, turn);
+        run(translationX, translationY, rotation);
     }
 
     /**
      * Runs swerve, behavior changes based on the drive's mode. Derives speed
      * from directional inputs. This will reset temporary modes on completion.
-     * @param directionalX The X axis of the directional control, between 1 and -1
-     * @param directionalY The Y axis of the directional control, between 1 and -1.
-     * @param turn A value between 1 and -1 that determines the turning angle.
+     * @param translationX The X axis of the directional control, between 1 and -1
+     * @param translationY The Y axis of the directional control, between 1 and -1.
+     * @param rotation A value between 1 and -1 that determines the turning speed.
      * @param lowSense The angle to move in low sensitivity in degrees, -1 for no movement.
      */
-    public static void run(double directionalX, double directionalY, double turn) {
-        var x = instance.directionCurve.apply(directionalX, directionalY);
-        var y = instance.directionCurve.apply(directionalY, directionalX);
+    public static void run(double translationX, double translationY, double rotation) {
+        var x = instance.directionCurve.apply(translationX, translationY);
+        var y = instance.directionCurve.apply(translationY, translationX);
         SmartDashboard.putNumber("direction x - run 2", x);
         SmartDashboard.putNumber("direction y - run 2", y);
-        turn = instance.turnCurve.apply(turn);
-        runUncurved(x, y, turn);
+        rotation = instance.turnCurve.apply(rotation);
+        runUncurved(x, y, rotation);
     }
     
     /**
      * Run the swerve drive exactly by the arguments passed, no curving will 
      * occure on the given inputs, nor will they be deadbanded. This will reset
      * temporary modes on completion.
-     * @param directionalX Speed along the x axis. -1.0 - 1.0
-     * @param directionalY Speed along the y axis. -1.0 - 1.0
-     * @param turn Rate of turn. -1.0 - 1.0
+     * @param translationX Speed along the x axis. -1.0 - 1.0
+     * @param translationY Speed along the y axis. -1.0 - 1.0
+     * @param rotation Rate of turn. -1.0 - 1.0
      */
-    public static void runUncurved(double directionalX, double directionalY, double turn) {
+    public static void runUncurved(double translationX, double translationY, double rotation) {
         SwerveModuleState[] moduleStates = new SwerveModuleState[instance.modules.length];
         boolean holdPos = false;
 
@@ -328,7 +360,7 @@ public class SwerveDrive extends SmartPrintable {
             case HEADLESS:
                 moduleStates = instance.kinematics.toSwerveModuleStates(
                     ChassisSpeeds.fromFieldRelativeSpeeds(
-                        directionalX, -directionalY, turn, 
+                        translationX, -translationY, rotation, 
                         new Rotation2d(Pigeon.getYaw().radians())
                     )
                 );
@@ -336,7 +368,7 @@ public class SwerveDrive extends SmartPrintable {
 
             case RELATIVE: 
                 moduleStates = instance.kinematics.toSwerveModuleStates(
-                    new ChassisSpeeds(directionalX, -directionalY, turn)
+                    new ChassisSpeeds(translationX, -translationY, rotation)
                 ); 
                 break;
 
@@ -365,6 +397,9 @@ public class SwerveDrive extends SmartPrintable {
 
         // Reset temp state
 
+        instance.translationSpeedX = translationX;
+        instance.translationSpeedY = translationY;
+        instance.rotationSpeed = rotation;
         instance.displayMode = instance.mode;
         
         if (instance.inactiveMode != null) {
@@ -440,16 +475,15 @@ public class SwerveDrive extends SmartPrintable {
     public void print() {
         SmartDashboard.putString("Swerve Drive Mode", getMode().toString());
         SmartDashboard.putString("Swerve Drive Odometry", 
-            "(" 
-            + ((double)(long)(odometry.getPoseMeters().getX() * 100)) / 100
-            + ", "
-            + ((double)(long)(odometry.getPoseMeters().getY() * 100)) / 100
-            + ") "
-            + ((double)(long)(odometry.getPoseMeters().getRotation().getDegrees() * 100)) / 100
-            + " degrees"
+            "(" + ((double)(long)(odometry.getPoseMeters().getX() * 100)) / 100 + ", "
+            + ((double)(long)(odometry.getPoseMeters().getY() * 100)) / 100 + ") "
+            + ((double)(long)(odometry.getPoseMeters().getRotation().getDegrees() * 100)) / 100 + " degrees"
         );
         SmartDashboard.putNumber("Swerve Drive Average Motor Tempurature (Celsius)", getAverageMotorTemp());
         SmartDashboard.putNumber("Swerve Drive Total Current Pull (Amps)", getAppliedCurrent());
+        SmartDashboard.putNumber("Swerve Drive Translation Speed X", translationSpeedX);
+        SmartDashboard.putNumber("Swerve Drive Translation Speed Y", translationSpeedY);
+        SmartDashboard.putNumber("Swerve Drive Rotation Speed", rotationSpeed);
     }
 
     /**
