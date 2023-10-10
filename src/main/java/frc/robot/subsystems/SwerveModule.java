@@ -195,7 +195,6 @@ public class SwerveModule extends SmartPrintable {
         }
 
         double calculation = rotationController.calculate(currentPosition, (state.angle.getRadians() + Angle.TAU) % Angle.TAU);
-        SmartDashboard.putNumber("Module " + physicalPosition.asString() + " Rotation Calculation", calculation);
         rotationMotor.set(calculation);
 
         position.angle = new Rotation2d(angularEncoder.getPosition());
