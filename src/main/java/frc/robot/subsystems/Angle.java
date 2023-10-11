@@ -4,7 +4,7 @@
 
 package frc.robot.subsystems;
 
-public final class Angle {
+public final class Angle implements Cloneable {
 	public static final double TAU = Math.PI * 2;
 
 	private double dec = 0.0;
@@ -49,10 +49,7 @@ public final class Angle {
 		return this.mul(1 / scalar);
 	}
 
-	/**
-	 * Creates a new identical angle so that modification of the original will not
-	 * effect the value returned from this function.
-	 */
+	@Override
 	public Angle clone() {
 		var ang = new Angle();
 		ang.dec = this.dec;

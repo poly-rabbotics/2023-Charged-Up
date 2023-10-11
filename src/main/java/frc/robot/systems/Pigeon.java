@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import frc.robot.SmartPrintable;
 import frc.robot.subsystems.Angle;
+import frc.robot.subsystems.WriteLock;
 
 /*
  * Manages the robot's pigeon.
@@ -27,7 +28,7 @@ public class Pigeon extends SmartPrintable {
     private final Pigeon2 pigeon;
     private final ScheduledExecutorService changeRateThread;
     
-    private OrientationalChange changePerSecond;
+    private WriteLock<OrientationalChange> changePerSecond;
 
     private Pigeon(int canID) {
         super();
@@ -56,7 +57,10 @@ public class Pigeon extends SmartPrintable {
      * Gets the change per second in the orientation of the Pigeon.
      */
     public static OrientationalChange getChangePerSecond() {
-        return instance.changePerSecond;
+        OrientationalChange change = instance.changePerSecond.lock();
+        OrientationalChange ownedChange = change.clone();
+        instance.changePerSecond.unlock();
+        return ownedChange;
     }
 
     /**
@@ -99,7 +103,7 @@ public class Pigeon extends SmartPrintable {
      * Represents the change per second in orientation as gathered and 
      * calculated from the Pigeon.
      */
-    public static class OrientationalChange {
+    public static class OrientationalChange implements Cloneable {
         public final Angle yawPerSecond;
         public final Angle rollPerSecond;
         public final Angle pitchPerSecond;
@@ -109,9 +113,18 @@ public class Pigeon extends SmartPrintable {
          * references freely, withoutr modifying this class' state.
          */
         private OrientationalChange(Angle yaw, Angle roll, Angle pitch) {
-            this.yawPerSecond = yaw.clone();
-            this.rollPerSecond = roll.clone();
-            this.pitchPerSecond = pitch.clone();
+            yawPerSecond = yaw.clone();
+            rollPerSecond = roll.clone();
+            pitchPerSecond = pitch.clone();
+        }
+
+        @Override
+        public OrientationalChange clone() {
+            return new OrientationalChange(
+                yawPerSecond.clone(),
+                rollPerSecond.clone(),
+                pitchPerSecond.clone()
+            );
         }
     }
 
@@ -151,11 +164,19 @@ public class Pigeon extends SmartPrintable {
             
             double differenceSeconds = (double)(recordedInstant.toEpochMilli() - previousInstant.toEpochMilli()) / 1000.0;
 
-            Angle changeYaw = yaw.sub(previousYaw).div(differenceSeconds);
-            Angle changeRoll = roll.sub(previousRoll).div(differenceSeconds);
-            Angle changePitch = pitch.sub(previousPitch).div(differenceSeconds);
+            Angle changeYaw = yaw
+                .sub(previousYaw)
+                .div(differenceSeconds);
+            Angle changeRoll = roll
+                .sub(previousRoll)
+                .div(differenceSeconds);
+            Angle changePitch = pitch
+                .sub(previousPitch)
+                .div(differenceSeconds);
 
-            pigeon.changePerSecond = new OrientationalChange(changeYaw, changeRoll, changePitch);
+            pigeon.changePerSecond.lock();
+            OrientationalChange change = new OrientationalChange(changeYaw, changeRoll, changePitch);
+            pigeon.changePerSecond.unlock(change);
 
             previousYaw = yaw;
             previousRoll = roll;
