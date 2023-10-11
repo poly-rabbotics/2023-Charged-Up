@@ -72,8 +72,8 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit() {
         controlMode = ControlMode.DISABLED;
-        SwerveDrive.setTurnCurve(Controls::defaultCurve);
-        SwerveDrive.setDirectionalCurve(Controls::defaultCurveTwoDimensional);
+        SwerveDrive.setRotationCurve(Controls::defaultCurve);
+        SwerveDrive.setTranslationCurve(Controls::defaultCurveTwoDimensional);
     }
     
     /**
@@ -167,15 +167,15 @@ public class Robot extends TimedRobot {
             );
         }
         
-        SwerveDrive.conditionalTempDirectionalCurve(
+        SwerveDrive.conditionalTempTranslationCurve(
             Controls.cardinalLock(Controls::defaultCurveTwoDimensional), 
             controllerOne.getXButton()
         ); // Lock to cardinal directions.
-        SwerveDrive.conditionalTempDirectionalCurve(
+        SwerveDrive.conditionalTempTranslationCurve(
             (x, y) -> Controls.defaultCurveTwoDimensional(x, y) / 3.0,
             controllerOne.getRightBumper()
         ); // Half translation speed.
-        SwerveDrive.conditionalTempDirectionalCurve(
+        SwerveDrive.conditionalTempTranslationCurve(
             Controls.cardinalLock((x, y) -> Controls.defaultCurveTwoDimensional(x, y) / 2.0),
             controllerOne.getRightBumper() && controllerOne.getXButton()
         ); // Half translation speed.
