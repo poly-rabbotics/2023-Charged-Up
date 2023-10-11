@@ -4,6 +4,10 @@
 
 package frc.robot.subsystems;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 import com.ctre.phoenix.sensors.SensorTimeBase;
@@ -41,6 +45,8 @@ public class SwerveModule extends SmartPrintable {
     private static final double ROCK_PID_D = 0.0;
 
     private final SwerveModulePosition position;
+    private final SwerveModuleRunner moduleRunner;
+    private final ScheduledExecutorService runnerThread;
 
     private final CANSparkMax rotationMotor;  // The motor responsible for rotating the module.
     private final CANSparkMax movementMotor;  // The motor responsible for creating movement in the module.
@@ -56,6 +62,7 @@ public class SwerveModule extends SmartPrintable {
     private final Angle canCoderOffset;
 
     private SlewRateLimiter accelerationLimit;
+    private WriteLock<SwerveModuleState> desiredState;
 
     // Set to NaN if not in rock mode, NaN does not equal itself by definition
     // (see some IEEE standard or something) and so this is how rock mode is 
@@ -112,6 +119,53 @@ public class SwerveModule extends SmartPrintable {
         }
     }
 
+    private class SwerveModuleRunner implements Runnable {
+        private SwerveModule parentModule;
+
+        public SwerveModuleRunner(SwerveModule parentModule) {
+            this.parentModule = parentModule;
+        }
+        
+        @Override
+        public void run() {
+            double currentPosition = (angularEncoder.getPosition() + canCoderOffset.radians()) % Angle.TAU;
+
+            // Lock the parent module's desired state for reading.
+            SwerveModuleState parentState = parentModule.desiredState.lock();
+            SwerveModuleState state = SwerveModuleState.optimize(parentState, new Rotation2d(currentPosition));
+
+            // Unlock to allow writing again. NOTE: the `parentState` variable
+            // MAY NOT BE USED beyond this point.
+            parentModule.desiredState.unlock();
+
+            /*
+             * There are two important reasons to run `SwerveModuleState.optomize()`. The first is obvious, make swerve
+             * more efficient. The other is to make a value-wise copy of the module state to avoid race conditions, as the 
+             * method creates a new `SwerveModuleState` each time. See this link for source:
+             * https://github.wpilib.org/allwpilib/docs/release/java/src-html/edu/wpi/first/math/kinematics/SwerveModuleState.html#line.74
+             */
+        
+            if (rockPos != rockPos) {
+                var desiredSpeed = Math.abs(state.speedMetersPerSecond) > maxSpeed 
+                    ? Math.signum(state.speedMetersPerSecond) * maxSpeed 
+                    : state.speedMetersPerSecond;
+                movementMotor.set(
+                    accelerationRate == accelerationRate
+                        ? accelerationLimit.calculate(desiredSpeed)
+                        : desiredSpeed
+                );
+            } else {
+                movementMotor.set(rockController.calculate(getDistanceTraveled(), rockPos));
+            }
+
+            double calculation = rotationController.calculate(currentPosition, (state.angle.getRadians() + Angle.TAU) % Angle.TAU);
+            rotationMotor.set(calculation);
+
+            position.angle = new Rotation2d(angularEncoder.getPosition());
+            position.distanceMeters = movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT;
+        }
+    }
+
     public SwerveModule(
         int movementMotorID, 
         int rotationalMotorID, 
@@ -123,8 +177,6 @@ public class SwerveModule extends SmartPrintable {
         
         this.physicalPosition = RelativePosition.fromTranslation(physicalPosition);
         this.canCoderOffset = canCoderOffset.clone();
-
-        accelerationLimit = new SlewRateLimiter(1.5);
 
         rotationMotor = new CANSparkMax(rotationalMotorID, MotorType.kBrushless);
         rotationMotor.setInverted(true);
@@ -171,34 +223,23 @@ public class SwerveModule extends SmartPrintable {
             movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT, 
             new Rotation2d(angularEncoder.getPosition())
         );
+
+        accelerationLimit = new SlewRateLimiter(1.5);
+        desiredState = new WriteLock<>(new SwerveModuleState());
+        moduleRunner = new SwerveModuleRunner(this);
+
+        runnerThread = Executors.newSingleThreadScheduledExecutor();
+        runnerThread.scheduleAtFixedRate(moduleRunner, 0, 20, TimeUnit.MILLISECONDS);
     }
 
     /**
      * Sets the desired module state for this module. This must be run 
      * repeatedly to continue PID calculations.
      */
-    public void setDesiredState(SwerveModuleState state) {
-        double currentPosition = (angularEncoder.getPosition() + canCoderOffset.radians()) % Angle.TAU;
-        state = SwerveModuleState.optimize(state, new Rotation2d(currentPosition));
-        
-        if (rockPos != rockPos) {
-            var desiredSpeed = Math.abs(state.speedMetersPerSecond) > maxSpeed 
-                ? Math.signum(state.speedMetersPerSecond) * maxSpeed 
-                : state.speedMetersPerSecond;
-            movementMotor.set(
-                accelerationRate == accelerationRate
-                    ? accelerationLimit.calculate(desiredSpeed)
-                    : desiredSpeed
-            );
-        } else {
-            movementMotor.set(rockController.calculate(getDistanceTraveled(), rockPos));
-        }
-
-        double calculation = rotationController.calculate(currentPosition, (state.angle.getRadians() + Angle.TAU) % Angle.TAU);
-        rotationMotor.set(calculation);
-
-        position.angle = new Rotation2d(angularEncoder.getPosition());
-        position.distanceMeters = movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT;
+    public void setDesiredState(SwerveModuleState desiredState) {
+        SwerveModuleState state = this.desiredState.lock();
+        state = desiredState;
+        this.desiredState.unlock(state);
     }
 
     /**
