@@ -1,4 +1,4 @@
-// Copyright (c) FIRST and other WPILib contributors.
+    // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
@@ -33,6 +33,12 @@ public class Pigeon extends SmartPrintable {
     private Pigeon(int canID) {
         super();
         pigeon = new Pigeon2(canID);
+
+        changePerSecond = new WriteLock(new OrientationalChange(
+            new Angle().setDegrees(0.0),
+            new Angle().setDegrees(0.0),
+            new Angle().setDegrees(0.0)
+        ));
 
         /* 
          * Starts the thread so that it calls 'run()' every 40 ms (25hz). This
