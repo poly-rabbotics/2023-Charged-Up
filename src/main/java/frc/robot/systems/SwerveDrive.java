@@ -62,10 +62,10 @@ public class SwerveDrive extends SmartPrintable {
     private final SwerveDriveOdometry odometry;
 
     // Fully mutable state objects    
-    private BiFunction<Double, Double, Double> directionCurve = Controls::defaultCurveTwoDimensional;
-    private BiFunction<Double, Double, Double> inactiveDirectionCurve = null;
-    private Function<Double, Double> turnCurve = Controls::defaultCurve;
-    private Function<Double, Double> inactiveTurnCurve = null;
+    private BiFunction<Double, Double, Double> translationCurve = Controls::defaultCurveTwoDimensional;
+    private BiFunction<Double, Double, Double> inactiveTransationCurve = null;
+    private Function<Double, Double> rotationCurve = Controls::defaultCurve;
+    private Function<Double, Double> inactiveRotationCurve = null;
     private SwerveMode mode = SwerveMode.HEADLESS;
     private SwerveMode inactiveMode = null;
     private SwerveMode displayMode = SwerveMode.HEADLESS;
@@ -195,15 +195,15 @@ public class SwerveDrive extends SmartPrintable {
      * argument is what should be curved, the second is used for context. Return
      * the curved direction.
      */
-    public static void setDirectionalCurve(BiFunction<Double, Double, Double> curve) {
-        instance.directionCurve = curve;
+    public static void setTranslationCurve(BiFunction<Double, Double, Double> curve) {
+        instance.translationCurve = curve;
     }
 
     /**
      * Gets the current curve used for directional inputs.
      */
-    public static BiFunction<Double, Double, Double> getDirectionalCurve() {
-        return instance.directionCurve;
+    public static BiFunction<Double, Double, Double> getTranslationCurve() {
+        return instance.translationCurve;
     }
 
     /**
@@ -213,20 +213,20 @@ public class SwerveDrive extends SmartPrintable {
      * argument is what should be curved, the second is used for context. Return
      * the curved direction.
      */
-    public static void tempDirectionalCurve(BiFunction<Double, Double, Double> curve) {
-        if (instance.inactiveDirectionCurve != null) {
-            instance.directionCurve = curve;
+    public static void tempTranslationCurve(BiFunction<Double, Double, Double> curve) {
+        if (instance.inactiveTransationCurve != null) {
+            instance.translationCurve = curve;
             return;
         }
 
-        instance.inactiveDirectionCurve = instance.directionCurve;
-        instance.directionCurve = curve;
+        instance.inactiveTransationCurve = instance.translationCurve;
+        instance.translationCurve = curve;
     }
 
     /**
      * Exactly like `tempDirectionalCurve` but predicated on a boolean condition.
      */
-    public static void conditionalTempDirectionalCurve(
+    public static void conditionalTempTranslationCurve(
         BiFunction<Double, Double, Double> curve, 
         boolean condition
     ) {
@@ -234,42 +234,42 @@ public class SwerveDrive extends SmartPrintable {
             return;
         }
 
-        tempDirectionalCurve(curve);
+        tempTranslationCurve(curve);
     }
 
     /**
      * Sets the curve function for turn inputs.
      * @param curve The Function to use for proccessing the curve.
      */
-    public static void setTurnCurve(Function<Double, Double> curve) {
-        instance.turnCurve = curve;
+    public static void setRotationCurve(Function<Double, Double> curve) {
+        instance.rotationCurve = curve;
     }
 
     /**
      * Gets the Function currently used for turning.
      */
-    public static Function<Double, Double> getTurnCurve() {
-        return instance.turnCurve;
+    public static Function<Double, Double> getRotationCurve() {
+        return instance.rotationCurve;
     }
 
     /**
      * Temporarily sets the curve function for turn inputs. Undone after running.
      * @param curve The Function to use for proccessing the curve.
      */
-    public static void tempTurnCurve(Function<Double, Double> curve) {
-        if (instance.inactiveTurnCurve != null) {
-            instance.turnCurve = curve;
+    public static void tempRotationCurve(Function<Double, Double> curve) {
+        if (instance.inactiveRotationCurve != null) {
+            instance.rotationCurve = curve;
             return;
         }
 
-        instance.inactiveTurnCurve = instance.turnCurve;
-        instance.turnCurve = curve;
+        instance.inactiveRotationCurve = instance.rotationCurve;
+        instance.rotationCurve = curve;
     }
 
     /**
      * Exactly like `tempTurnCurve` but predicated on a boolean condition.
      */
-    public static void conditionalTempTurnCurve(
+    public static void conditionalTempRotationCurve(
         Function<Double, Double> curve, 
         boolean condition
     ) {
@@ -277,7 +277,7 @@ public class SwerveDrive extends SmartPrintable {
             return;
         }
 
-        tempTurnCurve(curve);
+        tempRotationCurve(curve);
     }
 
     /**
@@ -312,18 +312,12 @@ public class SwerveDrive extends SmartPrintable {
         double rotation
     ) {
         speed = Math.abs(translationX) <= 0.05 && Math.abs(translationY) <= 0.05 ? 0.0 : speed;
-        
-        SmartDashboard.putNumber("direction x - run 0", translationX);
-        SmartDashboard.putNumber("direction y - run 0", translationY);
 
         // angle is in radians as per Java's trig methods.
         var angle = Math.atan2(translationY, translationX);
         translationX = Math.cos(angle) * speed;
+
         translationY = Math.sin(angle) * speed;
-
-        SmartDashboard.putNumber("direction x - run 1", translationX);
-        SmartDashboard.putNumber("direction y - run 1", translationY);
-
         run(translationX, translationY, rotation);
     }
 
@@ -336,11 +330,9 @@ public class SwerveDrive extends SmartPrintable {
      * @param lowSense The angle to move in low sensitivity in degrees, -1 for no movement.
      */
     public static void run(double translationX, double translationY, double rotation) {
-        var x = instance.directionCurve.apply(translationX, translationY);
-        var y = instance.directionCurve.apply(translationY, translationX);
-        SmartDashboard.putNumber("direction x - run 2", x);
-        SmartDashboard.putNumber("direction y - run 2", y);
-        rotation = instance.turnCurve.apply(rotation);
+        var x = instance.translationCurve.apply(translationX, translationY);
+        var y = instance.translationCurve.apply(translationY, translationX);
+        rotation = instance.rotationCurve.apply(rotation);
         runUncurved(x, y, rotation);
     }
     
@@ -353,6 +345,10 @@ public class SwerveDrive extends SmartPrintable {
      * @param rotation Rate of turn. -1.0 - 1.0
      */
     public static void runUncurved(double translationX, double translationY, double rotation) {
+        instance.translationSpeedX = translationX;
+        instance.translationSpeedY = translationY;
+        instance.rotationSpeed = rotation;
+
         SwerveModuleState[] moduleStates = new SwerveModuleState[instance.modules.length];
         boolean holdPos = false;
 
@@ -360,7 +356,9 @@ public class SwerveDrive extends SmartPrintable {
             case HEADLESS:
                 moduleStates = instance.kinematics.toSwerveModuleStates(
                     ChassisSpeeds.fromFieldRelativeSpeeds(
-                        translationX, -translationY, rotation, 
+                        instance.translationSpeedX,
+                        -instance.translationSpeedY,
+                        instance.rotationSpeed, 
                         new Rotation2d(Pigeon.getYaw().radians())
                     )
                 );
@@ -368,7 +366,11 @@ public class SwerveDrive extends SmartPrintable {
 
             case RELATIVE: 
                 moduleStates = instance.kinematics.toSwerveModuleStates(
-                    new ChassisSpeeds(translationX, -translationY, rotation)
+                    new ChassisSpeeds(
+                        instance.translationSpeedX,
+                        -instance.translationSpeedY,
+                        instance.rotationSpeed
+                    )
                 ); 
                 break;
 
@@ -377,7 +379,12 @@ public class SwerveDrive extends SmartPrintable {
                 holdPos = true;
 
                 for (int i = 0; i < instance.modules.length; i++) {
-                    moduleStates[i] = new SwerveModuleState(0.0, new Rotation2d(MODULE_ROCK_MODE_POSITIONS[i].radians()));
+                    moduleStates[i] = new SwerveModuleState(
+                        0.0,
+                        new Rotation2d(
+                            MODULE_ROCK_MODE_POSITIONS[i].radians()
+                        )
+                    );
                 }
 
                 break;
@@ -394,12 +401,9 @@ public class SwerveDrive extends SmartPrintable {
         }
 
         instance.odometry.update(new Rotation2d(Pigeon.getYaw().radians()), instance.positions);
-
-        // Reset temp state
-
-        instance.translationSpeedX = translationX;
-        instance.translationSpeedY = translationY;
-        instance.rotationSpeed = rotation;
+        
+        // Reset temporary states
+        
         instance.displayMode = instance.mode;
         
         if (instance.inactiveMode != null) {
@@ -407,14 +411,14 @@ public class SwerveDrive extends SmartPrintable {
             instance.inactiveMode = null;
         }
         
-        if (instance.inactiveDirectionCurve != null) {
-            instance.directionCurve = instance.inactiveDirectionCurve;
-            instance.inactiveDirectionCurve = null;
+        if (instance.inactiveTransationCurve != null) {
+            instance.translationCurve = instance.inactiveTransationCurve;
+            instance.inactiveTransationCurve = null;
         }
 
-        if (instance.inactiveTurnCurve != null) {
-            instance.turnCurve = instance.inactiveTurnCurve;
-            instance.inactiveTurnCurve = null;
+        if (instance.inactiveRotationCurve != null) {
+            instance.rotationCurve = instance.inactiveRotationCurve;
+            instance.inactiveRotationCurve = null;
         }
     }
 
