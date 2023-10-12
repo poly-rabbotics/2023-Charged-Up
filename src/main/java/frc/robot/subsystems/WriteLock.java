@@ -40,5 +40,6 @@ public class WriteLock<T> {
 	 */
 	public void unlock(T obj) {
 		this.obj = obj;
+		locked = false;
 	}
 }

@@ -34,7 +34,7 @@ public class Pigeon extends SmartPrintable {
         super();
         pigeon = new Pigeon2(canID);
 
-        changePerSecond = new WriteLock(new OrientationalChange(
+        changePerSecond = new WriteLock<>(new OrientationalChange(
             new Angle().setDegrees(0.0),
             new Angle().setDegrees(0.0),
             new Angle().setDegrees(0.0)
