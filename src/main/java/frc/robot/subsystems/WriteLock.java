@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * A write lock to prevent race conditions. This lock does not actually 
  * guarantee the memory safety of the contained object, each method call
@@ -7,7 +9,7 @@ package frc.robot.subsystems;
  */
 public class WriteLock<T> {
 	private T obj;
-	private boolean locked;
+	private AtomicBoolean locked;
 
 	/**
 	 * Creates a new lock around the given object. The given object mey not be used
@@ -22,8 +24,8 @@ public class WriteLock<T> {
 	 * Blockes the current thread until the object is made available.
 	 */
 	public T lock() {
-		while (locked == true) {}
-		locked = true;
+		while (locked.get()) {}
+		locked.set(true);
 		return obj;
 	}
 
@@ -31,7 +33,7 @@ public class WriteLock<T> {
 	 * Unocks the object, it should not be used after this call.
 	 */
 	public void unlock() {
-		locked = false;
+		locked.set(false);
 	}
 
 	/**
@@ -40,6 +42,6 @@ public class WriteLock<T> {
 	 */
 	public void unlock(T obj) {
 		this.obj = obj;
-		locked = false;
+		locked.set(false);
 	}
 }
