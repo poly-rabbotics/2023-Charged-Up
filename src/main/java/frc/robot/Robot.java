@@ -51,6 +51,7 @@ public class Robot extends TimedRobot {
     private static Robot instance;
 
     private ControlMode controlMode = ControlMode.DISABLED;
+    private boolean invertedTurn = false;
 
     /**
      * Exists only to enable static methods to gain access to non static data,
@@ -156,6 +157,16 @@ public class Robot extends TimedRobot {
                     ? SwerveMode.RELATIVE 
                     : SwerveMode.HEADLESS
             );
+        }
+
+        if (controllerOne.getRightStickButtonReleased()) {
+            SwerveDrive.setTurnCurve(
+                invertedTurn
+                    ? Controls::defaultCurve
+                    : Controls::invertedCurve
+            );
+
+            invertedTurn = !invertedTurn;
         }
 
         if (controllerOne.getRightStickButtonReleased()) {

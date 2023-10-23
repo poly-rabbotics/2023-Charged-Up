@@ -58,6 +58,10 @@ public class Controls {
         return Math.pow(x, DEFAULT_CURVE_EXPONENT);
     }
 
+    public static double invertedCurve(double x) {
+        return -defaultCurve(x);
+    }
+
     /**
      * Custom turning curve for Rohan.
      */
