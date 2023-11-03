@@ -1,8 +1,10 @@
 package frc.robot.systems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import frc.robot.systems.ElevFourbar.GamePiece;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.SmartPrintable;
@@ -21,14 +23,17 @@ public class Intake extends SmartPrintable {
     private static final int CLAW_REVERSE_CHANNEL = 0;
     private static final int PIVOT_FORWARD_CHANNEL = 2;
     private static final int PIVOT_REVERSE_CHANNEL = 3;
+    private static final int INTAKE_SWITCH_CHANNEL
 
     //Declare objects
     public static Compressor comp;
     private static Pivot pivot;
     private static Roller roller;
     private static Claw claw;
+    private static DigitalInput intakeSwitch;
 
     private Timer timer = new Timer();
+    private Timer switchTimer = new Timer();
 
     //instantiate instance of class
     private static Intake instance = new Intake();
@@ -44,6 +49,8 @@ public class Intake extends SmartPrintable {
         roller = new Roller(ROLLER_ID);
         claw = new Claw(PneumaticsModuleType.CTREPCM, CLAW_FORWARD_CHANNEL, CLAW_REVERSE_CHANNEL);
         pivot = new Pivot(PIVOT_FORWARD_CHANNEL, PIVOT_REVERSE_CHANNEL);
+
+        intakeSwitch = new DigitalInput(INTAKE_SWITCH_CHANNEL);
     }
 
     //Opens claw if cube is selected, closes claw if cone is selected
@@ -52,6 +59,9 @@ public class Intake extends SmartPrintable {
 
         instance.timer.reset();
         instance.timer.start();
+
+        instance.gamePieceTimer.reset();
+        instance.gamePieceTimer.start();
     }
 
     /**
@@ -77,6 +87,9 @@ public class Intake extends SmartPrintable {
             else if(outtake) //Shoot cubes at full power
                 rollerSpeed = 1.0;
 
+            else if(getTimeSinceSwitchPressed() < 0.5 && !getIntakeSwitch()) //If the switch hasn't been pressed for less than 0.5 seconds, run rollers in at half speed
+                rollerSpeed = -0.5;
+
             else 
                 rollerSpeed = -0.1;
         } 
@@ -89,6 +102,9 @@ public class Intake extends SmartPrintable {
             else if(outtake) //Outtake at full speed
                 rollerSpeed = 1.0;
 
+            else if(getTimeSinceSwitchPressed() < 0.5 && !getIntakeSwitch()) //If the switch hasn't been pressed for less than 0.5 seconds, run rollers in at half speed
+                rollerSpeed = -0.5;
+                
             else //Idly run at very low power to keep in game pieces
                 rollerSpeed = -0.06;
         }
@@ -96,6 +112,7 @@ public class Intake extends SmartPrintable {
         //Run the mechanisms
         runClaw(clawHeld);
         runPivot(pivotToggle);
+        updateSwitchTimer();
         roller.setSpeed(Math.abs(rollerSpeed) < 0.0 ? Math.signum(rollerSpeed) * 0.1 : rollerSpeed);
     }
 
@@ -122,6 +139,12 @@ public class Intake extends SmartPrintable {
             } else {
                 pivot.up();
             }
+        }
+    }
+
+    private static void updateSwitchTimer() {
+        if(!intakeSwitch.get()) {
+            instance.switchTimer.reset();
         }
     }
 
@@ -181,6 +204,20 @@ public class Intake extends SmartPrintable {
      */
     public static SolenoidState getClawState() {
         return claw.getState();
+    }
+
+    /**
+     * @return true if the intake switch is pressed
+     */
+    public static boolean getIntakeSwitch() {
+        return !intakeSwitch.get();
+    }
+
+    /**
+     * @return the amount of time that it's been since the bumper switch was pressed, in seconds
+     */
+    public static double getTimeSinceSwitchPressed() {
+        return instance.switchTimer.get();
     }
 
 
