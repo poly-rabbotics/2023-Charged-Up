@@ -69,6 +69,7 @@ public class SwerveDrive extends SmartPrintable {
     private SwerveMode mode = SwerveMode.HEADLESS;
     private SwerveMode inactiveMode = null;
     private SwerveMode displayMode = SwerveMode.HEADLESS;
+    private double setSpeed = 0.0;
 
     private SwerveDrive() {
         super();
@@ -366,6 +367,7 @@ public class SwerveDrive extends SmartPrintable {
         // Reset temp state
 
         instance.displayMode = instance.mode;
+        instance.setSpeed = Math.sqrt(directionalX * directionalX + directionalY * directionalY);
         
         if (instance.inactiveMode != null) {
             instance.mode = instance.inactiveMode;
@@ -431,6 +433,10 @@ public class SwerveDrive extends SmartPrintable {
         }
 
         return percentSum / (double)instance.modules.length;
+    }
+
+    public static double getSetSpeed() {
+        return instance.setSpeed;
     }
 
     /**

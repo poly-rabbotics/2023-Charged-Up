@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Robot;
 import frc.robot.Robot.ControlMode;
 import frc.robot.patterns.Rainbow;
+import frc.robot.patterns.BensPattern;
 import frc.robot.patterns.FadeIn;
 import frc.robot.patterns.FadeIntoPattern;
 import frc.robot.subsystems.LightPattern;
@@ -33,7 +34,8 @@ public class LEDLights {
         if (Robot.getControlMode() == ControlMode.DISABLED) {
             // Rainbow if disabled.
             //setPattern = new Rainbow();
-            setPattern = new FadeIntoPattern(new Rainbow(), 0.15);
+            //setPattern = new FadeIntoPattern(new Rainbow(), 0.15);
+            setPattern = new BensPattern(new Color(0.0, 1.0, 0.0), 1);
         } else if (Robot.getControlMode() == ControlMode.AUTONOMOUS) {
             setPattern = new FadeIn(new Color(0.0, 1.0, 0.0), 1.0);
 
