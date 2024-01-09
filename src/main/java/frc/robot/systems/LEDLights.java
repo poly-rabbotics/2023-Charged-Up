@@ -38,11 +38,11 @@ public class LEDLights {
             setPattern = new FadeIn(new Color(0.0, 1.0, 0.0), 1.0);
 
             if (AutoBalance.getStage() == Stage.RAMMING) {
-                setPattern = new FadeIn(new Color(1.0, 0.15, 0.15), 1.0);
+                setPattern = new FadeIn(new Color(1.0, 0.15, 0.15), 5.0);
             } else if (AutoBalance.getStage() == Stage.ADJUSTING) {
-                setPattern = new FadeIn(new Color(0.0, 0.75, 0.75), 1.0);
+                setPattern = new FadeIn(new Color(0.0, 0.75, 0.75), 5.0);
             } else if (AutoBalance.getStage() == Stage.PAUSED) {
-                setPattern = new FadeIn(new Color(0.0, 1.0, 0.0), 1.0);
+                setPattern = new FadeIn(new Color(0.0, 1.0, 0.0), 5.0);
             }
         } else {
             if (SwerveDrive.getDisplayMode() == SwerveMode.ROCK) {

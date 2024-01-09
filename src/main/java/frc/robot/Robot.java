@@ -195,7 +195,10 @@ public class Robot extends TimedRobot {
             controllerOne.getLeftX(),
             controllerOne.getLeftY(),
             //controllerOne.getRightTriggerAxis() - controllerOne.getLeftTriggerAxis(),
-            controllerOne.getRightX()
+            Math.abs(controllerOne.getRightX())
+             > 0.15
+                ? controllerOne.getRightX() * 1.2
+                : 0.0
         );
 
         double rumble = controllerOne.getLeftBumper() 
@@ -218,7 +221,7 @@ public class Robot extends TimedRobot {
             controlPanel.getRawButton(1), //Ground intake
             controlPanel.getRawButton(3), //Mid scoring
             controlPanel.getRawButton(4), //High scoring
-            controllerTwo.getStartButtonPressed() || controlPanel.getRawButton(2) //Zero elevator encoder
+            controlPanel.getRawButton(2) //Substation Intake
         );
     }
     

@@ -33,7 +33,7 @@ public class Fourbar {
     private static final double D0 = 0.05;
     private static final double F0 = 0.0;
 
-    private static final double P1 = 2.5;
+    private static final double P1 = 4.5;
     private static final double I1 = 0.0;
     private static final double D1 = 0.3;
     private static final double F1 = 0.0;
@@ -136,10 +136,11 @@ public class Fourbar {
 
         //Deadzone
         if(Math.abs(speed) < MANUAL_DEADZONE) {
+            
             speed = 0;
         }
 
-        targetSetpoint -= speed * 0.9;
+        targetSetpoint -= speed * 0.7;
 
         pidController.setReference((targetSetpoint + ENCODER_OFFSET) / 360.0, CANSparkMax.ControlType.kPosition, 1);
 

@@ -15,13 +15,13 @@ import frc.robot.subsystems.Fourbar;
 public class ElevFourbar extends SmartPrintable {
 
     //SETPOINTS FOR PID CONTROL
-    public static final DoubleSetpoint STOWED_SETPOINT = new DoubleSetpoint(new Setpoint(0, Setpoint.HYPOTENUSE), new Setpoint(0, Setpoint.HYPOTENUSE));
+    public static final DoubleSetpoint STOWED_SETPOINT = new DoubleSetpoint(new Setpoint(0, Setpoint.HYPOTENUSE), new Setpoint(0, Setpoint.HYPOTENUSE)) ;
     public static final DoubleSetpoint MID_SCOORING_SETPOINT = new DoubleSetpoint(new Setpoint(15, 37), new Setpoint(15, 34.4));
     public static final DoubleSetpoint HIGH_SCORING_SETPOINT = new DoubleSetpoint(new Setpoint(26.6, 50), new Setpoint(33.2, 48.6));
+    public static final DoubleSetpoint SUBSTATION_INTAKE_SETPOINT = new DoubleSetpoint(new Setpoint(false, 0, 10), new Setpoint(false, 0, 15));
 
     public static final Setpoint GROUND_INTAKE_DOWN_SETPOINT = new Setpoint(35.2, 11, true);
     public static final Setpoint GROUND_INTAKE_UP_SETPOINT = new Setpoint(30, 1, true);
-    public static final Setpoint SUBSTATION_INTAKE_SETPOINT = new Setpoint(20.4, 40.5);
 
     //deadzone to determine when manual control is enabled
     static final double DEADZONE = 0.3;
@@ -87,14 +87,14 @@ public class ElevFourbar extends SmartPrintable {
         fourbar.setPIDSpeed(0.3);
     }
 
-    public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean toggleGamePieceMode, boolean groundIntake, boolean mid, boolean high, boolean zeroElevEncoder) {
+    public static void run(double elevatorSpeed, double fourbarSpeed, int dPadDirection, boolean toggleGamePieceMode, boolean groundIntake, boolean mid, boolean high, boolean substation) {
         instance.currentSetpoint = new Setpoint(false, elevator.getPosition(), fourbar.getPosition());
 
         //toggle between cone and cube mode
         toggleGamePiece(toggleGamePieceMode);
 
         //set the target setpoint based on which button is pressed
-        setSetPoint(groundIntake, mid, high);
+        setSetPoint(groundIntake, mid, high, substation);
 
         //switches between control modes when button is pressed or manual control detects input
         if(Math.abs(elevatorSpeed) > DEADZONE || Math.abs(fourbarSpeed) > DEADZONE) {
@@ -117,11 +117,6 @@ public class ElevFourbar extends SmartPrintable {
             }
         }
 
-
-        if (zeroElevEncoder) {
-            elevator.zeroEncoder(0.5);
-        }
-
         SmartDashboard.putNumber("FB Power", fourbar.getPower());
     }
 
@@ -131,7 +126,7 @@ public class ElevFourbar extends SmartPrintable {
      * @param mid
      * @param high
      */
-    public static void setSetPoint(boolean ground, boolean mid, boolean high) {
+    public static void setSetPoint(boolean ground, boolean mid, boolean high, boolean substation) {
 
         if(ground) {
             instance.setpoint = Intake.getPivotState() == SolenoidState.DOWN 
@@ -145,6 +140,10 @@ public class ElevFourbar extends SmartPrintable {
             instance.setpoint = getGamePieceSelected() == GamePiece.CUBE 
                 ? HIGH_SCORING_SETPOINT.cube 
                 : HIGH_SCORING_SETPOINT.cone;
+        } else if(substation) {
+            instance.setpoint = getGamePieceSelected() == GamePiece.CUBE
+            ? SUBSTATION_INTAKE_SETPOINT.cube 
+            : SUBSTATION_INTAKE_SETPOINT.cone;
         } else {
             instance.setpoint = getGamePieceSelected() == GamePiece.CUBE
                 ? STOWED_SETPOINT.cube 

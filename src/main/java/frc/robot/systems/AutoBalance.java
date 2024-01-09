@@ -10,7 +10,7 @@ import frc.robot.SmartPrintable;
  */
 public class AutoBalance extends SmartPrintable {
     private static final double RAMMING_SPEED = -0.75;
-    private static final double HALTING_SPEED = 0.1;
+    private static final double ADJUSTING_SPEED = 0.1;
     
     private static final AutoBalance instance = new AutoBalance();
 
@@ -140,7 +140,7 @@ public class AutoBalance extends SmartPrintable {
             return Stage.PAUSED;
         }
 
-        SwerveDrive.runUncurved(0.0, Math.signum(Pigeon.getPitch().degrees()) * HALTING_SPEED, 0.0);
+        SwerveDrive.runUncurved(0.0, Math.signum(Pigeon.getPitch().degrees()) * ADJUSTING_SPEED, 0.0);
         return Stage.ADJUSTING;
     }
 

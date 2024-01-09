@@ -17,13 +17,13 @@ public class Intake extends SmartPrintable {
         OPEN, CLOSED, UP, DOWN
     }
 
-    //ID constants
+    //ID constants  
     private static final int ROLLER_ID = 0;
     private static final int CLAW_FORWARD_CHANNEL = 1;
     private static final int CLAW_REVERSE_CHANNEL = 0;
     private static final int PIVOT_FORWARD_CHANNEL = 2;
     private static final int PIVOT_REVERSE_CHANNEL = 3;
-    private static final int INTAKE_SWITCH_CHANNEL
+    private static final int INTAKE_SWITCH_CHANNEL = 9;
 
     //Declare objects
     public static Compressor comp;
@@ -60,8 +60,8 @@ public class Intake extends SmartPrintable {
         instance.timer.reset();
         instance.timer.start();
 
-        instance.gamePieceTimer.reset();
-        instance.gamePieceTimer.start();
+        instance.switchTimer.reset();
+        instance.switchTimer.start();
     }
 
     /**
@@ -87,8 +87,8 @@ public class Intake extends SmartPrintable {
             else if(outtake) //Shoot cubes at full power
                 rollerSpeed = 1.0;
 
-            else if(getTimeSinceSwitchPressed() < 0.5 && !getIntakeSwitch()) //If the switch hasn't been pressed for less than 0.5 seconds, run rollers in at half speed
-                rollerSpeed = -0.5;
+            else if(getTimeSinceSwitchPressed() < 1 && !getIntakeSwitch()) //If the switch hasn't been pressed for less than 0.5 seconds, run rollers in at half speed
+                rollerSpeed = -1;
 
             else 
                 rollerSpeed = -0.1;
@@ -102,8 +102,8 @@ public class Intake extends SmartPrintable {
             else if(outtake) //Outtake at full speed
                 rollerSpeed = 1.0;
 
-            else if(getTimeSinceSwitchPressed() < 0.5 && !getIntakeSwitch()) //If the switch hasn't been pressed for less than 0.5 seconds, run rollers in at half speed
-                rollerSpeed = -0.5;
+            else if(getTimeSinceSwitchPressed() < 1 && !getIntakeSwitch()) //If the switch hasn't been pressed for less than 0.5 seconds, run rollers in at half speed
+                rollerSpeed = -1;
                 
             else //Idly run at very low power to keep in game pieces
                 rollerSpeed = -0.06;
