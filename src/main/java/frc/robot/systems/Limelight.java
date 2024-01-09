@@ -5,8 +5,10 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class Limelight {
+    private static Limelight instance = new Limelight();
+
     private static final Angle LIMELIGHT_MOUNTING_PITCH = new Angle().setDegrees(0.0);
-    private static final LimelightPos LIMELIGHT_MOUNTING_POS = new LimelightPos(0.0, 0.0, 0.0); // inches
+    private static final LimelightPos LIMELIGHT_MOUNTING_POS = instance.new LimelightPos(0.0, 0.0, 0.0); // inches
     private static final double APRIL_TAG_SIDE_LENGTH = 8.5; // inches
 
     // Red scoring target tags.
@@ -41,7 +43,7 @@ public class Limelight {
      * Indexed by tag ID, given in inches to the center of the tag form field
      * floor.
      */
-    private static final double[] APRIL_TAG_HEIGHTS {
+    private static final double[] APRIL_TAG_HEIGHTS = {
         // Feet + Inches + Fractional Inches + Half of April Tag Height
         (4.0 * 12.0) + (1.0 / 8.0) + (APRIL_TAG_SIDE_LENGTH / 2.0),        // 1
         (4.0 * 12.0) + (1.0 / 8.0) + (APRIL_TAG_SIDE_LENGTH / 2.0),        // 2
@@ -53,14 +55,14 @@ public class Limelight {
         (4.0 * 12.0) + 3.0 + (7.0 / 8.0) + (APRIL_TAG_SIDE_LENGTH / 2.0),  // 8
         (4.0 * 12.0) + (1.0 / 8.0) + (APRIL_TAG_SIDE_LENGTH / 2.0),        // 9
         (4.0 * 12.0) + (1.0 / 8.0) + (APRIL_TAG_SIDE_LENGTH / 2.0),        // 10
-        (3.0 * 12.0) + 11.0 + (1.0 / 2.0) + (APRIL_TAG_SIDE_LENGTH / 2.0). // 11
-        (3.0 * 12.0) + 11.0 + (1.0 / 2.0) + (APRIL_TAG_SIDE_LENGTH / 2.0). // 12
-        (3.0 * 12.0) + 11.0 + (1.0 / 2.0) + (APRIL_TAG_SIDE_LENGTH / 2.0). // 13
-        (3.0 * 12.0) + 11.0 + (1.0 / 2.0) + (APRIL_TAG_SIDE_LENGTH / 2.0). // 14
-        (3.0 * 12.0) + 11.0 + (1.0 / 2.0) + (APRIL_TAG_SIDE_LENGTH / 2.0). // 15
-        (3.0 * 12.0) + 11.0 + (1.0 / 2.0) + (APRIL_TAG_SIDE_LENGTH / 2.0). // 16
-        
-    }
+        (3.0 * 12.0) + 11.0 + (1.0 / 2.0) + (APRIL_TAG_SIDE_LENGTH / 2.0), // 11
+        (3.0 * 12.0) + 11.0 + (1.0 / 2.0) + (APRIL_TAG_SIDE_LENGTH / 2.0), // 12
+        (3.0 * 12.0) + 11.0 + (1.0 / 2.0) + (APRIL_TAG_SIDE_LENGTH / 2.0), // 13
+        (3.0 * 12.0) + 11.0 + (1.0 / 2.0) + (APRIL_TAG_SIDE_LENGTH / 2.0), // 14
+        (3.0 * 12.0) + 11.0 + (1.0 / 2.0) + (APRIL_TAG_SIDE_LENGTH / 2.0), // 15
+        (3.0 * 12.0) + 11.0 + (1.0 / 2.0) + (APRIL_TAG_SIDE_LENGTH / 2.0), // 16  
+    };
+
 
     public class LimelightOrPos {
         public LimelightPos pos;
@@ -98,7 +100,7 @@ public class Limelight {
         public Angle roll;
         public Angle pitch;
 
-        public LimelightOrientation(double yaw, double roll, double pitch) {
+        public LimelightOrientation(Angle yaw, Angle roll, Angle pitch) {
             this.yaw = yaw;
             this.roll = roll;
             this.pitch = pitch;
@@ -122,7 +124,7 @@ public class Limelight {
         }
 
         double[] tid = tid();
-        return tid[0];
+        return (int)tid[0];
     }
 
     /**
@@ -174,10 +176,15 @@ public class Limelight {
         return doubleArrToOrPos(botpose);
     }
 
-    private static LimelightOrPos doubleArrToOrPos(double[6] arr) {
-        var pos = new LimelightPos(arr[0], arr[1], arr[2]);
-        var ori = new LimelightOrientation(arr[5], arr[3], arr[4]);
-        return new LimelightOrPos(pos, ori);
+    private static LimelightOrPos doubleArrToOrPos(double[] arr) {
+        Angle yaw = new Angle().setDegrees(arr[5]);
+        Angle roll = new Angle().setDegrees(arr[3]);
+        Angle pitch = new Angle().setDegrees(arr[4]);
+        
+        LimelightPos pos = instance.new LimelightPos(arr[0], arr[1], arr[2]);
+        LimelightOrientation ori = instance.new LimelightOrientation(yaw, roll, pitch);
+
+        return instance.new LimelightOrPos(pos, ori);
     } 
 
     /**
@@ -187,7 +194,7 @@ public class Limelight {
      */
     private static double estimateTargetDistance() {
         int tagId = aprilTagTargetId();
-        double targetVarticalAngleOffset = targetPitchOffset();
+        Angle targetVarticalAngleOffset = targetPitchOffset();
 
         if (tagId == -1) {
             return Double.NaN;
@@ -197,9 +204,9 @@ public class Limelight {
             return Double.NaN;
         }
 
-        double targetVerticalAngle = targetVarticalAngleOffset.add(LIMELIGHT_MOUNTING_PITCH);
+        Angle targetVerticalAngle = targetVarticalAngleOffset.add(LIMELIGHT_MOUNTING_PITCH);
         double targetHeight = APRIL_TAG_HEIGHTS[tagId];
-        double heightOffset = targetHeight - LIMELIGHT_MOUNTING_POS.y
+        double heightOffset = targetHeight - LIMELIGHT_MOUNTING_POS.y;
         double distance = heightOffset / Math.tan(targetVerticalAngle.radians());
 
         return distance;
