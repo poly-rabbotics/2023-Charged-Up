@@ -128,7 +128,7 @@ public class SwerveModule extends SmartPrintable {
         
         @Override
         public void run() {
-            double currentPosition = (angularEncoder.getPosition() + canCoderOffset.radians()) % Angle.TAU;
+            double currentPosition = (angularEncoder.getPosition().getValue() * Angle.TAU + canCoderOffset.radians()) % Angle.TAU;
 
             // Lock the parent module's desired state for reading.
             SwerveModuleState parentState = parentModule.desiredState.lock();
@@ -161,7 +161,7 @@ public class SwerveModule extends SmartPrintable {
             double calculation = rotationController.calculate(currentPosition, (state.angle.getRadians() + Angle.TAU) % Angle.TAU);
             rotationMotor.set(calculation);
 
-            position.angle = new Rotation2d(angularEncoder.getPosition());
+            position.angle = new Rotation2d(angularEncoder.getPosition().getValue() * Angle.TAU);
             position.distanceMeters = movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT;
         }
     }
@@ -188,24 +188,12 @@ public class SwerveModule extends SmartPrintable {
         movementMotor.setSmartCurrentLimit(40);
 
         angularEncoder = new CANCoder(canCoderID);
-        angularEncoder.configFactoryDefault();
-
-        // Magic and forbidden config from the code orange wizards. Makes the 
-        // encoder initialize to absolute.
-        angularEncoder.configSensorInitializationStrategy(SensorInitializationStrategy.BootToAbsolutePosition);
-        angularEncoder.configFeedbackCoefficient(
-            // Since the default coefficiant used for degrees is not 
-            // particularly intuitive we just grab it and run a deg -> rad
-            // conversion on it.
-            Math.toRadians(angularEncoder.configGetFeedbackCoefficient()), 
-            "rad", 
-            SensorTimeBase.PerSecond
-        );
-
+        angularEncoder.getConfigurator().apply(new CANcoderConfiguration());
+        
         rotationEncoder = rotationMotor.getEncoder();
-        rotationEncoder.setPosition(angularEncoder.getPosition());
         rotationEncoder.setPositionConversionFactor(CONVERSION_FACTOR_ROTATION);
         rotationEncoder.setVelocityConversionFactor(CONVERSION_FACTOR_ROTATION_VELOCITY);
+        rotationEncoder.setPosition(angularEncoder.getPosition().getValue() * Angle.TAU);
 
         movementEncoder = movementMotor.getEncoder();
         movementEncoder.setPosition(0.0);
@@ -221,7 +209,7 @@ public class SwerveModule extends SmartPrintable {
 
         position = new SwerveModulePosition(
             movementEncoder.getPosition() * CONVERSION_FACTOR_MOVEMENT, 
-            new Rotation2d(angularEncoder.getPosition())
+            new Rotation2d(angularEncoder.getPosition().getValue() * Angle.TAU)
         );
 
         accelerationLimit = new SlewRateLimiter(1.5);
@@ -347,10 +335,10 @@ public class SwerveModule extends SmartPrintable {
 
     @Override
     public void print() {
-        SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Position", Math.toDegrees(angularEncoder.getPosition()));
-        SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Position mod 360", Math.toDegrees(angularEncoder.getPosition() % Angle.TAU));
-        SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Position + off", Math.toDegrees(angularEncoder.getPosition() + canCoderOffset.radians()));
-        SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Position + off mod 360", Math.toDegrees((angularEncoder.getPosition() + canCoderOffset.radians()) % Angle.TAU));
+        SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Position", angularEncoder.getPosition().getValue() * 360.0);
+        SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Position mod 360", angularEncoder.getPosition() * 360.0 % 360.0);
+        SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Position + off", angularEncoder.getPosition() * 360.0 + canCoderOffset.degrees());
+        SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Position + off mod 360", angularEncoder.getPosition() * 360.0 % 360 + canCoderOffset.radians());
         SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Position (Distance) ", movementEncoder.getPosition());
         SmartDashboard.putNumber("Module " + physicalPosition.asString() + "(ids: " + movementMotor.getDeviceId() + ", " + rotationMotor.getDeviceId() + ", " + angularEncoder.getDeviceID() + ") Movement Speed", movementMotor.get());
     }
