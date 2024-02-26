@@ -1,12 +1,12 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.SparkMaxPIDController;
-import com.revrobotics.SparkMaxAbsoluteEncoder;
-import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
+import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.SparkPIDController;
+import com.revrobotics.SparkAbsoluteEncoder;
+import com.revrobotics.SparkAbsoluteEncoder.Type;
 
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import frc.robot.systems.Intake.SolenoidState;
 import frc.robot.systems.ElevFourbar;
@@ -40,8 +40,8 @@ public class Fourbar {
     
     //Motor and controller
     private final CANSparkMax fourbarMotor;   
-    private final SparkMaxPIDController pidController; 
-    private SparkMaxAbsoluteEncoder absoluteEncoder;
+    private final SparkPIDController pidController; 
+    private SparkAbsoluteEncoder absoluteEncoder;
 
     //instance variables
     private double targetSetpoint;

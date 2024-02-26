@@ -3,10 +3,10 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj.DigitalInput;
 
 /**
@@ -40,6 +40,11 @@ public class Elevator {
     private double encoderPosition;
     private double targetSetpoint;
 
+    //2024 stuff I have to make this work for the APEC conference. Tomorrow. If robotics gods exist, please make this work.
+    //Also praise past me for making this organized, I didn't think I'd have to work on it again but its very much easier than it wouldve been.
+    Slot0Configs slot0Configs;
+    PositionVoltage request;
+
     private DigitalInput limit;
     
     /**
@@ -51,19 +56,14 @@ public class Elevator {
         encoder = new Encoder(ENCODER_CHANNEL_A, ENCODER_CHANNEL_B);
         
         elevatorMotor = new TalonFX(ELEVATOR_MOTOR_ID);
+        slot0Configs = new Slot0Configs();
 
-        elevatorMotor.configFactoryDefault();
-        elevatorMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 30);
-        elevatorMotor.config_kP(0, P);
-        elevatorMotor.config_kI(0, I);
-        elevatorMotor.config_kD(0, D);
-        elevatorMotor.selectProfileSlot(0, 0);
-
-        elevatorMotor.configPeakOutputForward(0.7);
-        elevatorMotor.configPeakOutputReverse(-0.7);
+        slot0Configs.kP = P;
+        slot0Configs.kI = I;
+        slot0Configs.kD = D;
         
         //Configures motor to brake when not being used
-        elevatorMotor.setNeutralMode(NeutralMode.Brake);
+        elevatorMotor.setNeutralMode(NeutralModeValue.Brake);
         limit = new DigitalInput(0);
     }
 
@@ -84,7 +84,7 @@ public class Elevator {
      * @param dPadDirection The value of the dpad
      */
     public void manualControl(double speed, int dPadDirection) {
-        encoderPosition = elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
+        encoderPosition = elevatorMotor.getPosition().getValueAsDouble();
 
         if (Math.abs(speed) < MANUAL_DEADZONE) {
             speed = 0;
@@ -103,7 +103,7 @@ public class Elevator {
             }
         }
 
-        elevatorMotor.set(ControlMode.PercentOutput, speed * 0.6);
+        elevatorMotor.set(speed * 0.6);
     
         SmartDashboard.putNumber("Elev Encoder", encoder.get());
     }
@@ -113,12 +113,12 @@ public class Elevator {
      * @param setpoint The setpoint to move the elevator to
      */
     public void pidControl(Setpoint setpoint) {
-        encoderPosition = elevatorMotor.getSensorCollection().getIntegratedSensorPosition();
+        encoderPosition = elevatorMotor.getPosition().getValueAsDouble();
 
         targetSetpoint = setpoint.getElevPos();
 
         //set elevator PID position to target setpoint
-        elevatorMotor.set(ControlMode.Position, targetSetpoint * TICKS_PER_INCH);
+        elevatorMotor.setControl(request.withPosition(targetSetpoint * TICKS_PER_INCH));
 
         if(encoder.get() >= 0) {
             zeroEncoder(0.25);
@@ -147,6 +147,6 @@ public class Elevator {
     public void zeroEncoder(double inches) {
         double ticks = inches * TICKS_PER_INCH;
 
-        elevatorMotor.getSensorCollection().setIntegratedSensorPosition(2000, 30);
+        elevatorMotor.setPosition(2000);
     }
 }

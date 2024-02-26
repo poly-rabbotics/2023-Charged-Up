@@ -193,8 +193,8 @@ public class Robot extends TimedRobot {
         controllerOne.setRumble(RumbleType.kBothRumble, rumble);
         
         Intake.run(
-            controlPanel.getRawButtonPressed(8), //Pivot toggle
-            controlPanel.getRawButton(9), //Claw hold
+            controlPanel.getRawButtonPressed(9), //Pivot toggle
+            controlPanel.getRawButton(8), //Claw hold
             controlPanel.getRawButton(6), //Intake hold
             controlPanel.getRawButton(7) //Outtake hold
         );
